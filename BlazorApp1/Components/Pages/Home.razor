@@ -1,0 +1,98 @@
+@page "/"
+@rendermode InteractiveServer
+@using BlazorApp1.Data
+@using BlazorApp1.Models
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+<PageTitle>Helal mi? | Ürün ve yemek bilgisi</PageTitle>
+
+<main class="app-shell">
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
+        <span class="beta-pill">BETA · TÜRKİYE</span>
+    </header>
+
+    <section class="hero">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> BİLGİLİ SEÇİM, İÇİN RAHATLIĞI</div>
+        <h1>Ne yediğini<br /><span>bilerek seç.</span></h1>
+        <p>Ürün içeriğini incele, restoran yemekleri hakkında sorulacakları öğren. Her bilgi için kaynağı ve belirsizliği açıkça gösteriyoruz.</p>
+        <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input aria-label="Ürün veya içerik ara" @bind="query" @bind:event="oninput" @onkeydown="OnKeyDown" placeholder="Ürün, marka veya içerik ara..." />
+            <button class="search-button" @onclick="Search">Ara <span>→</span></button>
+        </div>
+        <div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
+    </section>
+
+    <section class="catalog-section">
+        <div class="section-heading">
+            <div><div class="section-kicker">KEŞFET</div><h2>Bilgiye göz at</h2></div>
+            <div class="tabs" role="tablist"><button class="@(showProducts ? "active" : "")" @onclick="ShowProducts">Paketli ürünler</button><button class="@(!showProducts ? "active" : "")" @onclick="ShowRestaurants">Restoran yemekleri</button></div>
+        </div>
+
+        @if (showProducts)
+        {
+            <div class="results-label">@products.Count ürün kaydı <span>·</span> Bilgiler kaynak durumuyla gösterilir</div>
+            <div class="card-grid">
+                @foreach (var product in products)
+                {
+                    <article class="info-card">
+                        <div class="card-top"><div class="product-icon">@(product.Name.StartsWith("Örnek Sütlü") ? "▧" : product.Name.StartsWith("Örnek Çilek") ? "◉" : "◇")</div><span class="status status-review">@product.Assessment</span></div>
+                        <div class="product-brand">@product.Brand</div><h3>@product.Name</h3>
+                        <p class="ingredients">@product.Ingredients</p>
+                        <div class="card-note"><span>ⓘ</span> @product.Note</div>
+                        <div class="card-source">KAYNAK DURUMU <strong>@product.Source</strong></div>
+                    </article>
+                }
+            </div>
+            @if (products.Count == 0) { <div class="empty-state">Bu aramayla eşleşen kayıt yok. Ürün adını veya içeriği değiştirebilirsin.</div> }
+        }
+        else
+        {
+            <div class="results-label">@restaurants.Count yemek kaydı <span>·</span> İşletme bilgileri henüz doğrulanmadı</div>
+            <div class="card-grid">
+                @foreach (var restaurant in restaurants)
+                {
+                    <article class="info-card restaurant-card">
+                        <div class="card-top"><div class="product-icon restaurant-icon">⌂</div><span class="status status-review">İşletmeye danışın</span></div>
+                        <div class="product-brand">@restaurant.Name</div><h3>@restaurant.Dish</h3>
+                        <p class="ingredients">@restaurant.PossibleIngredients</p>
+                        <div class="card-note"><span>?</span> Sorulabilecekler: @restaurant.Questions</div>
+                        <div class="card-source">BİLGİ KAYNAĞI <strong>@restaurant.InformationSource</strong></div>
+                    </article>
+                }
+            </div>
+            @if (restaurants.Count == 0) { <div class="empty-state">Bu aramayla eşleşen yemek kaydı yok.</div> }
+        }
+    </section>
+
+    <footer class="disclaimer"><span>ⓘ</span><p><strong>Bilgi notu</strong> — Bu uygulama kesin dini hüküm veya sertifika vermez. Örnek kayıtlar gösterim amaçlıdır; gerçek ürün ya da işletme bilgisi olarak kullanılmamalıdır. Belirsiz durumlarda üreticiye veya işletmeye danışın.</p></footer>
+    <footer class="site-footer"><span>helalmi? <span class="brand-dot">·</span> Kaynağıyla bilgi</span><span>İçerik ve değerlendirmeler bilgilendirme amaçlıdır.</span></footer>
+</main>
+
+@code {
+    private List<Product> products = [];
+    private List<Restaurant> restaurants = [];
+    private string query = "";
+    private bool showProducts = true;
+
+    protected override async Task OnInitializedAsync() => await Search();
+
+    private async Task Search()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var term = query.Trim();
+        products = await db.Products.AsNoTracking()
+            .Where(p => term == "" || p.Name.Contains(term) || p.Brand.Contains(term) || p.Barcode.Contains(term) || p.Ingredients.Contains(term))
+            .OrderBy(p => p.Name).ToListAsync();
+        restaurants = await db.Restaurants.AsNoTracking()
+            .Where(r => term == "" || r.Name.Contains(term) || r.Dish.Contains(term) || r.PossibleIngredients.Contains(term))
+            .OrderBy(r => r.Name).ToListAsync();
+    }
+
+    private async Task QuickSearch(string term) { query = term; showProducts = true; await Search(); }
+    private async Task ShowProducts() { showProducts = true; await Search(); }
+    private async Task ShowRestaurants() { showProducts = false; await Search(); }
+    private async Task OnKeyDown(KeyboardEventArgs args) { if (args.Key == "Enter") await Search(); }
+}
