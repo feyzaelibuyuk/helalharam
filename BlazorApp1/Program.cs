@@ -23,7 +23,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     if (!await db.Products.AnyAsync())
     {
         db.Products.AddRange(
-            new Product { Name = "Örnek Sütlü Çikolata", Brand = "Örnek Marka", Barcode = "8690000000011", Ingredients = "Şeker, kakao yağı, süt tozu, kakao kitlesi, emülgatör (soya lesitini), aroma verici.", Assessment = "Ek bilgi gerekli", Note = "Aroma vericinin kaynağı ürün bilgisinde açıklanmıyor. Üreticiye danışın.", Source = "Demo kayıt; üretici bilgisiyle doğrulanmadı." },
+            new Product { Name = "Örnek Sütlü Çikolata", Brand = "Örnek Marka", Barcode = "8690000000011", Ingredients = "Şeker, kakao yağı, süt tozu, kakao kitlesi, emülgatör (soya lesitini), aroma verici.", Assessment = "Şüpheli gıda", Note = "Aroma vericinin kaynağı ürün bilgisinde açıklanmıyor. Bu nedenle ürünün uygunluğu doğrulanamıyor.", Source = "Demo kayıt; üretici bilgisiyle doğrulanmadı." },
             new Product { Name = "Örnek Çilekli Yoğurt", Brand = "Örnek Marka", Barcode = "8690000000028", Ingredients = "Yoğurt, çilek preparatı, şeker, kıvam artırıcı.", Assessment = "Bilgi bekleniyor", Note = "Bu demo kaydında katkı maddelerinin ayrıntısı doğrulanmadı.", Source = "Demo kayıt; üretici bilgisiyle doğrulanmadı." },
             new Product { Name = "Örnek Sebzeli Kraker", Brand = "Örnek Marka", Barcode = "8690000000035", Ingredients = "Buğday unu, bitkisel yağ, tuz, baharat.", Assessment = "Bilgi bekleniyor", Note = "Ambalaj ve üretici bilgisi kontrol edilmeli.", Source = "Demo kayıt; üretici bilgisiyle doğrulanmadı." });
         db.Restaurants.AddRange(
@@ -33,6 +33,22 @@ await using (var scope = app.Services.CreateAsyncScope())
     }
 }
 
+// Önceden oluşturulmuş demo kaydın eski yönlendirmesini güncelle.
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+    await using var db = await factory.CreateDbContextAsync();
+    var demoProduct = await db.Products.FirstOrDefaultAsync(p =>
+        p.Barcode == "8690000000011" &&
+        p.Source == "Demo kayıt; üretici bilgisiyle doğrulanmadı." &&
+        p.Note == "Aroma vericinin kaynağı ürün bilgisinde açıklanmıyor. Üreticiye danışın.");
+    if (demoProduct is not null)
+    {
+        demoProduct.Assessment = "Şüpheli gıda";
+        demoProduct.Note = "Aroma vericinin kaynağı ürün bilgisinde açıklanmıyor. Bu nedenle ürünün uygunluğu doğrulanamıyor.";
+        await db.SaveChangesAsync();
+    }
+}
 app.MapGet("/api/products", async (IDbContextFactory<AppDbContext> factory, string? q) =>
 {
     await using var db = await factory.CreateDbContextAsync();

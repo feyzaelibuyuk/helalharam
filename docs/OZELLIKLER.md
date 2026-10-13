@@ -33,3 +33,6 @@
 
 Her görev güncel main'den açılır. Derleme ve ilgili akış kontrolünden sonra main'e birleştirilir.
 Demo kayıtlar gerçek ürün, restoran, sertifika veya dini hüküm değildir.
+
+## Uyarı dili
+Paketli üründe şüpheli bileşen varsa Şüpheli gıda ve gerekçe gösterilir; kullanıcı üreticiye yönlendirilmez. Bilgi eksikliği tek başına haram hükmü değildir. Restoran ve açık yemeklerde İşletmeye danışın ve sorulacak sorular gösterilir.

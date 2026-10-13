@@ -52,7 +52,7 @@ public sealed class HomePage : TabbedPage
             {
                 results.Add(Text(item.name));
                 results.Add(Text(item.index == 0
-                    ? "Şüpheli — Demo etikette jelatin var; kaynağı belirtilmemiş. Sertifika veya üretici bilgisi gerekir."
+                    ? "Şüpheli gıda — Demo etikette jelatin var; kaynağı belirtilmemiş. Ürünün uygunluğu doğrulanamıyor."
                     : "Yetersiz bilgi — Demo içerik: un, bitkisel yağ, tuz. Tam üretim ve kaynak bilgisi olmadan uygunluk doğrulanamaz."));
                 results.Add(Text("Kaynak: uygulama içi kurgu örnek. Doğrulanmış kayıt değildir."));
                 results.Add(Text(item.index == 0 ? "Alternatif arama ölçütü: aynı kategoride, jelatin kaynağı belgelenmiş ürün. Henüz doğrulanmış alternatif yok." : "Henüz doğrulanmış alternatif yok."));
@@ -130,4 +130,3 @@ public sealed class HomePage : TabbedPage
         return Page("Profil", stack);
     }
 }
-

@@ -10,3 +10,5 @@
 # Yerel aktarım yedekleri ve CLI dosyaları
 migration-backup/
 .local-dotnet/
+
+.verification/
