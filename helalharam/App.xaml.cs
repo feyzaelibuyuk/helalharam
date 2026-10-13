@@ -11,7 +11,8 @@ namespace helalharam
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new NavigationPage(new HomePage()));
+            return new Window(new HomePage());
         }
     }
 }
+
