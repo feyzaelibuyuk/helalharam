@@ -20,3 +20,7 @@ Başlangıçtaki ürün ve restoran kayıtları yalnızca arayüz/API denemesi i
 Menü metninden sorular, cihazda deneyim taslağı, profil tercihleri ve demo ürün ekranı eklendi. Mevcut API kataloğu Katalog sekmesinde korunur. Gerçek OCR ve kamera sonraki görevlerdir.
 Özellikler: docs/OZELLIKLER.md. Android derleme: ./build-android.ps1; emülatörde çalıştırma: ./build-android.ps1 -Run.
 Aktarım öncesi ilk çalışmanın dosya ve Git yedekleri migration-backup klasöründe yereldir, GitHub'a gönderilmez.
+
+## Android cihaz seçimi
+Bu bilgisayarda Pixel_7 (API 35) sistem imajı kuruludur. API 36 cihazının sistem imajı eksik olduğu için açılmaz. Visual Studio'da API 35 cihazını seçin veya Android Device Manager üzerinden başlatın.
+Komut satırı APK'sı C# derlemelerini içerir; build-android.ps1 ile oluşturulabilir.
