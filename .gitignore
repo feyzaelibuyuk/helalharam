@@ -6,3 +6,7 @@
 **/helalharam.db-shm
 **/helalharam.db-wal
 *.user
+
+# Yerel aktarım yedekleri ve CLI dosyaları
+migration-backup/
+.local-dotnet/
