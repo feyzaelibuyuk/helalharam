@@ -45,12 +45,22 @@
                     <p class="ingredients">Kategori etiketleri: @Join(p.Categories)</p>
                     <p class="ingredients">Bir ürünün birden çok satış ülkesi olabilir. Bu kayıt her ülkenin formülünü ayrı doğrulamaz.</p>
                 </article>
-                <article class="info-card"><h2>Kaynak ve etiket beyanı</h2>
+                <article class="info-card"><h2>Helal sertifikası</h2>
+                    <p class="ingredients">@p.Certificate.Message</p>
+                    @if (p.Certificate.Number.Length > 0)
+                    {
+                        <p class="ingredients">Kurum: @p.Certificate.Issuer · Belge: @p.Certificate.Number</p>
+                        <p class="ingredients">Üretim yeri/kapsam: @p.Certificate.Factory</p>
+                        <p class="ingredients">Geçerlilik: @p.Certificate.ValidFrom?.ToString("dd.MM.yyyy") — @p.Certificate.ValidUntil?.ToString("dd.MM.yyyy")</p>
+                        <p class="ingredients">Resmî kayıt kontrol tarihi: @p.Certificate.CheckedOn?.ToString("dd.MM.yyyy")</p>
+                        <a href="@p.Certificate.VerificationUrl" target="_blank" rel="noopener noreferrer">Resmî belge kaydını aç ↗</a>
+                    }
+                    <h3>Kaynak ve etiket beyanı</h3>
                     <p class="ingredients">@result.Message</p><p class="ingredients">Kaynak etiketleri: @Join(p.Labels)</p>
                     <p class="ingredients">Etikette “helal” yazması kontrol edilmiş sertifika anlamına gelmez.</p>
                     <p class="ingredients">Kaynak güncellemesi: @(p.SourceUpdatedUtc?.ToString("dd.MM.yyyy") ?? "Belirtilmedi")</p>
                     <p class="ingredients">Veri alınma tarihi: @p.FetchedAtUtc.ToString("dd.MM.yyyy") @(result.FromCache ? "(önbellekten)" : "")</p>
-                    <p class="ingredients">Helal uygunluk kontrolü: Henüz doğrulanmadı.</p>
+                    <p class="ingredients">İçerik değerlendirmesi ve sertifika durumu ayrı gösterilir; sertifika etiketi içerik bulgularını otomatik silmez.</p>
                     <a href="@p.SourceUrl" target="_blank" rel="noopener noreferrer">Open Food Facts ürün kaydını aç ↗</a>
                 </article>
             </div></section>

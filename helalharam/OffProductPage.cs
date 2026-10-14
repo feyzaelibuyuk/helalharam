@@ -55,10 +55,26 @@ public sealed class OffProductPage : ContentPage
                     body.Add(reference);
                 }
             }
+            Text("Helal sertifikası", 20);
+            if (p.Certificate is { } certificate)
+            {
+                Text(certificate.Message);
+                if (certificate.Number.Length > 0)
+                {
+                    Text($"Kurum: {certificate.Issuer}\nBelge: {certificate.Number}\nÜretim yeri: {certificate.Factory}\nGeçerlilik: {certificate.ValidFrom:dd.MM.yyyy} — {certificate.ValidUntil:dd.MM.yyyy}\nKayıt kontrolü: {certificate.CheckedOn:dd.MM.yyyy}");
+                    var reference = new Button { Text = "Resmî belge kaydını aç" };
+                    reference.Clicked += async (_, _) =>
+                    {
+                        try { await Launcher.Default.OpenAsync(new Uri(certificate.VerificationUrl)); }
+                        catch (Exception ex) when (ex is InvalidOperationException or FeatureNotSupportedException) { await DisplayAlertAsync("Belge", "Bağlantı açılamadı.", "Tamam"); }
+                    };
+                    body.Add(reference);
+                }
+            }
             Text("Özgün içindekiler", 20); Text(string.IsNullOrWhiteSpace(p.Ingredients) ? "Kaynakta içerik bulunmuyor." : p.Ingredients);
             Text($"Dil: {p.IngredientsLanguage}\nSatış ülke etiketleri: {Join(p.Countries)}\nKategori etiketleri: {Join(p.Categories)}");
             Text($"Kaynak etiketleri: {Join(p.Labels)}\nHelal etiketi, kontrol edilmiş sertifika anlamına gelmez.");
-            Text($"Kaynak güncellemesi: {p.SourceUpdatedUtc?.ToString("dd.MM.yyyy") ?? "Belirtilmedi"}\nVeri alınma tarihi: {p.FetchedAtUtc:dd.MM.yyyy}{(result.FromCache ? " (önbellekten)" : "")}\nHelal uygunluk kontrolü: Henüz doğrulanmadı.");
+            Text($"Kaynak güncellemesi: {p.SourceUpdatedUtc?.ToString("dd.MM.yyyy") ?? "Belirtilmedi"}\nVeri alınma tarihi: {p.FetchedAtUtc:dd.MM.yyyy}{(result.FromCache ? " (önbellekten)" : "")}\nİçerik değerlendirmesi ve sertifika bilgisi ayrı gösterilir.");
             Text("Birden çok satış ülkesi, her ülkedeki formülün ayrı doğrulandığı anlamına gelmez. Çeviri henüz bağlı değil.");
             Text("Veri: Open Food Facts · ODbL. Ambalaj fotoğrafları: CC BY-SA.", 13);
             if (Uri.TryCreate(p.SourceUrl, UriKind.Absolute, out var source) && source.Scheme == "https" && source.Host == "world.openfoodfacts.org")
@@ -99,6 +115,17 @@ public sealed class OffProductPage : ContentPage
         public string SourceTitle { get; set; } = "";
         public string SourceUrl { get; set; } = "";
     }
+    private sealed class Certificate
+    {
+        public string Message { get; set; } = "";
+        public string Issuer { get; set; } = "";
+        public string Number { get; set; } = "";
+        public string Factory { get; set; } = "";
+        public string VerificationUrl { get; set; } = "";
+        public DateOnly? ValidFrom { get; set; }
+        public DateOnly? ValidUntil { get; set; }
+        public DateOnly? CheckedOn { get; set; }
+    }
     private sealed class Product
     {
         public string Barcode { get; set; } = "";
@@ -115,6 +142,7 @@ public sealed class OffProductPage : ContentPage
         public DateTimeOffset? SourceUpdatedUtc { get; set; }
         public string Assessment { get; set; } = "";
         public string AssessmentNote { get; set; } = "";
+        public Certificate? Certificate { get; set; }
         public Evaluation? IngredientAssessment { get; set; }
     }
 }

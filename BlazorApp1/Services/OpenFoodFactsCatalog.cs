@@ -7,10 +7,10 @@ namespace BlazorApp1.Services;
 public sealed record OffProduct(string Barcode, string Name, string Brand, string Ingredients,
     string IngredientsLanguage, string[] Countries, string[] Categories, string[] Labels,
     string ImageUrl, string SourceUrl, DateTimeOffset FetchedAtUtc, DateTimeOffset? SourceUpdatedUtc,
-    string Assessment, string AssessmentNote, IngredientAssessment IngredientAssessment);
+    string Assessment, string AssessmentNote, IngredientAssessment IngredientAssessment, CertificateInfo Certificate);
 public sealed record OffResult(string Status, OffProduct? Product, string Message, bool FromCache = false);
 
-public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCache cache)
+public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCache cache, CertificateRegistry? certificates = null)
 {
     private readonly SemaphoreSlim gate = new(1, 1);
     private readonly Queue<DateTimeOffset> requests = new();
@@ -23,11 +23,11 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         if (!ValidBarcode(code)) return new("invalid_barcode", null, "8, 12, 13 veya 14 rakamlı barkod girin.");
         code = NormalizeBarcode(code);
         var key = "off-v3:" + IngredientEvaluator.Version + ":" + code;
-        if (cache.TryGetValue<OffResult>(key, out var cached) && cached is not null) return cached with { FromCache = true };
+        if (cache.TryGetValue<OffResult>(key, out var cached) && cached is not null) return WithCertificate(cached with { FromCache = true });
         await gate.WaitAsync(cancellationToken);
         try
         {
-            if (cache.TryGetValue<OffResult>(key, out cached) && cached is not null) return cached with { FromCache = true };
+            if (cache.TryGetValue<OffResult>(key, out cached) && cached is not null) return WithCertificate(cached with { FromCache = true });
             var now = DateTimeOffset.UtcNow;
             while (requests.TryPeek(out var time) && time <= now.AddMinutes(-1)) requests.Dequeue();
             if (requests.Count >= 15) return new("rate_limited", null, "Sorgu sınırına ulaşıldı. Bir dakika sonra tekrar deneyin.");
@@ -44,12 +44,15 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
             var result = Parse(document.RootElement, code, DateTimeOffset.UtcNow);
             if (result.Status is "found" or "not_found")
                 cache.Set(key, result, result.Status == "found" ? TimeSpan.FromHours(24) : TimeSpan.FromMinutes(10));
-            return result;
+            return WithCertificate(result);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return Unavailable(); }
         catch (Exception ex) when (ex is HttpRequestException or JsonException) { return Unavailable(); }
         finally { gate.Release(); }
     }
+
+    private OffResult WithCertificate(OffResult result) => result.Product is { } product && certificates is not null
+        ? result with { Product = product with { Certificate = certificates.Evaluate(product) } } : result;
 
     private OffResult CacheMissing(string key)
     {
@@ -83,7 +86,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         return new("found", new OffProduct(code, Text(product, "product_name") is { Length: > 0 } name ? name : "Ürün adı belirtilmemiş",
             Text(product, "brands"), ingredients, Text(product, "lang"), Tags(product, "countries_tags"),
             Tags(product, "categories_tags"), Tags(product, "labels_tags"), image,
-            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, evaluation.Status, evaluation.Summary, evaluation),
+            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, evaluation.Status, evaluation.Summary, evaluation, CertificateRegistry.Check(code, Text(product, "product_name"), Tags(product, "labels_tags"), [], DateOnly.FromDateTime(fetchedAt.Date))),
             "Gerçek ürün kaydı: Open Food Facts. Topluluk verileri eksik veya eski olabilir.");
     }
     private static string Text(JsonElement root, string property) => root.ValueKind == JsonValueKind.Object &&

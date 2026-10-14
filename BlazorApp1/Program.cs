@@ -22,6 +22,7 @@ builder.Services.AddHttpClient("OpenFoodFacts", client =>
     client.Timeout = TimeSpan.FromSeconds(15);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber/0.1 (+https://github.com/feyzaelibuyuk/helalharam)");
 });
+builder.Services.AddSingleton<CertificateRegistry>();
 builder.Services.AddSingleton<OpenFoodFactsCatalog>();
 var app = builder.Build();
 
