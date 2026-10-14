@@ -53,6 +53,15 @@ public partial class MainPage : ContentPage
 
     private async Task LoadResultsAsync()
     {
+        var country = CountryEntry.Text?.Trim() ?? "";
+        if (!_showRestaurants && country.Length > 0 &&
+            (country.Length != 2 || !country.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z')))
+        {
+            ConnectionStatus.Text = "Ülke için iki harfli kod kullanın (TR, DE gibi).";
+            ResultsList.ItemsSource = Array.Empty<CatalogCard>();
+            ResultCount.Text = "Ülke filtresini düzeltin.";
+            return;
+        }
         ConnectionStatus.Text = "Bilgiler yükleniyor…";
         var query = Uri.EscapeDataString(SearchEntry.Text?.Trim() ?? "");
         try
@@ -66,10 +75,10 @@ public partial class MainPage : ContentPage
             }
             else
             {
-                var records = await _httpClient.GetFromJsonAsync<List<ProductDto>>($"api/products?q={query}") ?? [];
+                var records = await _httpClient.GetFromJsonAsync<List<ProductDto>>($"api/products?q={query}&country={Uri.EscapeDataString(CountryEntry.Text?.Trim() ?? "")}") ?? [];
                 ResultsList.ItemsSource = records.Select(p => new CatalogCard(p.Name, p.Brand, p.Ingredients,
-                    p.Note, $"Bilgi kaynağı: {p.Source}", p.Assessment)).ToList();
-                ResultCount.Text = $"{records.Count} ürün kaydı · Bilgiler kaynak durumuyla gösterilir";
+                    p.Note, $"Bilgi kaynağı: {p.Source}", p.Assessment, p.Id)).ToList();
+                ResultCount.Text = records.Count == 0 ? "Ürün bulunamadı. Ülke filtresini kontrol edin veya içindekiler metnini Menü ekranına girin. Kamera/OCR henüz bağlı değil." : $"{records.Count} ürün kaydı · Detay ve alternatifleri inceleyebilirsiniz";
             }
             ConnectionStatus.Text = "";
         }
@@ -85,9 +94,16 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private sealed record CatalogCard(string Title, string Subtitle, string Details, string Note, string Source, string Status);
+    private async void OnDetailsClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: CatalogCard card } && card.ProductId > 0)
+            await Navigation.PushModalAsync(new NavigationPage(new ProductDetailsPage(card.ProductId, _httpClient)));
+    }
+    private sealed record CatalogCard(string Title, string Subtitle, string Details, string Note, string Source, string Status, int ProductId = 0)
+    { public bool IsProduct => ProductId > 0; }
     private sealed class ProductDto
     {
+        public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Brand { get; set; } = "";
         public string Ingredients { get; set; } = "";

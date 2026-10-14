@@ -24,3 +24,6 @@ Aktarım öncesi ilk çalışmanın dosya ve Git yedekleri migration-backup klas
 ## Android cihaz seçimi
 Bu bilgisayarda Pixel_7 (API 35) sistem imajı kuruludur. API 36 cihazının sistem imajı eksik olduğu için açılmaz. Visual Studio'da API 35 cihazını seçin veya Android Device Manager üzerinden başlatın.
 Komut satırı APK'sı C# derlemelerini içerir; build-android.ps1 ile oluşturulabilir.
+
+## Ürün kataloğu
+Ürün detayları, ülke filtresi ve demo alternatif akışı için docs/URUN_KATALOG.md dosyasına bakın. Web ve mobil Katalog sekmesi aynı servisi kullanır. Mobil Ürünler sekmesi ilk yerel demo olarak korunmuştur.

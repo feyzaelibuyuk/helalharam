@@ -1,6 +1,7 @@
 using BlazorApp1.Components;
 using BlazorApp1.Data;
 using BlazorApp1.Models;
+using BlazorApp1.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped<ProductCatalog>();
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -49,15 +51,23 @@ await using (var scope = app.Services.CreateAsyncScope())
         await db.SaveChangesAsync();
     }
 }
-app.MapGet("/api/products", async (IDbContextFactory<AppDbContext> factory, string? q) =>
+await using (var scope = app.Services.CreateAsyncScope())
 {
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     await using var db = await factory.CreateDbContextAsync();
-    var products = db.Products.AsNoTracking();
-    if (!string.IsNullOrWhiteSpace(q))
-        products = products.Where(p => p.Name.Contains(q) || p.Brand.Contains(q) || p.Barcode.Contains(q) || p.Ingredients.Contains(q));
-    return Results.Ok(await products.OrderBy(p => p.Name).ToListAsync());
-});
+    await CatalogSetup.InitializeAsync(db);
+}
 
+app.MapGet("/api/products", async (ProductCatalog catalog, string? q, string? country) =>
+    !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :
+    Results.Ok(await catalog.SearchAsync(q, country)));
+
+app.MapGet("/api/products/by-barcode/{barcode}", async (ProductCatalog catalog, string barcode, string? country) =>
+    !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :
+    Results.Ok(await catalog.SearchAsync(barcode, country, exactBarcode: true)));
+
+app.MapGet("/api/products/{id:int}", async (ProductCatalog catalog, int id) =>
+    await catalog.GetDetailAsync(id) is { } detail ? Results.Ok(detail) : Results.NotFound());
 app.MapGet("/api/restaurants", async (IDbContextFactory<AppDbContext> factory, string? q) =>
 {
     await using var db = await factory.CreateDbContextAsync();

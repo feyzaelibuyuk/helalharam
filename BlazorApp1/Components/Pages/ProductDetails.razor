@@ -1,0 +1,82 @@
+@page "/products/{Id:int}"
+@rendermode InteractiveServer
+@using BlazorApp1.Models
+@using BlazorApp1.Services
+@inject ProductCatalog Catalog
+
+<PageTitle>Ürün detayı | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="/">← Kataloğa dön</a><span class="beta-pill">ÜRÜN DETAYI</span></header>
+    @if (error is not null)
+    {
+        <div class="empty-state" role="alert">@error <button @onclick="Load">Tekrar dene</button></div>
+    }
+    else if (loading)
+    {
+        <div class="empty-state">Ürün yükleniyor…</div>
+    }
+    else if (detail is null)
+    {
+        <div class="empty-state">Ürün bulunamadı. <a href="/">Katalogda tekrar ara</a></div>
+    }
+    else
+    {
+        var p = detail.Product;
+        <section class="hero">
+            <div class="eyebrow">@(p.IsDemo ? "KURGU DEMO KAYIT · GERÇEK ÜRÜN DEĞİLDİR" : "KAYNAĞIYLA ÜRÜN BİLGİSİ")</div>
+            <h1>@p.Name</h1><p>@p.Brand · @p.Category</p>
+            <span class="status status-review">@p.Assessment</span>
+            <p>@p.Note</p>
+        </section>
+        <section class="catalog-section"><div class="card-grid">
+            <article class="info-card"><h2>İçindekiler</h2><p class="ingredients">@p.Ingredients</p>
+                <h3>Özgün etiket metni</h3><p class="ingredients">@(p.OriginalIngredients.Length == 0 ? "Özgün metin henüz kaydedilmedi." : p.OriginalIngredients)</p>
+                <div class="card-source">İçerik dili: @(p.IngredientsLanguage.Length == 0 ? "Belirtilmedi" : p.IngredientsLanguage)</div>
+                <p class="ingredients">Otomatik çeviri henüz bağlı değil. Özgün metin değiştirilmeden saklanır.</p>
+            </article>
+            <article class="info-card"><h2>Kaynak ve kayıt bilgisi</h2>
+                <p class="ingredients">Barkod: @p.Barcode</p>
+                <p class="ingredients">Satış ülkesi: @(p.CountryCode.Length == 0 ? "Belirtilmedi" : p.CountryCode)</p>
+                <p class="ingredients">Kaynak: @p.Source</p>
+                <p class="ingredients">Kontrol tarihi: @(p.LastCheckedUtc?.ToString("dd.MM.yyyy") ?? "Henüz doğrulanmadı")</p>
+                <p class="ingredients">@(p.IsDemo ? "Demo — doğrulanmış değerlendirme değildir." : p.IsVerified ? "Kayıtlı kaynak kontrol edilmiş." : "Kaynak kontrolü tamamlanmadı.")</p>
+                @if (SafeSource(p.SourceUrl)) { <a href="@p.SourceUrl" target="_blank" rel="noopener noreferrer">Kaynağı aç ↗</a> }
+                else { <p class="ingredients">Kaynak bağlantısı yok.</p> }
+            </article>
+        </div></section>
+        <section class="catalog-section"><h2>@(p.IsDemo ? "Örnek alternatifler" : "Uygun alternatifler")</h2>
+            <p class="ingredients">@detail.AlternativeMessage</p>
+            <div class="card-grid">
+                @foreach (var alternative in detail.Alternatives)
+                {
+                    <article class="info-card"><span class="status status-review">@(alternative.Product.IsDemo ? "DEMO · UYGUNLUĞU DOĞRULANMADI" : alternative.Product.Assessment)</span>
+                        <h3>@alternative.Product.Name</h3><p class="ingredients">@alternative.Reason</p>
+                        <p class="ingredients">@alternative.Product.Ingredients</p>
+                        <div class="card-source">@alternative.Product.Source</div>
+                        <a href="@($"/products/{alternative.Product.Id}")">Alternatifin detayını incele →</a>
+                    </article>
+                }
+            </div>
+            @if (detail.Alternatives.Count == 0) { <div class="empty-state">Henüz önerilecek alternatif yok.</div> }
+        </section>
+        <footer class="disclaimer"><p>Şüpheli veya yetersiz bilgi, kesin haram hükmü değildir. Demo kayıtlar gerçek ürün tavsiyesi veya sertifika değildir.</p></footer>
+    }
+</main>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private ProductDetail? detail;
+    private bool loading;
+    private string? error;
+    protected override Task OnParametersSetAsync() => Load();
+    private async Task Load()
+    {
+        loading = true; error = null; detail = null;
+        try { detail = await Catalog.GetDetailAsync(Id); }
+        catch (Exception ex) when (ex is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        { error = "Ürün bilgisi şu anda alınamadı."; }
+        finally { loading = false; }
+    }
+    private static bool SafeSource(string value) => Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+        (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
+}

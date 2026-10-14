@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using BlazorApp1.Data
 @using BlazorApp1.Models
+@using BlazorApp1.Services
+@inject ProductCatalog Catalog
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
 
@@ -10,19 +12,20 @@
 <main class="app-shell">
     <header class="topbar">
         <a class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
-        <span class="beta-pill">BETA · TÜRKİYE</span>
+        <span class="beta-pill">BETA · DEMO KATALOG</span>
     </header>
 
     <section class="hero">
         <div class="eyebrow"><span class="eyebrow-dot"></span> BİLGİLİ SEÇİM, İÇİN RAHATLIĞI</div>
         <h1>Ne yediğini<br /><span>bilerek seç.</span></h1>
         <p>Ürün içeriğini incele, restoran yemekleri hakkında sorulacakları öğren. Her bilgi için kaynağı ve belirsizliği açıkça gösteriyoruz.</p>
+        <form method="get" action="/">
         <div class="search-box">
             <span class="search-icon">⌕</span>
-            <input aria-label="Ürün veya içerik ara" @bind="query" @bind:event="oninput" @onkeydown="OnKeyDown" placeholder="Ürün, marka veya içerik ara..." />
-            <button class="search-button" @onclick="Search">Ara <span>→</span></button>
+            <input name="q" aria-label="Ürün veya içerik ara" @bind="query" @bind:event="oninput" placeholder="Ürün, marka veya içerik ara..." />
+            <button class="search-button" type="submit">Ara <span>→</span></button>
         </div>
-        <div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
+        <div class="quick-links"><label>Satış ülkesi kodu <input name="country" aria-label="Satış ülkesi kodu" @bind="country" maxlength="2" placeholder="TR, DE…; boşsa tümü" /></label></div></form><div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
     </section>
 
     <section class="catalog-section">
@@ -33,6 +36,7 @@
 
         @if (showProducts)
         {
+            @if (searchError is not null) { <div class="empty-state" role="alert">@searchError</div> }
             <div class="results-label">@products.Count ürün kaydı <span>·</span> Bilgiler kaynak durumuyla gösterilir</div>
             <div class="card-grid">
                 @foreach (var product in products)
@@ -43,10 +47,11 @@
                         <p class="ingredients">@product.Ingredients</p>
                         <div class="card-note"><span>ⓘ</span> @product.Note</div>
                         <div class="card-source">KAYNAK DURUMU <strong>@product.Source</strong></div>
+<div class="card-source">@product.Category · @(product.CountryCode == "" ? "Ülke belirtilmedi" : product.CountryCode) · @(product.IsDemo ? "DEMO" : "Katalog kaydı")</div><a href="@($"/products/{product.Id}")">Detay ve alternatifler →</a>
                     </article>
                 }
             </div>
-            @if (products.Count == 0) { <div class="empty-state">Bu aramayla eşleşen kayıt yok. Ürün adını veya içeriği değiştirebilirsin.</div> }
+            @if (products.Count == 0) { <div class="empty-state">Bu aramayla eşleşen kayıt yok. Ülke filtresini kontrol edin. Barkod bulunamazsa içindekiler metnini kullanın; kamera ve OCR sonraki sürümde eklenecek.</div> }
         }
         else
         {
@@ -72,20 +77,28 @@
 </main>
 
 @code {
-    private List<Product> products = [];
+    private List<ProductRecord> products = [];
+    private string country = "";
+    private string? searchError;
     private List<Restaurant> restaurants = [];
     private string query = "";
     private bool showProducts = true;
 
-    protected override async Task OnInitializedAsync() => await Search();
+    [SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "country")] public string? CountryQuery { get; set; }
+    protected override async Task OnParametersSetAsync()
+    {
+        query = SearchQuery ?? "";
+        country = CountryQuery ?? "";
+        await Search();
+    }
 
     private async Task Search()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
         var term = query.Trim();
-        products = await db.Products.AsNoTracking()
-            .Where(p => term == "" || p.Name.Contains(term) || p.Brand.Contains(term) || p.Barcode.Contains(term) || p.Ingredients.Contains(term))
-            .OrderBy(p => p.Name).ToListAsync();
+        searchError = ProductCatalog.ValidCountry(country) ? null : "Ülke için iki harfli kod kullanın (TR, DE gibi).";
+        products = searchError is null ? await Catalog.SearchAsync(term, country) : [];
         restaurants = await db.Restaurants.AsNoTracking()
             .Where(r => term == "" || r.Name.Contains(term) || r.Dish.Contains(term) || r.PossibleIngredients.Contains(term))
             .OrderBy(r => r.Name).ToListAsync();
@@ -94,5 +107,4 @@
     private async Task QuickSearch(string term) { query = term; showProducts = true; await Search(); }
     private async Task ShowProducts() { showProducts = true; await Search(); }
     private async Task ShowRestaurants() { showProducts = false; await Search(); }
-    private async Task OnKeyDown(KeyboardEventArgs args) { if (args.Key == "Enter") await Search(); }
 }
