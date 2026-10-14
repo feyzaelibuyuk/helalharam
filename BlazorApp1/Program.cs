@@ -15,6 +15,14 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ProductCatalog>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient("OpenFoodFacts", client =>
+{
+    client.BaseAddress = new Uri("https://world.openfoodfacts.org/");
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber/0.1 (+https://github.com/feyzaelibuyuk/helalharam)");
+});
+builder.Services.AddSingleton<OpenFoodFactsCatalog>();
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -65,6 +73,16 @@ app.MapGet("/api/products", async (ProductCatalog catalog, string? q, string? co
 app.MapGet("/api/products/by-barcode/{barcode}", async (ProductCatalog catalog, string barcode, string? country) =>
     !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :
     Results.Ok(await catalog.SearchAsync(barcode, country, exactBarcode: true)));
+
+app.MapGet("/api/off/products/{barcode}", async (OpenFoodFactsCatalog catalog, string barcode, CancellationToken cancellationToken) =>
+{
+    var result = await catalog.FindAsync(barcode, cancellationToken);
+    return Results.Json(result, statusCode: result.Status switch
+    {
+        "found" => 200, "invalid_barcode" => 400, "not_found" => 404,
+        "rate_limited" => 429, _ => 502
+    });
+});
 
 app.MapGet("/api/products/{id:int}", async (ProductCatalog catalog, int id) =>
     await catalog.GetDetailAsync(id) is { } detail ? Results.Ok(detail) : Results.NotFound());

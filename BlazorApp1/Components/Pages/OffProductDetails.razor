@@ -1,0 +1,65 @@
+@page "/off"
+@page "/off/{Barcode}"
+@rendermode InteractiveServer
+@using BlazorApp1.Services
+@inject OpenFoodFactsCatalog Catalog
+
+<PageTitle>Gerçek ürün sorgula | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="/">← Kataloğa dön</a><span class="beta-pill">OPEN FOOD FACTS</span></header>
+    <section class="hero"><h1>Gerçek ürünü bul.</h1><p>Ambalajdaki barkod numarasını gir. Marka ve içerik bilgisi doğrudan Open Food Facts'ten gelir.</p>
+        <form method="get" action="/off" class="search-box">
+            <input name="barcode" aria-label="Gerçek ürün barkodu" value="@enteredBarcode" inputmode="numeric" maxlength="14" placeholder="Örnek: 3017620422003" />
+            <button type="submit" class="search-button">Barkodu sorgula →</button>
+        </form>
+    </section>
+    @if (loading) { <div class="empty-state">Ürün sorgulanıyor…</div> }
+    else if (result is not null)
+    {
+        @if (result.Product is { } p)
+        {
+            <section class="catalog-section"><div class="card-grid">
+                <article class="info-card">
+                    @if (p.ImageUrl.Length > 0) { <img src="@p.ImageUrl" alt="@($"{p.Name} ambalaj fotoğrafı — Open Food Facts")" style="width:100%;height:220px;object-fit:contain" loading="lazy" referrerpolicy="no-referrer" /> }
+                    <div class="product-brand">@p.Brand</div><h2>@p.Name</h2><p class="ingredients">Barkod: @p.Barcode</p>
+                    <span class="status status-review">@p.Assessment</span><p class="ingredients">@p.AssessmentNote</p>
+                </article>
+                <article class="info-card"><h2>Özgün içindekiler</h2><p class="ingredients">@(p.Ingredients.Length == 0 ? "Kaynakta içerik bulunmuyor." : p.Ingredients)</p>
+                    <div class="card-source">İçerik dili: @(p.IngredientsLanguage.Length == 0 ? "Belirtilmedi" : p.IngredientsLanguage)</div>
+                    <p class="ingredients">Çeviri henüz bağlı değil. Özgün etiket metni gösterilir.</p>
+                    <p class="ingredients">Satış ülke etiketleri: @Join(p.Countries)</p>
+                    <p class="ingredients">Kategori etiketleri: @Join(p.Categories)</p>
+                    <p class="ingredients">Bir ürünün birden çok satış ülkesi olabilir. Bu kayıt her ülkenin formülünü ayrı doğrulamaz.</p>
+                </article>
+                <article class="info-card"><h2>Kaynak ve etiket beyanı</h2>
+                    <p class="ingredients">@result.Message</p><p class="ingredients">Kaynak etiketleri: @Join(p.Labels)</p>
+                    <p class="ingredients">Etikette “helal” yazması kontrol edilmiş sertifika anlamına gelmez.</p>
+                    <p class="ingredients">Kaynak güncellemesi: @(p.SourceUpdatedUtc?.ToString("dd.MM.yyyy") ?? "Belirtilmedi")</p>
+                    <p class="ingredients">Veri alınma tarihi: @p.FetchedAtUtc.ToString("dd.MM.yyyy") @(result.FromCache ? "(önbellekten)" : "")</p>
+                    <p class="ingredients">Helal uygunluk kontrolü: Henüz doğrulanmadı.</p>
+                    <a href="@p.SourceUrl" target="_blank" rel="noopener noreferrer">Open Food Facts ürün kaydını aç ↗</a>
+                </article>
+            </div></section>
+        }
+        else { <div class="empty-state" role="alert">@result.Message</div> }
+    }
+    <footer class="disclaimer"><p>Ürün verileri: <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer">Open Food Facts</a> · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a>. Fotoğraflar: CC BY-SA. Bu akış yalnızca veriyi okur; dış servise ürün/fotoğraf yüklemez.</p></footer>
+</main>
+
+@code {
+    [Parameter] public string? Barcode { get; set; }
+    [SupplyParameterFromQuery(Name = "barcode")] public string? BarcodeQuery { get; set; }
+    private string enteredBarcode = "";
+    private OffResult? result;
+    private bool loading;
+    protected override async Task OnParametersSetAsync()
+    {
+        enteredBarcode = Barcode ?? BarcodeQuery ?? "";
+        result = null;
+        if (enteredBarcode.Length == 0) return;
+        loading = true;
+        try { result = await Catalog.FindAsync(enteredBarcode); }
+        finally { loading = false; }
+    }
+    private static string Join(string[] tags) => tags.Length == 0 ? "Belirtilmedi" : string.Join(", ", tags.Select(t => t.Contains(':') ? t[(t.IndexOf(':') + 1)..] : t));
+}

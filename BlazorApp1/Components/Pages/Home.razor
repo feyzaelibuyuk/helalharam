@@ -12,7 +12,7 @@
 <main class="app-shell">
     <header class="topbar">
         <a class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
-        <span class="beta-pill">BETA · DEMO KATALOG</span>
+        <span class="beta-pill">BETA · ÜRÜN KATALOĞU</span>
     </header>
 
     <section class="hero">
@@ -28,6 +28,14 @@
         <div class="quick-links"><label>Satış ülkesi kodu <input name="country" aria-label="Satış ülkesi kodu" @bind="country" maxlength="2" placeholder="TR, DE…; boşsa tümü" /></label></div></form><div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
     </section>
 
+    <section class="catalog-section">
+        <h2>Gerçek barkod sorgula</h2>
+        <p class="ingredients">Marka, ambalaj fotoğrafı ve içerikler Open Food Facts'ten alınır. Aşağıdaki yerel katalog demo kayıtlarını içerir.</p>
+        <form method="get" action="/off" class="search-box">
+            <input name="barcode" aria-label="Gerçek ürün barkodu" inputmode="numeric" maxlength="14" placeholder="Ambalaj barkodu; örnek: 3017620422003" />
+            <button type="submit" class="search-button">Barkodu sorgula →</button>
+        </form>
+    </section>
     <section class="catalog-section">
         <div class="section-heading">
             <div><div class="section-kicker">KEŞFET</div><h2>Bilgiye göz at</h2></div>

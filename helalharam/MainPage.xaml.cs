@@ -94,6 +94,17 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnOffBarcodeClicked(object? sender, EventArgs e)
+    {
+        var code = OffBarcodeEntry.Text?.Trim() ?? "";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(code, "\\A(?:[0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})\\z"))
+        {
+            await DisplayAlertAsync("Barkod", "8, 12, 13 veya 14 rakamlı barkod girin.", "Tamam");
+            return;
+        }
+        await Navigation.PushModalAsync(new NavigationPage(new OffProductPage(code, _httpClient)));
+    }
+
     private async void OnDetailsClicked(object? sender, EventArgs e)
     {
         if (sender is Button { BindingContext: CatalogCard card } && card.ProductId > 0)

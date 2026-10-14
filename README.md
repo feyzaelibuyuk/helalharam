@@ -27,3 +27,6 @@ Komut satırı APK'sı C# derlemelerini içerir; build-android.ps1 ile oluşturu
 
 ## Ürün kataloğu
 Ürün detayları, ülke filtresi ve demo alternatif akışı için docs/URUN_KATALOG.md dosyasına bakın. Web ve mobil Katalog sekmesi aynı servisi kullanır. Mobil Ürünler sekmesi ilk yerel demo olarak korunmuştur.
+
+## Gerçek ürün API'si
+Open Food Facts barkod bağlantısı web ve mobilde eklendi. Kullanım ve sınırlar: docs/OPEN_FOOD_FACTS.md. API anahtarı gerekmez. Gerçek ürünlerde içerik değerlendirmesi henüz tamamlanmadığı için kesin uygunluk kararı verilmez.
