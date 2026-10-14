@@ -11,6 +11,7 @@ public sealed class HomePage : TabbedPage
         BarBackgroundColor = green;
         BarTextColor = Colors.White;
         Children.Add(new MainPage { Title = "Katalog" });
+        Children.Add(new FavoritesPage());
         Children.Add(Products());
         Children.Add(Menu());
         Children.Add(Community());

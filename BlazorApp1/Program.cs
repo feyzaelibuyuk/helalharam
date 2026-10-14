@@ -1,3 +1,5 @@
+using HelalRehber.Shared;
+using Microsoft.AspNetCore.Antiforgery;
 using BlazorApp1.Components;
 using BlazorApp1.Data;
 using BlazorApp1.Models;
@@ -24,6 +26,8 @@ builder.Services.AddHttpClient("OpenFoodFacts", client =>
 });
 builder.Services.AddSingleton<CertificateRegistry>();
 builder.Services.AddSingleton<OpenFoodFactsCatalog>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<BrowserFavorites>();
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -66,6 +70,37 @@ await using (var scope = app.Services.CreateAsyncScope())
     await using var db = await factory.CreateDbContextAsync();
     await CatalogSetup.InitializeAsync(db);
 }
+
+app.MapPost("/favorites/{action}", async (string action, HttpContext context, IAntiforgery antiforgery, BrowserFavorites favorites, ProductCatalog catalog, OpenFoodFactsCatalog off) =>
+{
+    try { await antiforgery.ValidateRequestAsync(context); }
+    catch (AntiforgeryValidationException) { return Results.BadRequest("Form süresi dolmuş. Sayfayı yenileyin."); }
+    if (action is not ("toggle" or "remove" or "clear")) return Results.NotFound();
+    var form = await context.Request.ReadFormAsync();
+    var kind = form["kind"].ToString(); var id = form["id"].ToString();
+    var items = favorites.Read(context);
+    if (action == "clear") { favorites.Write(context, []); return Results.Redirect("/favorites"); }
+    if (!FavoriteList.Valid(kind, id)) return Results.BadRequest("Geçersiz ürün bağlantısı.");
+    var removed = items.RemoveAll(x => x.Kind == kind && x.Id == id) > 0;
+    if (action == "toggle" && !removed)
+    {
+        FavoriteItem? item;
+        if (kind == "catalog")
+        {
+            var detail = await catalog.GetDetailAsync(int.Parse(id));
+            item = detail is null ? null : new(kind, id, detail.Product.Name, detail.Product.Brand);
+        }
+        else
+        {
+            var result = await off.FindAsync(id, context.RequestAborted);
+            item = result.Product is { } p ? new(kind, p.Barcode, p.Name, p.Brand) : null;
+        }
+        if (item is null) return Results.BadRequest("Ürün alınamadı. Ürün sayfasından tekrar deneyin.");
+        if (!FavoriteList.Add(items, item)) return Results.BadRequest("Favori alanı doldu. Favoriler sayfasından bir ürünü çıkarın.");
+    }
+    favorites.Write(context, items);
+    return Results.Redirect(action == "remove" ? "/favorites" : new FavoriteItem(kind, id, "", "").Url);
+});
 
 app.MapGet("/api/products", async (ProductCatalog catalog, string? q, string? country) =>
     !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :

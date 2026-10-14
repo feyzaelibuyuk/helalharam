@@ -33,6 +33,7 @@ public sealed class ProductDetailsPage : ContentPage
             var detail = await response.Content.ReadFromJsonAsync<Detail>();
             if (detail is null) { Text("Ürün bilgisi alınamadı."); return; }
             var p = detail.Product;
+            body.Add(DeviceFavorites.Button(this, new HelalRehber.Shared.FavoriteItem("catalog", productId.ToString(), p.Name, p.Brand)));
             if (p.IsDemo) Text("DEMO • Kurgu kayıt; gerçek ürün veya uygunluk kararı değildir.");
             Text(p.Name, 26); Text($"{p.Brand} • {p.Category}"); Text(p.Assessment, 20); Text(p.Note);
             Text("İçindekiler", 20); Text(p.Ingredients);

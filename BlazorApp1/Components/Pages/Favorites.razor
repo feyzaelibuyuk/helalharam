@@ -1,0 +1,27 @@
+@page "/favorites"
+@using BlazorApp1.Services
+@using HelalRehber.Shared
+@inject BrowserFavorites Store
+@inject IHttpContextAccessor Context
+<PageTitle>Favorilerim | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="/" data-enhance-nav="false">← Kataloğa dön</a><span class="beta-pill">FAVORİLER</span></header>
+    <section class="hero"><h1>Favorilerim</h1><p>Bu tarayıcıya özel en fazla 20 ürün. Hesap veya mobil eşitleme yoktur. Favoriye kaydetmek uygunluk ya da sertifika onayı değildir; detayda güncel bilgi yeniden alınır.</p></section>
+    <section class="catalog-section">
+    @if (items.Count == 0) { <div class="empty-state">Henüz favori ürün yok. Bir ürünün detayından ekleyebilirsin.</div> }
+    <div class="card-grid">
+    @foreach (var item in items)
+    {
+        <article class="info-card"><h2>@item.Name</h2><p class="ingredients">@item.Brand</p><p class="ingredients">@(item.Kind == "off" ? "Open Food Facts" : "Yerel katalog") · @item.Id</p>
+        <a href="@item.Url" data-enhance-nav="false">Güncel ürün bilgisini aç →</a>
+        <form method="post" action="/favorites/remove" data-enhance="false"><AntiforgeryToken /><input type="hidden" name="kind" value="@item.Kind" /><input type="hidden" name="id" value="@item.Id" /><button type="submit">Favoriden çıkar</button></form></article>
+    }
+    </div>
+    @if (items.Count > 0) { <form method="post" action="/favorites/clear" data-enhance="false"><AntiforgeryToken /><button type="submit">Tüm favorileri sil</button></form> }
+    <p class="ingredients">Tarayıcı çerezleri silinirse bu liste kaybolur. Yalnız ürün bağlantısı, kısa ad ve marka şifreli çerezde saklanır; eski içerik değerlendirmesi saklanmaz.</p>
+    </section>
+</main>
+@code {
+    private List<FavoriteItem> items = [];
+    protected override void OnInitialized() => items = Store.Read(Context.HttpContext);
+}

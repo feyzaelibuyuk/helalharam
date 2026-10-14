@@ -30,3 +30,7 @@ Komut satırı APK'sı C# derlemelerini içerir; build-android.ps1 ile oluşturu
 
 ## Gerçek ürün API'si
 Open Food Facts barkod bağlantısı web ve mobilde eklendi. Kullanım ve sınırlar: docs/OPEN_FOOD_FACTS.md. API anahtarı gerekmez. Gerçek ürünlerde sınırlı kaynaklı içerik kuralları uygulanır; sertifika onayı verilmez. Kapsam ve deneme: docs/ICERIK_KURALLARI.md.
+
+
+## Favoriler
+Web ve mobil ürün favorileri eklendi. Kapsam, saklama ve kontrol adımları: docs/FAVORILER.md. Listeler tarayıcıya/cihaza özeldir; hesap eşitlemesi yoktur.

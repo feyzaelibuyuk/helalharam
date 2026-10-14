@@ -75,4 +75,5 @@
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <Compile Include="..\tests\OcrAndroidSmoke.cs" Link="Tests\OcrAndroidSmoke.cs" />
     </ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\FavoriteList.cs" Link="Shared\FavoriteList.cs" /></ItemGroup>
 </Project>

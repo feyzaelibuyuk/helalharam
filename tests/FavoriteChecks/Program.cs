@@ -1,0 +1,21 @@
+using HelalRehber.Shared;
+using System.Text.Json;
+var items = new List<FavoriteItem>();
+void Check(bool ok, string reason) { if (!ok) throw new Exception(reason); }
+Check(FavoriteList.Add(items, new("catalog", "1", "Demo", "Marka")), "Yerel ürün eklenemedi");
+Check(FavoriteList.Add(items, new("off", "3017620422003", "Nutella", "Ferrero")), "OFF eklenemedi");
+Check(FavoriteList.Add(items, new("off", "3017620422003", "Yeni ad", "Ferrero")) && items.Count == 2, "Tekrar ekleme çoğaldı");
+var saved = FavoriteList.Read(JsonSerializer.Serialize(items));
+Check(saved.Count == 2 && saved[0].Name == "Yeni ad", "Kayıt tekrar okunamadı");
+Check(saved[0].Url == "/off?barcode=3017620422003", "OFF bağlantısı yanlış");
+Check(saved[1].Url == "/products/1", "Yerel bağlantı yanlış");
+Check(FavoriteList.Read("{broken").Count == 0, "Bozuk kayıt çökertti");
+Check(FavoriteList.Read("[{\"Kind\":\"off\",\"Id\":\"javascript:alert(1)\",\"Name\":\"x\",\"Brand\":\"x\"}]").Count == 0, "Geçersiz bağlantı kabul edildi");
+Check(!FavoriteList.Add(items, new("other", "1", "x", "x")), "Bilinmeyen kaynak kabul edildi");
+items.Clear();
+for(var i=1; i<=20; i++) Check(FavoriteList.Add(items, new("catalog", i.ToString(), "x", "x")), "Limit erken doldu");
+Check(!FavoriteList.Add(items, new("catalog", "21", "x", "x")) && items.Count == 20, "Limit aşımı");
+items.Clear();
+for(var i=1;i<=20;i++) FavoriteList.Add(items,new("catalog",i.ToString(),new string('食',70),new string('食',40)));
+Check(JsonSerializer.Serialize(items).Length <= 4000, "Çerez boyutu aşımı");
+Console.WriteLine("PASS: kalıcılık, tekrar kayıt, kaynak ayrımı, güvenli bağlantılar, bozuk veri ve depolama sınırları.");

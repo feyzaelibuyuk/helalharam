@@ -13,4 +13,5 @@
     <PackageReference Include="SourceGear.sqlite3" Version="3.53.3" />
   </ItemGroup>
 
+  <ItemGroup><Compile Include="..\Shared\FavoriteList.cs" Link="Shared\FavoriteList.cs" /></ItemGroup>
 </Project>

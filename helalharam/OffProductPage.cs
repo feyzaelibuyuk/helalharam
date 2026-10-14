@@ -35,6 +35,7 @@ public sealed class OffProductPage : ContentPage
                 if (response.StatusCode is System.Net.HttpStatusCode.BadGateway or System.Net.HttpStatusCode.TooManyRequests) Retry();
                 return;
             }
+            body.Add(DeviceFavorites.Button(this, new HelalRehber.Shared.FavoriteItem("off", p.Barcode, p.Name, p.Brand)));
             Text(p.Name, 26); Text(p.Brand); Text($"Barkod: {p.Barcode}");
             if (Uri.TryCreate(p.ImageUrl, UriKind.Absolute, out var image) && image.Scheme == "https" && image.Host == "images.openfoodfacts.org")
                 body.Add(new Image { Source = ImageSource.FromUri(image), HeightRequest = 220, Aspect = Aspect.AspectFit });

@@ -1,0 +1,17 @@
+@using HelalRehber.Shared
+@using BlazorApp1.Services
+@inject BrowserFavorites Favorites
+@inject IHttpContextAccessor Context
+<form method="post" action="/favorites/toggle" data-enhance="false">
+    <AntiforgeryToken />
+    <input type="hidden" name="kind" value="@Kind" />
+    <input type="hidden" name="id" value="@Id" />
+    <button type="submit" class="search-button">@(saved ? "Favorilerden çıkar" : "Favorilere ekle")</button>
+    <a href="/favorites" data-enhance-nav="false">Favorilerim →</a>
+</form>
+@code {
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public string Id { get; set; } = "";
+    private bool saved;
+    protected override void OnParametersSet() => saved = Favorites.Read(Context.HttpContext).Any(x => x.Kind == Kind && x.Id == Id);
+}
