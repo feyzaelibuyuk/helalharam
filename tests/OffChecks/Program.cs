@@ -12,7 +12,7 @@ var mapped = OpenFoodFactsCatalog.Parse(parsed.RootElement, barcode, DateTimeOff
 Check(mapped.Product is { Name: "Test ürünü", Ingredients: "砂糖, lait, cacao", IngredientsLanguage: "ja" }, "Özgün dil/metin korunmalı");
 var mappedProduct = mapped.Product ?? throw new Exception("Ürün eşlenmedi");
 Check(mappedProduct.Countries.Length == 2, "Birden çok satış ülkesi korunmalı");
-Check(mappedProduct.Assessment == "Değerlendirme bekleniyor", "Helal etiketi kesin uygunluğa dönüşmemeli");
+Check(mappedProduct.Assessment == "Yetersiz bilgi" && !mappedProduct.IngredientAssessment.LanguageSupported, "Helal etiketi kesin uygunluğa dönüşmemeli");
 Check(mappedProduct.SourceUpdatedUtc != mappedProduct.FetchedAtUtc, "Veri alınma tarihi kaynak doğrulama tarihi değildir");
 using var empty = JsonDocument.Parse("""{"product":{"code":"3017620422003","product_name":"İçeriksiz","last_modified_t":"bozuk"}}""");
 Check(OpenFoodFactsCatalog.Parse(empty.RootElement, barcode, DateTimeOffset.UtcNow).Product?.Assessment == "Yetersiz bilgi", "Eksik içerik ve bozuk tarih güvenle ele alınmalı");

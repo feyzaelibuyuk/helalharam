@@ -7,7 +7,7 @@ namespace BlazorApp1.Services;
 public sealed record OffProduct(string Barcode, string Name, string Brand, string Ingredients,
     string IngredientsLanguage, string[] Countries, string[] Categories, string[] Labels,
     string ImageUrl, string SourceUrl, DateTimeOffset FetchedAtUtc, DateTimeOffset? SourceUpdatedUtc,
-    string Assessment, string AssessmentNote);
+    string Assessment, string AssessmentNote, IngredientAssessment IngredientAssessment);
 public sealed record OffResult(string Status, OffProduct? Product, string Message, bool FromCache = false);
 
 public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCache cache)
@@ -22,7 +22,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         var code = barcode?.Trim() ?? "";
         if (!ValidBarcode(code)) return new("invalid_barcode", null, "8, 12, 13 veya 14 rakamlı barkod girin.");
         code = NormalizeBarcode(code);
-        var key = "off-v3:" + code;
+        var key = "off-v3:" + IngredientEvaluator.Version + ":" + code;
         if (cache.TryGetValue<OffResult>(key, out var cached) && cached is not null) return cached with { FromCache = true };
         await gate.WaitAsync(cancellationToken);
         try
@@ -74,10 +74,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         if (!ValidBarcode(returnedCode) || NormalizeBarcode(returnedCode) != NormalizeBarcode(code)) return Unavailable();
         code = NormalizeBarcode(returnedCode);
         var ingredients = Text(product, "ingredients_text");
-        var note = "İçerikler kaynakta bulundu. Kaynaklı beslenme kuralları ve sertifika kontrolü henüz tamamlanmadı; kesin helal/haram sonucu verilmez.";
-        var assessment = "Değerlendirme bekleniyor";
-        if (string.IsNullOrWhiteSpace(ingredients))
-        { assessment = "Yetersiz bilgi"; note = "Kaynakta içindekiler metni yok. Ürün uygunluğu değerlendirilemez."; }
+        var evaluation = IngredientEvaluator.Evaluate(ingredients, Text(product, "lang"));
         var image = Text(product, "image_front_url");
         if (!Uri.TryCreate(image, UriKind.Absolute, out var imageUri) || imageUri.Scheme != "https" || imageUri.Host != "images.openfoodfacts.org") image = "";
         DateTimeOffset? updated = null;
@@ -86,7 +83,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         return new("found", new OffProduct(code, Text(product, "product_name") is { Length: > 0 } name ? name : "Ürün adı belirtilmemiş",
             Text(product, "brands"), ingredients, Text(product, "lang"), Tags(product, "countries_tags"),
             Tags(product, "categories_tags"), Tags(product, "labels_tags"), image,
-            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, assessment, note),
+            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, evaluation.Status, evaluation.Summary, evaluation),
             "Gerçek ürün kaydı: Open Food Facts. Topluluk verileri eksik veya eski olabilir.");
     }
     private static string Text(JsonElement root, string property) => root.ValueKind == JsonValueKind.Object &&

@@ -39,6 +39,22 @@ public sealed class OffProductPage : ContentPage
             if (Uri.TryCreate(p.ImageUrl, UriKind.Absolute, out var image) && image.Scheme == "https" && image.Host == "images.openfoodfacts.org")
                 body.Add(new Image { Source = ImageSource.FromUri(image), HeightRequest = 220, Aspect = Aspect.AspectFit });
             Text(p.Assessment, 20); Text(p.AssessmentNote);
+            if (p.IngredientAssessment is { } evaluation)
+            {
+                Text(evaluation.Profile); Text($"Kural sürümü: {evaluation.RuleVersion}", 13); Text(evaluation.Coverage, 13);
+                foreach (var finding in evaluation.Findings)
+                {
+                    Text(finding.Ingredient, 19); Text($"Etikette eşleşen: {finding.MatchedText}"); Text(finding.Reason);
+                    var uri = new Uri(finding.SourceUrl);
+                    var reference = new Button { Text = finding.SourceTitle };
+                    reference.Clicked += async (_, _) =>
+                    {
+                        try { await Launcher.Default.OpenAsync(uri); }
+                        catch (Exception ex) when (ex is InvalidOperationException or FeatureNotSupportedException) { await DisplayAlertAsync("Kaynak", "Bağlantı açılamadı.", "Tamam"); }
+                    };
+                    body.Add(reference);
+                }
+            }
             Text("Özgün içindekiler", 20); Text(string.IsNullOrWhiteSpace(p.Ingredients) ? "Kaynakta içerik bulunmuyor." : p.Ingredients);
             Text($"Dil: {p.IngredientsLanguage}\nSatış ülke etiketleri: {Join(p.Countries)}\nKategori etiketleri: {Join(p.Categories)}");
             Text($"Kaynak etiketleri: {Join(p.Labels)}\nHelal etiketi, kontrol edilmiş sertifika anlamına gelmez.");
@@ -68,6 +84,21 @@ public sealed class OffProductPage : ContentPage
         public string Message { get; set; } = "";
         public bool FromCache { get; set; }
     }
+    private sealed class Evaluation
+    {
+        public string Profile { get; set; } = "";
+        public string RuleVersion { get; set; } = "";
+        public string Coverage { get; set; } = "";
+        public List<Finding> Findings { get; set; } = [];
+    }
+    private sealed class Finding
+    {
+        public string Ingredient { get; set; } = "";
+        public string MatchedText { get; set; } = "";
+        public string Reason { get; set; } = "";
+        public string SourceTitle { get; set; } = "";
+        public string SourceUrl { get; set; } = "";
+    }
     private sealed class Product
     {
         public string Barcode { get; set; } = "";
@@ -84,5 +115,6 @@ public sealed class OffProductPage : ContentPage
         public DateTimeOffset? SourceUpdatedUtc { get; set; }
         public string Assessment { get; set; } = "";
         public string AssessmentNote { get; set; } = "";
+        public Evaluation? IngredientAssessment { get; set; }
     }
 }

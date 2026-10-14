@@ -18,6 +18,20 @@
     {
         @if (result.Product is { } p)
         {
+            <section class="catalog-section"><h2>İçerik değerlendirmesi</h2>
+                <p class="ingredients">@p.IngredientAssessment.Profile · Kural sürümü: @p.IngredientAssessment.RuleVersion</p>
+                <p class="ingredients">@p.IngredientAssessment.Coverage</p>
+                <div class="card-grid">
+                    @foreach (var finding in p.IngredientAssessment.Findings)
+                    {
+                        <article class="info-card"><h3>@finding.Ingredient</h3>
+                            <span class="status status-review">@(finding.Severity == "restricted" ? "Kısıtlı içerik" : finding.Severity == "uncertain" ? "Kaynak belirsiz" : "Etiket beyanı")</span>
+                            <p class="ingredients">Etikette eşleşen: @finding.MatchedText</p><p class="ingredients">@finding.Reason</p>
+                            <a href="@finding.SourceUrl" target="_blank" rel="noopener noreferrer">@finding.SourceTitle ↗</a>
+                        </article>
+                    }
+                </div>
+            </section>
             <section class="catalog-section"><div class="card-grid">
                 <article class="info-card">
                     @if (p.ImageUrl.Length > 0) { <img src="@p.ImageUrl" alt="@($"{p.Name} ambalaj fotoğrafı — Open Food Facts")" style="width:100%;height:220px;object-fit:contain" loading="lazy" referrerpolicy="no-referrer" /> }

@@ -11,8 +11,8 @@ Bu sürüm dış API'de barkod sorgular; marka/ad ile dış arama ve gerçek kam
 ## Değerlendirme ayrımı
 
 OFF topluluk verisidir. API'deki helal etiketi, kontrol edilmiş sertifika değildir.
-İçerik metni yoksa Yetersiz bilgi; varsa Değerlendirme bekleniyor gösterilir.
-Kaynaklı içerik kuralları henüz bağlı olmadığından gerçek ürünlere otomatik helal/haram hükmü verilmez.
+İçerik metni yoksa veya dili desteklenmiyorsa Yetersiz bilgi gösterilir. Desteklenen dillerde sınırlı kaynaklı kurallar uygulanır; ayrıntılar docs/ICERIK_KURALLARI.md dosyasındadır.
+İçerik bulguları gerekçe ve kaynaklarıyla gösterilir; ürünün sertifikası ve üretim koşulları otomatik doğrulanmaz.
 Kaynak güncellemesi ve veri alınma tarihi gösterilir; bunlar helal kontrol tarihi olarak kullanılmaz.
 Birden çok satış ülkesi saklanır; barkod önekinden ülke/üretim yeri tahmin edilmez.
 Özgün içerik değiştirilmez ve otomatik çeviri yapılmış gibi gösterilmez.
@@ -37,4 +37,3 @@ Canlı bağlantı tek gerçek barkodla kontrol edildi.
 Test: dotnet run --project tests/OffChecks/OffChecks.csproj
 Kapsam: özgün dil/metin, eksik içerik, etiket/sertifika ayrımı, farklı barkod yanıtı,
 önbellek ve eşzamanlılık, geçersiz girdi, 404/429/503 ve istek sınırı.
-

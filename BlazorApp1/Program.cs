@@ -74,6 +74,10 @@ app.MapGet("/api/products/by-barcode/{barcode}", async (ProductCatalog catalog, 
     !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :
     Results.Ok(await catalog.SearchAsync(barcode, country, exactBarcode: true)));
 
+app.MapPost("/api/ingredients/assess", (IngredientInput input) =>
+    input.Ingredients?.Length > 12000 ? Results.BadRequest("İçerik en fazla 12.000 karakter olabilir.") :
+    Results.Ok(IngredientEvaluator.Evaluate(input.Ingredients, input.Language)));
+
 app.MapGet("/api/off/products/{barcode}", async (OpenFoodFactsCatalog catalog, string barcode, CancellationToken cancellationToken) =>
 {
     var result = await catalog.FindAsync(barcode, cancellationToken);

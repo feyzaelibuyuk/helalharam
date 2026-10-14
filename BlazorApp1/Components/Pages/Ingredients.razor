@@ -1,0 +1,42 @@
+@page "/ingredients"
+@using BlazorApp1.Services
+
+<PageTitle>İçerik değerlendirmesi | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="/">← Kataloğa dön</a><span class="beta-pill">İÇERİK İNCELE</span></header>
+    <section class="hero"><h1>İçindekileri incele.</h1>
+        <p>Etiket metnini yaz ve gerçek dilini seç. İnceleme yerel sunucuda yapılır; bu form metni Open Food Facts'e göndermez.</p>
+        <form method="get" action="/ingredients">
+            <label for="ingredient-text">İçindekiler</label>
+            <textarea id="ingredient-text" name="text" maxlength="12000" rows="5" style="width:100%">@Text</textarea>
+            <label for="ingredient-language">Metnin dili</label>
+            <select id="ingredient-language" name="language" value="@Language">
+                <option value="tr" selected="@(Language == "tr")">Türkçe</option>
+                <option value="en" selected="@(Language == "en")">İngilizce</option>
+                <option value="fr" selected="@(Language == "fr")">Fransızca</option>
+                <option value="de" selected="@(Language == "de")">Almanca</option>
+                <option value="other" selected="@(Language == "other")">Diğer / bilinmiyor</option>
+            </select>
+            <button type="submit" class="search-button">İçeriği değerlendir</button>
+        </form>
+    </section>
+    @if (Text is not null)
+    {
+        var evaluation = IngredientEvaluator.Evaluate(Text, Language);
+        <section class="catalog-section"><h2>@evaluation.Status</h2><p class="ingredients">@evaluation.Summary</p>
+            <p class="ingredients">@evaluation.Profile · @evaluation.RuleVersion</p><p class="ingredients">@evaluation.Coverage</p>
+            <div class="card-grid">
+                @foreach (var finding in evaluation.Findings)
+                {
+                    <article class="info-card"><h3>@finding.Ingredient</h3><p class="ingredients">Etikette eşleşen: @finding.MatchedText</p>
+                        <p class="ingredients">@finding.Reason</p><a href="@finding.SourceUrl" target="_blank" rel="noopener noreferrer">@finding.SourceTitle ↗</a>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+</main>
+@code {
+    [SupplyParameterFromQuery(Name = "text")] public string? Text { get; set; }
+    [SupplyParameterFromQuery(Name = "language")] public string Language { get; set; } = "tr";
+}
