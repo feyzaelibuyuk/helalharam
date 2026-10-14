@@ -17,7 +17,7 @@ Android + web MVP başlangıcı. Çözüm `helalharam.slnx` içindedir.
 Başlangıçtaki ürün ve restoran kayıtları yalnızca arayüz/API denemesi içindir; gerçek ürün veya işletme bilgisi değildir. Uygulama kesin dini hüküm vermez.
 
 ## Yeni mobil akışlar
-Menü metninden sorular, cihazda deneyim taslağı, profil tercihleri ve demo ürün ekranı eklendi. Mevcut API kataloğu Katalog sekmesinde korunur. Katalog sekmesinde kamera ile barkod tarama eklendi. Gerçek OCR sonraki görevdir. Kamera kullanımı ve cihaz kontrol adımları: docs/BARKOD_KAMERA.md.
+Menü metninden sorular, cihazda deneyim taslağı, profil tercihleri ve demo ürün ekranı eklendi. Mevcut API kataloğu Katalog sekmesinde korunur. Katalog sekmesinde kamera ile barkod tarama eklendi. Etiket ve menü fotoğrafları için Android OCR eklendi; kullanım ve dil kapsamı: docs/ETIKET_MENU_OCR.md. Kamera kullanımı ve cihaz kontrol adımları: docs/BARKOD_KAMERA.md.
 Özellikler: docs/OZELLIKLER.md. Android derleme: ./build-android.ps1; emülatörde çalıştırma: ./build-android.ps1 -Run.
 Aktarım öncesi ilk çalışmanın dosya ve Git yedekleri migration-backup klasöründe yereldir, GitHub'a gönderilmez.
 

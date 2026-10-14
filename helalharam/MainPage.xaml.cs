@@ -78,7 +78,7 @@ public partial class MainPage : ContentPage
                 var records = await _httpClient.GetFromJsonAsync<List<ProductDto>>($"api/products?q={query}&country={Uri.EscapeDataString(CountryEntry.Text?.Trim() ?? "")}") ?? [];
                 ResultsList.ItemsSource = records.Select(p => new CatalogCard(p.Name, p.Brand, p.Ingredients,
                     p.Note, $"Bilgi kaynağı: {p.Source}", p.Assessment, p.Id)).ToList();
-                ResultCount.Text = records.Count == 0 ? "Ürün bulunamadı. Ülke filtresini kontrol edin veya içindekiler metnini Menü ekranına girin. Kamera barkod taraması kullanılabilir; etiket OCR henüz bağlı değil." : $"{records.Count} ürün kaydı · Detay ve alternatifleri inceleyebilirsiniz";
+                ResultCount.Text = records.Count == 0 ? "Ürün bulunamadı. Ülke filtresini kontrol edin veya içindekiler metnini Menü ekranına girin. Kamera barkod taraması kullanılabilir; etiket fotoğrafını OCR ile okuyabilirsiniz." : $"{records.Count} ürün kaydı · Detay ve alternatifleri inceleyebilirsiniz";
             }
             ConnectionStatus.Text = "";
         }
@@ -93,6 +93,9 @@ public partial class MainPage : ContentPage
             ConnectionStatus.Text = "Sunucu yanıt vermedi. Web projesinin çalıştığını kontrol et.";
         }
     }
+
+    private async void OnOcrClicked(object? sender, EventArgs e) =>
+        await Navigation.PushModalAsync(new NavigationPage(new OcrPage()));
 
     private async void OnScanBarcodeClicked(object? sender, EventArgs e) =>
         await Navigation.PushModalAsync(new NavigationPage(new BarcodeScannerPage(_httpClient)));

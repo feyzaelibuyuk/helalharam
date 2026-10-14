@@ -1,3 +1,4 @@
+using Plugin.Maui.OCR;
 using ZXing.Net.Maui.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace helalharam
             builder
                 .UseMauiApp<App>()
                 .UseBarcodeReader()
+                .UseOcr()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

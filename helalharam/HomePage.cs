@@ -60,7 +60,7 @@ public sealed class HomePage : TabbedPage
         }
         stack.Add(search);
         stack.Add(Action("Ürün ara", (_, _) => Find()));
-        stack.Add(Action("Barkod / etiket fotoğrafı", async (_, _) => await DisplayAlertAsync("Geliştirme sırası", "Gerçek barkod tarama ve OCR ayrı görevlerde eklenecek. Şimdilik demo barkodu elle yazabilirsiniz.", "Tamam")));
+        stack.Add(Action("Etiket fotoğrafını oku", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage()))));
         stack.Add(results);
         Find();
         return Page("Ürünler", stack);
@@ -71,22 +71,17 @@ public sealed class HomePage : TabbedPage
         var stack = Stack("Menüden soruya", "Menüdeki yemek adlarını ve varsa içerik açıklamalarını yaz. Sorular işletmeden bilgi almak içindir; uygunluk sonucu değildir.");
         var input = new Editor { Placeholder = "Örnek: Mercimek çorbası, tavuk ızgara, kremalı makarna", HeightRequest = 130 };
         var output = Text("");
+        stack.Add(Action("Menü fotoğrafını oku", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage(1)))));
         stack.Add(input);
         stack.Add(Action("Sorulacak soruları hazırla", (_, _) =>
         {
             var value = input.Text?.Trim() ?? "";
             if (value.Length == 0) { output.Text = "Önce menü veya içerik metnini gir."; return; }
-            var questions = new List<string> { "• Bu yemeklerin tam içerik listesini paylaşabilir misiniz?", "• Sos, aroma ve katkı maddelerinin içerikleri nedir?", "• Aynı ekipmanla başka ürünler hazırlanıyor mu?" };
-            if (Contains(value, "et", "tavuk", "köfte", "kebap")) questions.Add("• Etin tedarikçisi ve varsa helal sertifikasının kapsamı nedir?");
-            if (Contains(value, "çorba", "pilav", "sos")) questions.Add("• Et suyu, bulyon veya hazır karışım kullanılıyor mu; kaynağı nedir?");
-            if (Contains(value, "tatlı", "jelatin", "pasta")) questions.Add("• Jelatin veya benzeri bileşenler var mı; varsa kaynakları nedir?");
-            questions.Add("• İçeriği belirsiz bileşen çıkarılabilir mi veya içeriği açık başka bir yemek seçebilir miyim?");
-            output.Text = $"Girilen menü: {value}\n\n" + string.Join("\n\n", questions) + "\n\nAlternatifler: işletmenin yanıtı ve doğrulanmış yemek bilgisi geldikten sonra önerilecek.";
+            output.Text = MenuQuestions.Prepare(value, "tr");
         }));
         stack.Add(output);
         return Page("Menü", stack);
     }
-    private static bool Contains(string text, params string[] words) => words.Any(w => text.Contains(w, StringComparison.OrdinalIgnoreCase));
 
     private ContentPage Community()
     {
