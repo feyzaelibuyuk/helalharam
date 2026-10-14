@@ -34,3 +34,7 @@ Open Food Facts barkod bağlantısı web ve mobilde eklendi. Kullanım ve sını
 
 ## Favoriler
 Web ve mobil ürün favorileri eklendi. Kapsam, saklama ve kontrol adımları: docs/FAVORILER.md. Listeler tarayıcıya/cihaza özeldir; hesap eşitlemesi yoktur.
+
+
+## Türkiye restoran/yemek detayları
+Şehir ve şube bilgileri, kaynak, içerik belirsizliği ve işletme soruları eklendi. Mevcut kayıtlar DEMO'dur; gerçek işletme verisi bağlı değildir. Kontrol adımları: docs/TURKIYE_YEMEK_DETAY.md.

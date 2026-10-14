@@ -17,6 +17,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ProductCatalog>();
+builder.Services.AddScoped<RestaurantCatalog>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient("OpenFoodFacts", client =>
 {
@@ -69,6 +70,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     await using var db = await factory.CreateDbContextAsync();
     await CatalogSetup.InitializeAsync(db);
+    await RestaurantCatalog.InitializeAsync(db);
 }
 
 app.MapPost("/favorites/{action}", async (string action, HttpContext context, IAntiforgery antiforgery, BrowserFavorites favorites, ProductCatalog catalog, OpenFoodFactsCatalog off) =>
@@ -126,14 +128,10 @@ app.MapGet("/api/off/products/{barcode}", async (OpenFoodFactsCatalog catalog, s
 
 app.MapGet("/api/products/{id:int}", async (ProductCatalog catalog, int id) =>
     await catalog.GetDetailAsync(id) is { } detail ? Results.Ok(detail) : Results.NotFound());
-app.MapGet("/api/restaurants", async (IDbContextFactory<AppDbContext> factory, string? q) =>
-{
-    await using var db = await factory.CreateDbContextAsync();
-    var restaurants = db.Restaurants.AsNoTracking();
-    if (!string.IsNullOrWhiteSpace(q))
-        restaurants = restaurants.Where(r => r.Name.Contains(q) || r.Dish.Contains(q));
-    return Results.Ok(await restaurants.OrderBy(r => r.Name).ToListAsync());
-});
+app.MapGet("/api/restaurants", async (RestaurantCatalog catalog, string? q, string? city) =>
+    Results.Ok(await catalog.SearchAsync(q, city)));
+app.MapGet("/api/restaurants/{id:int}", async (RestaurantCatalog catalog, int id) =>
+    await catalog.GetAsync(id) is { } detail ? Results.Ok(detail) : Results.NotFound());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

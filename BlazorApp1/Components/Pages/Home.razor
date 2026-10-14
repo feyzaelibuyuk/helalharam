@@ -5,7 +5,7 @@
 @using BlazorApp1.Services
 @inject ProductCatalog Catalog
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<AppDbContext> DbFactory
+@inject RestaurantCatalog Restaurants
 
 <PageTitle>Helal mi? | Ürün ve yemek bilgisi</PageTitle>
 
@@ -25,7 +25,14 @@
             <input name="q" aria-label="Ürün veya içerik ara" @bind="query" @bind:event="oninput" placeholder="Ürün, marka veya içerik ara..." />
             <button class="search-button" type="submit">Ara <span>→</span></button>
         </div>
-        <div class="quick-links"><label>Satış ülkesi kodu <input name="country" aria-label="Satış ülkesi kodu" @bind="country" maxlength="2" placeholder="TR, DE…; boşsa tümü" /></label></div></form><div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
+        <input type="hidden" name="mode" value="@(showProducts ? "products" : "restaurants")" />
+        @if (showProducts) {
+            <div class="quick-links"><label>Satış ülkesi kodu <input name="country" aria-label="Satış ülkesi kodu" @bind="country" maxlength="2" placeholder="TR, DE…; boşsa tümü" /></label></div>
+        }
+        else {
+            <div class="quick-links"><label for="restaurant-city">Türkiye şehir filtresi</label><input id="restaurant-city" name="city" @bind="city" placeholder="İstanbul, Ankara…; boşsa tümü" maxlength="80" /></div>
+        }
+</form><div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
     </section>
 
     <section class="catalog-section">
@@ -69,10 +76,10 @@
                 {
                     <article class="info-card restaurant-card">
                         <div class="card-top"><div class="product-icon restaurant-icon">⌂</div><span class="status status-review">İşletmeye danışın</span></div>
-                        <div class="product-brand">@restaurant.Name</div><h3>@restaurant.Dish</h3>
+                        <div class="product-brand">@restaurant.Name</div><h3>@restaurant.Dish</h3><p class="ingredients">@(restaurant.IsDemo ? "DEMO · Kurgu işletme" : "Kaynak bilgisi doğrulanmalı") · @(restaurant.City.Length == 0 ? "Şehir belirtilmedi" : restaurant.City) · @restaurant.Branch</p>
                         <p class="ingredients">@restaurant.PossibleIngredients</p>
                         <div class="card-note"><span>?</span> Sorulabilecekler: @restaurant.Questions</div>
-                        <div class="card-source">BİLGİ KAYNAĞI <strong>@restaurant.InformationSource</strong></div>
+                        <div class="card-source">BİLGİ KAYNAĞI <strong>@restaurant.InformationSource</strong></div><a href="@($"/restaurants/{restaurant.Id}")">Yemek detayını incele →</a>
                     </article>
                 }
             </div>
@@ -88,28 +95,30 @@
     private List<ProductRecord> products = [];
     private string country = "";
     private string? searchError;
-    private List<Restaurant> restaurants = [];
+    private List<RestaurantRecord> restaurants = [];
+    private string city = "";
     private string query = "";
     private bool showProducts = true;
 
+    [SupplyParameterFromQuery(Name = "city")] public string? CityQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "mode")] public string? ModeQuery { get; set; }
     [SupplyParameterFromQuery(Name = "q")] public string? SearchQuery { get; set; }
     [SupplyParameterFromQuery(Name = "country")] public string? CountryQuery { get; set; }
     protected override async Task OnParametersSetAsync()
     {
         query = SearchQuery ?? "";
+        city = CityQuery ?? ""; showProducts = ModeQuery != "restaurants";
         country = CountryQuery ?? "";
         await Search();
     }
 
     private async Task Search()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
+
         var term = query.Trim();
-        searchError = ProductCatalog.ValidCountry(country) ? null : "Ülke için iki harfli kod kullanın (TR, DE gibi).";
+        searchError = !showProducts || ProductCatalog.ValidCountry(country) ? null : "Ülke için iki harfli kod kullanın (TR, DE gibi).";
         products = searchError is null ? await Catalog.SearchAsync(term, country) : [];
-        restaurants = await db.Restaurants.AsNoTracking()
-            .Where(r => term == "" || r.Name.Contains(term) || r.Dish.Contains(term) || r.PossibleIngredients.Contains(term))
-            .OrderBy(r => r.Name).ToListAsync();
+        restaurants = await Restaurants.SearchAsync(term, city);
     }
 
     private async Task QuickSearch(string term) { query = term; showProducts = true; await Search(); }

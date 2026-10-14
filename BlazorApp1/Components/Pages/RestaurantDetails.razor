@@ -1,0 +1,29 @@
+@page "/restaurants/{Id:int}"
+@using BlazorApp1.Services
+@inject RestaurantCatalog Catalog
+<PageTitle>Yemek detayı | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="/?mode=restaurants">← Restoran yemeklerine dön</a><span class="beta-pill">TÜRKİYE · YEMEK DETAYI</span></header>
+    @if (detail is null) { <div class="empty-state">Yemek bulunamadı veya Türkiye kapsamı dışında.</div> }
+    else
+    {
+        var r = detail.Restaurant;
+        <section class="hero"><div class="eyebrow">@(r.IsDemo ? "KURGU DEMO · GERÇEK İŞLETME DEĞİLDİR" : "KAYNAĞIYLA İŞLETME BİLGİSİ")</div>
+            <h1>@r.Dish</h1><p>@r.Name</p><span class="status status-review">İşletmeye danışın</span><p>@detail.Note</p></section>
+        <section class="catalog-section"><div class="card-grid">
+            <article class="info-card"><h2>Şehir ve şube</h2><p class="ingredients">Ülke: @(r.CountryCode == "TR" ? "Türkiye" : "Belirtilmedi")<br />Şehir: @Known(r.City)<br />Şube: @Known(r.Branch)</p>
+            @if (r.IsDemo) { <p class="ingredients">Şehir ve şube dahil bütün bu kayıt gösterim amaçlı kurgudur.</p> }</article>
+            <article class="info-card"><h2>İçerik bilgisi</h2><h3>Kayıtlı içerik beyanı</h3><p class="ingredients">@(r.ConfirmedIngredients.Length == 0 ? "Tam içerik listesi işletmeden alınmadı." : r.ConfirmedIngredients)</p>
+                <h3>Olası içerikler — doğrulanmadı</h3><p class="ingredients">@Known(r.PossibleIngredients)</p><p class="ingredients">Yemek adı tarifin, sosun veya etin kaynağının kanıtı değildir.</p></article>
+            <article class="info-card"><h2>Bilgi kaynağı</h2><p class="ingredients">@Known(r.InformationSource)</p><p class="ingredients">Son kayıt kontrolü: @(r.LastCheckedUtc?.ToString("dd.MM.yyyy") ?? "Doğrulanmadı")<br />Kayıt dili: @Known(r.Language)</p><p class="ingredients">Doğrulanmış restoran sertifikası kaydı yok.</p></article>
+        </div></section>
+        <section class="catalog-section"><h2>İşletmeye sorulabilecekler</h2><p class="ingredients" style="white-space:pre-line">@detail.Questions</p>
+            <h3>Alternatif yemek</h3><p class="ingredients">İçeriği belirsiz bileşenin çıkarılmasını veya içerikleri açık başka bir yemek isteyebilirsin. Henüz kaynağı kontrol edilmiş alternatif yemek kaydı yok.</p></section>
+    }
+</main>
+@code {
+    [Parameter] public int Id { get; set; }
+    private DishDetail? detail;
+    protected override async Task OnParametersSetAsync() => detail = await Catalog.GetAsync(Id);
+    private static string Known(string value) => string.IsNullOrWhiteSpace(value) ? "Belirtilmedi" : value;
+}

@@ -33,7 +33,7 @@ public partial class MainPage : ContentPage
 
     private async void OnProductsClicked(object? sender, EventArgs e)
     {
-        _showRestaurants = false;
+        _showRestaurants = false; CountryEntry.IsVisible = true; CityEntry.IsVisible = false;
         ProductsButton.BackgroundColor = Color.FromArgb("#245342");
         ProductsButton.TextColor = Colors.White;
         RestaurantsButton.BackgroundColor = Color.FromArgb("#EEEFEB");
@@ -43,7 +43,7 @@ public partial class MainPage : ContentPage
 
     private async void OnRestaurantsClicked(object? sender, EventArgs e)
     {
-        _showRestaurants = true;
+        _showRestaurants = true; CountryEntry.IsVisible = false; CityEntry.IsVisible = true;
         RestaurantsButton.BackgroundColor = Color.FromArgb("#245342");
         RestaurantsButton.TextColor = Colors.White;
         ProductsButton.BackgroundColor = Color.FromArgb("#EEEFEB");
@@ -68,9 +68,9 @@ public partial class MainPage : ContentPage
         {
             if (_showRestaurants)
             {
-                var records = await _httpClient.GetFromJsonAsync<List<RestaurantDto>>($"api/restaurants?q={query}") ?? [];
+                var records = await _httpClient.GetFromJsonAsync<List<RestaurantDto>>($"api/restaurants?q={query}&city={Uri.EscapeDataString(CityEntry.Text?.Trim() ?? "")}") ?? [];
                 ResultsList.ItemsSource = records.Select(r => new CatalogCard(r.Dish, r.Name, r.PossibleIngredients,
-                    $"Sorulabilecekler: {r.Questions}", $"Bilgi kaynağı: {r.InformationSource}", "İşletmeye danışın")).ToList();
+                    $"Sorulabilecekler: {r.Questions}", $"{(r.IsDemo ? "DEMO · Kurgu işletme" : "Kaynak bilgisi doğrulanmalı")} · {r.City} · {r.Branch}\nBilgi kaynağı: {r.InformationSource}", "İşletmeye danışın", RestaurantId: r.Id)).ToList();
                 ResultCount.Text = $"{records.Count} yemek kaydı · İşletme bilgileri kaynağıyla gösterilir";
             }
             else
@@ -111,13 +111,18 @@ public partial class MainPage : ContentPage
         await Navigation.PushModalAsync(new NavigationPage(new OffProductPage(code, _httpClient)));
     }
 
+    private async void OnDishDetailsClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: CatalogCard card } && card.RestaurantId > 0)
+            await Navigation.PushModalAsync(new NavigationPage(new DishDetailsPage(card.RestaurantId, _httpClient)));
+    }
     private async void OnDetailsClicked(object? sender, EventArgs e)
     {
         if (sender is Button { BindingContext: CatalogCard card } && card.ProductId > 0)
             await Navigation.PushModalAsync(new NavigationPage(new ProductDetailsPage(card.ProductId, _httpClient)));
     }
-    private sealed record CatalogCard(string Title, string Subtitle, string Details, string Note, string Source, string Status, int ProductId = 0)
-    { public bool IsProduct => ProductId > 0; }
+    private sealed record CatalogCard(string Title, string Subtitle, string Details, string Note, string Source, string Status, int ProductId = 0, int RestaurantId = 0)
+    { public bool IsProduct => ProductId > 0; public bool IsRestaurant => RestaurantId > 0; }
     private sealed class ProductDto
     {
         public int Id { get; set; }
@@ -130,6 +135,10 @@ public partial class MainPage : ContentPage
     }
     private sealed class RestaurantDto
     {
+        public int Id { get; set; }
+        public string City { get; set; } = "";
+        public string Branch { get; set; } = "";
+        public bool IsDemo { get; set; }
         public string Name { get; set; } = "";
         public string Dish { get; set; } = "";
         public string PossibleIngredients { get; set; } = "";
