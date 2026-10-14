@@ -65,7 +65,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         return significant.Length <= 8 ? significant.PadLeft(8, '0') :
             significant.Length <= 12 ? significant.PadLeft(13, '0') : significant;
     }
-    private static OffResult Missing() => new("not_found", null, "Bu barkod Open Food Facts'te bulunamadı. İçindekiler metnini elle girebilirsiniz; etiket OCR sonraki görevde eklenecek.");
+    private static OffResult Missing() => new("not_found", null, "Bu barkod Open Food Facts'te bulunamadı. İçindekiler metnini elle girebilir veya mobil uygulamada etiket fotoğrafını okutabilirsiniz.");
     private static OffResult Unavailable() => new("unavailable", null, "Ürün servisine şu anda ulaşılamıyor. İnternet bağlantısını kontrol edip tekrar deneyin.");
 
     public static OffResult Parse(JsonElement root, string code, DateTimeOffset fetchedAt)

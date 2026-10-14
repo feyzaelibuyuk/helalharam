@@ -6,6 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 using var connection = new SqliteConnection("Data Source=:memory:");
 await connection.OpenAsync();
+using (var versionQuery = connection.CreateCommand())
+{
+    versionQuery.CommandText = "SELECT sqlite_version()";
+    var nativeVersion = Version.Parse((string)(await versionQuery.ExecuteScalarAsync())!);
+    Check(nativeVersion >= new Version(3, 50, 2), "Çalışan SQLite motoru güvenlik düzeltmesini içermeli");
+    Console.WriteLine("SQLite motoru: " + nativeVersion);
+}
 var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
 var factory = new Factory(options);
 await using var db = new AppDbContext(options);

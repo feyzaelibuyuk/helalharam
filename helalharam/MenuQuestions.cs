@@ -6,6 +6,7 @@ public static class MenuQuestions
     {
         if (string.IsNullOrWhiteSpace(text)) return "Önce menü metnini gir.";
         if (text.Length > 12000) return "Menü en fazla 12.000 karakter olabilir.";
+        if (language == "tr") text = text.ToLower(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
         var questions = new List<string>
         {
             "• Bu yemeklerin tam içerik listesini paylaşabilir misiniz?",
