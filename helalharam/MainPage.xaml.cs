@@ -78,7 +78,7 @@ public partial class MainPage : ContentPage
                 var records = await _httpClient.GetFromJsonAsync<List<ProductDto>>($"api/products?q={query}&country={Uri.EscapeDataString(CountryEntry.Text?.Trim() ?? "")}") ?? [];
                 ResultsList.ItemsSource = records.Select(p => new CatalogCard(p.Name, p.Brand, p.Ingredients,
                     p.Note, $"Bilgi kaynağı: {p.Source}", p.Assessment, p.Id)).ToList();
-                ResultCount.Text = records.Count == 0 ? "Ürün bulunamadı. Ülke filtresini kontrol edin veya içindekiler metnini Menü ekranına girin. Kamera/OCR henüz bağlı değil." : $"{records.Count} ürün kaydı · Detay ve alternatifleri inceleyebilirsiniz";
+                ResultCount.Text = records.Count == 0 ? "Ürün bulunamadı. Ülke filtresini kontrol edin veya içindekiler metnini Menü ekranına girin. Kamera barkod taraması kullanılabilir; etiket OCR henüz bağlı değil." : $"{records.Count} ürün kaydı · Detay ve alternatifleri inceleyebilirsiniz";
             }
             ConnectionStatus.Text = "";
         }
@@ -94,10 +94,13 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnScanBarcodeClicked(object? sender, EventArgs e) =>
+        await Navigation.PushModalAsync(new NavigationPage(new BarcodeScannerPage(_httpClient)));
+
     private async void OnOffBarcodeClicked(object? sender, EventArgs e)
     {
         var code = OffBarcodeEntry.Text?.Trim() ?? "";
-        if (!System.Text.RegularExpressions.Regex.IsMatch(code, "\\A(?:[0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})\\z"))
+        if (!ProductBarcode.IsValid(code))
         {
             await DisplayAlertAsync("Barkod", "8, 12, 13 veya 14 rakamlı barkod girin.", "Tamam");
             return;

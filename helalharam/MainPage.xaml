@@ -32,6 +32,7 @@
 
                 <Label Text="Gerçek barkod sorgula · Open Food Facts" FontAttributes="Bold" TextColor="#245342" />
                 <Entry x:Name="OffBarcodeEntry" Placeholder="Ambalaj barkodu; örnek: 3017620422003" Keyboard="Numeric" MaxLength="14" />
+                <Button Text="Kamerayla barkod tara" Clicked="OnScanBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
                 <Button Text="Gerçek ürünü getir" Clicked="OnOffBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
                 <Label Text="Aşağıdaki yerel katalog demo kayıtlarını içerir." FontSize="11" TextColor="#79847D" />
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
