@@ -18,4 +18,9 @@
   <ItemGroup><Compile Include="..\helalharam\MenuQuestions.cs" Link="Shared\MenuQuestions.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\CorrectionInput.cs" Link="Shared\CorrectionInput.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\PrivacyNotice.cs" Link="Shared\PrivacyNotice.cs" /></ItemGroup>
+  <ItemGroup>
+    <Content Update="Data/certificates.json" CopyToPublishDirectory="PreserveNewest" />
+    <Content Remove="keys/**;helalharam.db*;.verification/**" />
+    <None Remove="keys/**;helalharam.db*;.verification/**" />
+  </ItemGroup>
 </Project>

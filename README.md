@@ -48,3 +48,5 @@ Web ve mobil ürün/yemek detaylarından düzeltme önerisi gönderilebilir. Ön
 Yönetici erişimiyle kuyruk, inceleme kararı ve geçmiş eklendi. Varsayılan parola yoktur; yerel kurulum için configure-admin.ps1 ve docs/YONETIM_INCELEME.md dosyasına bakın. Katalog otomatik değiştirilmez.
 
 Gizlilik ve hata ekranları: [HATA_GIZLILIK](docs/HATA_GIZLILIK.md). Web: /privacy; mobil: Profil → Gizlilik ve kullanım sınırları.
+
+Web yayın paketi ve kalıcı sunucu verileri: [WEB_YAYIN](docs/WEB_YAYIN.md).

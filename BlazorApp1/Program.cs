@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Threading.RateLimiting;
@@ -12,9 +14,21 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var databasePath = Path.Combine(builder.Environment.ContentRootPath, "helalharam.db");
+// Keep mutable data outside the deployment directory in production.
+var configuredDataPath = builder.Configuration["Storage:DataDirectory"];
+if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(configuredDataPath))
+    throw new InvalidOperationException("Production için Storage:DataDirectory kalıcı klasörü ayarlanmalıdır.");
+var dataDirectory = string.IsNullOrWhiteSpace(configuredDataPath)
+    ? builder.Environment.ContentRootPath
+    : Path.GetFullPath(configuredDataPath, builder.Environment.ContentRootPath);
+Directory.CreateDirectory(dataDirectory);
+var databasePath = Path.Combine(dataDirectory, "helalharam.db");
+var keysDirectory = Path.Combine(dataDirectory, "keys");
+Directory.CreateDirectory(keysDirectory);
+builder.Services.AddDataProtection().SetApplicationName("HelalRehber.Web")
+    .PersistKeysToFileSystem(new DirectoryInfo(keysDirectory));
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseSqlite($"Data Source={databasePath}"));
+    options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databasePath }.ToString()));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

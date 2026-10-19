@@ -7,8 +7,12 @@
 **/helalharam.db-wal
 *.user
 
-# Yerel aktarım yedekleri ve CLI dosyaları
+# Yerel aktarÄ±m yedekleri ve CLI dosyalarÄ±
 migration-backup/
 .local-dotnet/
 
 .verification/
+
+# Persistent server data and deployment artifacts
+**/keys/
+artifacts/
