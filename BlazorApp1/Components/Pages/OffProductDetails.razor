@@ -18,7 +18,8 @@
     {
         @if (result.Product is { } p)
         {
-            <section class="catalog-section"><BlazorApp1.Components.Shared.FavoriteButton Kind="off" Id="@(p.Barcode)" /><h2>İçerik değerlendirmesi</h2>
+            <section class="catalog-section"><a href="@($"/corrections/off/{p.Barcode}")" data-enhance-nav="false">Bilgi düzeltme öner →</a>
+<BlazorApp1.Components.Shared.FavoriteButton Kind="off" Id="@(p.Barcode)" /><h2>İçerik değerlendirmesi</h2>
                 <p class="ingredients">@p.IngredientAssessment.Profile · Kural sürümü: @p.IngredientAssessment.RuleVersion</p>
                 <p class="ingredients">@p.IngredientAssessment.Coverage</p>
                 <div class="card-grid">

@@ -1,0 +1,62 @@
+@page "/corrections/{Kind}/{TargetId}"
+@using HelalRehber.Shared
+@using BlazorApp1.Services
+@inject CorrectionService Corrections
+<PageTitle>Bilgi düzeltme önerisi | Helal mi?</PageTitle>
+<main class="app-shell">
+    <header class="topbar"><a class="brand" href="@BackUrl">← Kayda dön</a><span class="beta-pill">BİLGİ DÜZELTME</span></header>
+    <section class="hero"><h1>Düzeltme öner</h1><p>Öneriler inceleme bekler; ürün veya yemek bilgisi doğrudan değiştirilmez. Ad, telefon, e-posta veya başka kişisel bilgi yazmayın. Kaynak için bağlantı verebilirsiniz.</p></section>
+    <section class="catalog-section">
+    @if (receipt is not null)
+    {
+        <div class="info-card" role="status"><h2>Öneriniz kaydedildi</h2><p>İnceleme bekliyor · Gönderim: @receipt.Id</p><p>Katalog değiştirilmedi. Takip numarasını saklayabilirsiniz. Otomatik bildirim gönderilmez.</p><a href="@BackUrl">Kayda dön</a></div>
+    }
+    else if (targetName is null)
+    { <div class="empty-state">Ürün/yemek bilgisi alınamadı. Kaydın detayını açıp tekrar deneyin.</div> }
+    else
+    {
+        <h2>@targetName</h2><p class="ingredients">@(Kind == "off" ? "Open Food Facts" : Kind == "restaurant" ? "Yemek kaydı" : "Yerel ürün kaydı") · @TargetId</p>
+        @foreach (var message in errors) { <p role="alert">@message</p> }
+        <EditForm Model="Input" OnSubmit="Submit" FormName="correction">
+            <input type="hidden" name="Input.SubmissionId" value="@Input!.SubmissionId" />
+            <label for="correction-field">Yanlış / eksik alan</label>
+            <InputSelect id="correction-field" @bind-Value="Input.Field"><option value="">Alan seçin</option>@foreach (var field in CorrectionRules.Fields(Kind)) { <option value="@field.Id">@field.Label</option> }</InputSelect>
+            <label for="correction-text">Düzeltme öneriniz</label>
+            <InputTextArea id="correction-text" @bind-Value="Input.Suggestion" minlength="10" maxlength="2000" rows="6" style="width:100%" />
+            <label for="correction-source">Kaynak bağlantısı (isteğe bağlı, https)</label>
+            <InputText id="correction-source" @bind-Value="Input.SourceUrl" maxlength="1000" style="width:100%" />
+            <p class="ingredients">Yalnız ilgili kayıt için öneri gönderin. Kaynak bağlantısı otomatik doğrulanmaz. Aynı gönderim tekrar gönderilirse ikinci kayıt oluşturulmaz.</p>
+            <button type="submit" class="search-button">İncelemeye gönder</button>
+        </EditForm>
+    }
+    </section>
+</main>
+@code {
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public string TargetId { get; set; } = "";
+    [SupplyParameterFromForm] public CorrectionInput? Input { get; set; }
+    private string? targetName;
+    private List<string> errors = [];
+    private CorrectionReceipt? receipt;
+    private string BackUrl => CorrectionRules.ValidTarget(Kind, TargetId) ? Kind switch { "restaurant" => "/restaurants/" + TargetId, "catalog" => "/products/" + TargetId, _ => "/off?barcode=" + TargetId } : "/";
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new() { SubmissionId = Guid.NewGuid() };
+        Input.Kind = Kind; Input.TargetId = TargetId;
+        targetName = await Corrections.TargetNameAsync(Kind, TargetId);
+    }
+    private async Task Submit()
+    {
+        if (Input is null) return;
+        Input.Kind = Kind; Input.TargetId = TargetId;
+        errors = CorrectionRules.Validate(Input);
+        if (errors.Count > 0) return;
+        try
+        {
+            var result = await Corrections.SubmitAsync(Input);
+            if (result.Receipt is not null) receipt = result.Receipt;
+            else errors = [result.Message];
+        }
+        catch (Exception) { errors = ["Öneri kaydedilemedi. Metniniz korunuyor; tekrar deneyin."]; }
+    }
+}

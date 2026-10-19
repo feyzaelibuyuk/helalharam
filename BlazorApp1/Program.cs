@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using HelalRehber.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using BlazorApp1.Components;
@@ -18,6 +20,27 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<RestaurantCatalog>();
+builder.Services.AddScoped<CorrectionService>();
+builder.Services.AddRateLimiter(options => {
+    options.RejectionStatusCode = 429;
+    options.OnRejected = async (context, token) => {
+        context.HttpContext.Response.StatusCode = 429;
+        context.HttpContext.Response.Headers.RetryAfter = "60";
+        if (context.HttpContext.Request.Path.StartsWithSegments("/corrections"))
+        {
+            var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(context.HttpContext.Request.Path.ToString());
+            context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+            await context.HttpContext.Response.WriteAsync("<!doctype html><html lang='tr'><meta charset='utf-8'><title>Gönderim sınırı</title><main style='max-width:600px;margin:60px auto;font-family:system-ui'><h1>Biraz bekleyelim</h1><p>Gönderim sınırına ulaşıldı. Bir dakika sonra tekrar deneyin. Önceki forma dönmek için tarayıcınızın geri düğmesini kullanabilirsiniz.</p><a href=\"" + path + "\">Yeni form aç</a></main></html>", token);
+            return;
+        }
+        await context.HttpContext.Response.WriteAsJsonAsync(new { Message = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı öneriyle tekrar deneyin.", Receipt = (CorrectionReceipt?)null }, cancellationToken: token);
+    };
+    options.AddPolicy("correction-posts", context =>
+        context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections")
+        ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
+        : RateLimitPartition.GetNoLimiter("other-requests"));
+});
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient("OpenFoodFacts", client =>
 {
@@ -71,6 +94,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await using var db = await factory.CreateDbContextAsync();
     await CatalogSetup.InitializeAsync(db);
     await RestaurantCatalog.InitializeAsync(db);
+    await CorrectionService.InitializeAsync(db);
 }
 
 app.MapPost("/favorites/{action}", async (string action, HttpContext context, IAntiforgery antiforgery, BrowserFavorites favorites, ProductCatalog catalog, OpenFoodFactsCatalog off) =>
@@ -103,6 +127,11 @@ app.MapPost("/favorites/{action}", async (string action, HttpContext context, IA
     favorites.Write(context, items);
     return Results.Redirect(action == "remove" ? "/favorites" : new FavoriteItem(kind, id, "", "").Url);
 });
+
+app.MapPost("/api/corrections", async (CorrectionInput input, CorrectionService service, CancellationToken token) => {
+    var result = await service.SubmitAsync(input, token);
+    return Results.Json(new { result.Message, result.Receipt }, statusCode: result.HttpStatus);
+}).RequireRateLimiting("correction-posts");
 
 app.MapGet("/api/products", async (ProductCatalog catalog, string? q, string? country) =>
     !ProductCatalog.ValidCountry(country) ? Results.BadRequest("İki harfli ülke kodu kullanın (TR, DE gibi).") :
@@ -144,10 +173,19 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
+app.Use(async (context, next) => {
+    if (context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections")))
+    {
+        var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+        if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = 64 * 1024;
+    }
+    await next();
+});
+app.UseRateLimiter();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode().RequireRateLimiting("correction-posts");
 
 app.Run();

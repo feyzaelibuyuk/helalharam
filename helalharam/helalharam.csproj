@@ -76,4 +76,5 @@
         <Compile Include="..\tests\OcrAndroidSmoke.cs" Link="Tests\OcrAndroidSmoke.cs" />
     </ItemGroup>
   <ItemGroup><Compile Include="..\Shared\FavoriteList.cs" Link="Shared\FavoriteList.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\CorrectionInput.cs" Link="Shared\CorrectionInput.cs" /></ItemGroup>
 </Project>

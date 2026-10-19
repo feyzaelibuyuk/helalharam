@@ -28,6 +28,9 @@ public sealed class DishDetailsPage : ContentPage
             var detail = await response.Content.ReadFromJsonAsync<Detail>();
             if (detail is null) { Text("Yemek bilgisi alınamadı."); Retry(); return; }
             var r = detail.Restaurant;
+            var correction = new Button { Text = "Bilgi düzeltme öner" };
+            correction.Clicked += async (_, _) => await Navigation.PushAsync(new CorrectionPage("restaurant", id.ToString(), r.Name + " · " + r.Dish, client));
+            body.Add(correction);
             if (r.IsDemo) Text("DEMO · Şehir/şube dahil kurgu kayıt, gerçek işletme değildir.");
             Text(r.Dish, 26); Text(r.Name, 22);
             Text($"Ülke: {(r.CountryCode == "TR" ? "Türkiye" : "Belirtilmedi")}\nŞehir: {Known(r.City)}\nŞube: {Known(r.Branch)}");

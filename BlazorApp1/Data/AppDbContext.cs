@@ -11,8 +11,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<RestaurantMetadata> RestaurantMetadata => Set<RestaurantMetadata>();
 
+    public DbSet<CorrectionSubmission> CorrectionSubmissions => Set<CorrectionSubmission>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CorrectionSubmission>().ToTable("CorrectionSubmissions");
+        modelBuilder.Entity<CorrectionSubmission>().HasKey(c => c.Id);
         modelBuilder.Entity<RestaurantMetadata>().ToTable("RestaurantMetadata");
         modelBuilder.Entity<RestaurantMetadata>().HasKey(m => m.RestaurantId);
         modelBuilder.Entity<RestaurantMetadata>().HasOne<Restaurant>().WithOne().HasForeignKey<RestaurantMetadata>(m => m.RestaurantId).OnDelete(DeleteBehavior.Cascade);

@@ -36,6 +36,9 @@ public sealed class OffProductPage : ContentPage
                 return;
             }
             body.Add(DeviceFavorites.Button(this, new HelalRehber.Shared.FavoriteItem("off", p.Barcode, p.Name, p.Brand)));
+            var correction = new Button { Text = "Bilgi düzeltme öner" };
+            correction.Clicked += async (_, _) => await Navigation.PushAsync(new CorrectionPage("off", p.Barcode, p.Name, client));
+            body.Add(correction);
             Text(p.Name, 26); Text(p.Brand); Text($"Barkod: {p.Barcode}");
             if (Uri.TryCreate(p.ImageUrl, UriKind.Absolute, out var image) && image.Scheme == "https" && image.Host == "images.openfoodfacts.org")
                 body.Add(new Image { Source = ImageSource.FromUri(image), HeightRequest = 220, Aspect = Aspect.AspectFit });

@@ -9,7 +9,7 @@
     {
         var r = detail.Restaurant;
         <section class="hero"><div class="eyebrow">@(r.IsDemo ? "KURGU DEMO · GERÇEK İŞLETME DEĞİLDİR" : "KAYNAĞIYLA İŞLETME BİLGİSİ")</div>
-            <h1>@r.Dish</h1><p>@r.Name</p><span class="status status-review">İşletmeye danışın</span><p>@detail.Note</p></section>
+            <h1>@r.Dish</h1><a href="@($"/corrections/restaurant/{r.Id}")" data-enhance-nav="false">Bilgi düzeltme öner →</a><p>@r.Name</p><span class="status status-review">İşletmeye danışın</span><p>@detail.Note</p></section>
         <section class="catalog-section"><div class="card-grid">
             <article class="info-card"><h2>Şehir ve şube</h2><p class="ingredients">Ülke: @(r.CountryCode == "TR" ? "Türkiye" : "Belirtilmedi")<br />Şehir: @Known(r.City)<br />Şube: @Known(r.Branch)</p>
             @if (r.IsDemo) { <p class="ingredients">Şehir ve şube dahil bütün bu kayıt gösterim amaçlı kurgudur.</p> }</article>

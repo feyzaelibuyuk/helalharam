@@ -38,3 +38,7 @@ Web ve mobil ürün favorileri eklendi. Kapsam, saklama ve kontrol adımları: d
 
 ## Türkiye restoran/yemek detayları
 Şehir ve şube bilgileri, kaynak, içerik belirsizliği ve işletme soruları eklendi. Mevcut kayıtlar DEMO'dur; gerçek işletme verisi bağlı değildir. Kontrol adımları: docs/TURKIYE_YEMEK_DETAY.md.
+
+
+## Bilgi düzeltme önerileri
+Web ve mobil ürün/yemek detaylarından düzeltme önerisi gönderilebilir. Öneriler ayrı tabloda inceleme bekler; katalog otomatik değişmez. Kapsam ve kontrol: docs/BILGI_DUZELTME.md.
