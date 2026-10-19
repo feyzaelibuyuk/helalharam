@@ -123,6 +123,7 @@ public sealed class HomePage : TabbedPage
         var feedback = Text("");
         stack.Add(Action("Tercihleri kaydet", (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = "Tercihler cihazda kaydedildi. Değerlendirme kurallarına bağlanması sonraki görevde yapılacak."; }));
         stack.Add(feedback);
+        stack.Add(Action("Gizlilik ve kullanım sınırları", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new PrivacyPage()))));
         return Page("Profil", stack);
     }
 }

@@ -17,4 +17,5 @@
   <ItemGroup><Compile Include="..\Shared\FavoriteList.cs" Link="Shared\FavoriteList.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\helalharam\MenuQuestions.cs" Link="Shared\MenuQuestions.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\CorrectionInput.cs" Link="Shared\CorrectionInput.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\PrivacyNotice.cs" Link="Shared\PrivacyNotice.cs" /></ItemGroup>
 </Project>

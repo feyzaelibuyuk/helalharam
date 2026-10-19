@@ -130,10 +130,10 @@ public sealed class OcrPage : ContentPage
             results.Add(new Label { Text = assessment.Coverage });
             foreach (var finding in assessment.Findings ?? [])
                 results.Add(new Label { Text = $"{finding.Ingredient} · {finding.MatchedText}\n{finding.Reason}\nKaynak: {finding.SourceTitle}\n{finding.SourceUrl}" });
-            results.Add(new Label { Text = $"{assessment.Profile}\n{assessment.RuleVersion}\nBu metin analizi sertifika doğrulaması değildir. Şüpheli paket içeriği için uygunluk doğrulanamaz." });
+            results.Add(new Label { Text = $"{assessment.Profile}\n{assessment.RuleVersion}\nBu metin analizi sertifika doğrulaması değildir. Şüpheli paket içeriği için uygunluk doğrulanamaz.\n{HelalHaram.Shared.PrivacyNotice.Limits}" });
         }
         catch (OperationCanceledException) { if (visible) status.Text = "İstek tamamlanamadı. Tekrar deneyin."; }
-        catch (Exception) { status.Text = "İçerik analizi alınamadı. Bilgisayarda Blazor projesinin 5088 portunda çalıştığını kontrol edin."; }
+        catch (Exception) { status.Text = "İçerik analizi alınamadı. İnternet ve analiz sunucusu bağlantısını kontrol edip tekrar deneyin. Bu hata uygunluk sonucu değildir."; }
         finally { SetBusy(false); }
     }
     private sealed class Assessment

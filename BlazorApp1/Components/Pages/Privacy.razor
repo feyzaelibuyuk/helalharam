@@ -1,0 +1,11 @@
+@page "/privacy"
+@using HelalHaram.Shared
+<PageTitle>Gizlilik ve kullanım sınırları | Helal mi?</PageTitle>
+<main class="app-shell">
+<header class="topbar"><a class="brand" href="/">← Kataloğa dön</a></header>
+<h1>Gizlilik ve kullanım sınırları</h1>
+@foreach (var section in PrivacyNotice.Sections)
+{
+    <section class="catalog-section"><h2>@section.Title</h2><p>@section.Text</p></section>
+}
+</main>

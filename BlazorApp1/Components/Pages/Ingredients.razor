@@ -1,11 +1,14 @@
 @page "/ingredients"
 @using BlazorApp1.Services
+@using HelalHaram.Shared
 
 <PageTitle>İçerik değerlendirmesi | Helal mi?</PageTitle>
 <main class="app-shell">
     <header class="topbar"><a class="brand" href="/">← Kataloğa dön</a><span class="beta-pill">İÇERİK İNCELE</span></header>
     <section class="hero"><h1>İçindekileri incele.</h1>
         <p>Etiket metnini yaz ve gerçek dilini seç. İnceleme yerel sunucuda yapılır; bu form metni Open Food Facts'e göndermez.</p>
+        <p>Metin sayfa adresine ve tarayıcı geçmişine eklenir. Kişisel bilgi yazmayın. <a href="/privacy">Veriler nasıl işlenir?</a></p>
+        <p>@PrivacyNotice.Limits</p>
         <form method="get" action="/ingredients">
             <label for="ingredient-text">İçindekiler</label>
             <textarea id="ingredient-text" name="text" maxlength="12000" rows="5" style="width:100%">@Text</textarea>
