@@ -1,6 +1,7 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+@using Microsoft.AspNetCore.Components.Authorization
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"><NotAuthorized><p>Bu sayfa için yönetici girişi gerekiyor. <a href="/admin/login" data-enhance-nav="false">Giriş yap</a></p></NotAuthorized></AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>

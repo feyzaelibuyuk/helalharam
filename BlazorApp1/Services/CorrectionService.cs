@@ -34,7 +34,7 @@ public sealed class CorrectionService(IDbContextFactory<AppDbContext> factory, P
         await using var db = await factory.CreateDbContextAsync(token);
         var existing = await db.CorrectionSubmissions.FindAsync([input.SubmissionId], token);
         CorrectionResult Existing(CorrectionSubmission row) => row.Kind == input.Kind && row.TargetId == input.TargetId && row.Field == input.Field && row.Suggestion == suggestion && row.SourceUrl == source
-            ? new(200, "Bu öneri daha önce kaydedildi.", new(row.Id, row.Status, "Öneri inceleme bekliyor; katalog değiştirilmedi."))
+            ? new(200, "Bu öneri daha önce kaydedildi.", new(row.Id, row.Status, CorrectionRules.StatusLabel(row.Status) + "; katalog değiştirilmedi."))
             : new(409, "Bu gönderim kimliği başka bir öneride kullanıldı. Yeni öneri için formu yeniden açın.");
         if (existing is not null) return Existing(existing);
         var name = await TargetNameAsync(input.Kind, input.TargetId, token);

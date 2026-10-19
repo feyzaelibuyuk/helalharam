@@ -1,0 +1,35 @@
+@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using BlazorApp1.Services
+@using HelalRehber.Shared
+@attribute [Authorize(Policy = "Admin")]
+@inject ReviewService Reviews
+@inject IHttpContextAccessor Context
+<PageTitle>Gönderim yönetimi | Helal mi?</PageTitle>
+<main class="app-shell"><header class="topbar"><a class="brand" href="/" data-enhance-nav="false">← Katalog</a><span class="beta-pill">GÖNDERİM YÖNETİMİ</span><form method="post" action="/admin/signout" data-enhance="false"><AntiforgeryToken /><button type="submit">Çıkış yap</button></form></header>
+<section class="hero"><h1>İnceleme kuyruğu</h1><p>Kararlar öneri hakkındadır; helal onayı veya katalog değişikliği değildir.</p></section>
+@if (queue is not null) {
+<section class="catalog-section"><p>Bekleyen: @queue.Pending · Ek bilgi: @queue.NeedsInfo · Uygun bulunan: @queue.Accepted · Reddedilen: @queue.Rejected</p>
+<form method="get" action="/admin"><label for="review-status">Durum</label><select id="review-status" name="status">@foreach(var value in new[]{"all","pending","needs_info","accepted","rejected"}){<option value="@value" selected="@(Status == value)">@(value == "all" ? "Tümü" : CorrectionRules.StatusLabel(value))</option>}</select>
+<label for="review-kind">Kayıt türü</label><select id="review-kind" name="kind">@foreach(var value in new[]{"all","catalog","off","restaurant"}){<option value="@value" selected="@(Kind == value)">@(value == "all" ? "Tümü" : value == "catalog" ? "Yerel ürün" : value == "off" ? "OFF ürünü" : "Yemek")</option>}</select><button type="submit">Filtrele</button></form>
+<p>@queue.Total eşleşme · Sayfa @queue.Page</p>
+@if(queue.Items.Count == 0) {<div class="empty-state">Bu filtrede gönderim yok.</div>}
+<div class="card-grid">@foreach(var row in queue.Items){<article class="info-card"><h2>@row.TargetName</h2><p class="ingredients">@CorrectionRules.StatusLabel(row.Status) · @row.Kind · @row.Field</p><p class="ingredients">@(row.Suggestion.Length > 160 ? row.Suggestion[..160] + "…" : row.Suggestion)</p><p class="ingredients">@row.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><a href="@($"/admin/corrections/{row.Id}")" data-enhance-nav="false">Gönderimi incele →</a></article>}</div>
+@if(queue.Page > 1){<a href="@PageUrl(queue.Page - 1)">← Önceki</a>}
+@if(queue.Page * 25 < queue.Total){<a href="@PageUrl(queue.Page + 1)">Sonraki →</a>}
+</section>}
+</main>
+@code {
+    [SupplyParameterFromQuery(Name="status")] public string Status { get; set; } = "pending";
+    [SupplyParameterFromQuery(Name="kind")] public string Kind { get; set; } = "all";
+    [SupplyParameterFromQuery(Name="page")] public int Page { get; set; } = 1;
+    private ReviewQueue? queue;
+    protected override async Task OnParametersSetAsync()
+    {
+        Status = Status == "all" || ReviewService.Statuses.Contains(Status) ? Status : "pending";
+        Kind = Kind is "catalog" or "off" or "restaurant" ? Kind : "all";
+        queue = await Reviews.QueueAsync(Context.HttpContext?.User ?? new ClaimsPrincipal(), Status, Kind, Page);
+    }
+    private string PageUrl(int page) => $"/admin?status={Uri.EscapeDataString(Status)}&kind={Uri.EscapeDataString(Kind)}&page={page}";
+}

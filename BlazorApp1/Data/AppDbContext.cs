@@ -13,8 +13,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<CorrectionSubmission> CorrectionSubmissions => Set<CorrectionSubmission>();
 
+    public DbSet<CorrectionReview> CorrectionReviews => Set<CorrectionReview>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CorrectionReview>().ToTable("CorrectionReviews");
+        modelBuilder.Entity<CorrectionReview>().HasKey(r => r.Id);
+        modelBuilder.Entity<CorrectionReview>().HasIndex(r => new { r.SubmissionId, r.Revision }).IsUnique();
+        modelBuilder.Entity<CorrectionReview>().HasOne<CorrectionSubmission>().WithMany().HasForeignKey(r => r.SubmissionId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CorrectionSubmission>().Property(c => c.Status).IsConcurrencyToken();
         modelBuilder.Entity<CorrectionSubmission>().ToTable("CorrectionSubmissions");
         modelBuilder.Entity<CorrectionSubmission>().HasKey(c => c.Id);
         modelBuilder.Entity<RestaurantMetadata>().ToTable("RestaurantMetadata");

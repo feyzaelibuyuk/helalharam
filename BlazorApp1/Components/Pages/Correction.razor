@@ -9,7 +9,7 @@
     <section class="catalog-section">
     @if (receipt is not null)
     {
-        <div class="info-card" role="status"><h2>Öneriniz kaydedildi</h2><p>İnceleme bekliyor · Gönderim: @receipt.Id</p><p>Katalog değiştirilmedi. Takip numarasını saklayabilirsiniz. Otomatik bildirim gönderilmez.</p><a href="@BackUrl">Kayda dön</a></div>
+        <div class="info-card" role="status"><h2>Öneriniz kaydedildi</h2><p>@CorrectionRules.StatusLabel(receipt.Status) · Gönderim: @receipt.Id</p><p>Katalog değiştirilmedi. Takip numarasını saklayabilirsiniz. Otomatik bildirim gönderilmez.</p><a href="@BackUrl">Kayda dön</a></div>
     }
     else if (targetName is null)
     { <div class="empty-state">Ürün/yemek bilgisi alınamadı. Kaydın detayını açıp tekrar deneyin.</div> }

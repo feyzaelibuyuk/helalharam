@@ -42,3 +42,7 @@ Web ve mobil ürün favorileri eklendi. Kapsam, saklama ve kontrol adımları: d
 
 ## Bilgi düzeltme önerileri
 Web ve mobil ürün/yemek detaylarından düzeltme önerisi gönderilebilir. Öneriler ayrı tabloda inceleme bekler; katalog otomatik değişmez. Kapsam ve kontrol: docs/BILGI_DUZELTME.md.
+
+
+## Gönderim yönetimi
+Yönetici erişimiyle kuyruk, inceleme kararı ve geçmiş eklendi. Varsayılan parola yoktur; yerel kurulum için configure-admin.ps1 ve docs/YONETIM_INCELEME.md dosyasına bakın. Katalog otomatik değiştirilmez.

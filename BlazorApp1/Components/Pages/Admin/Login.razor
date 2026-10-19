@@ -1,0 +1,17 @@
+@page "/admin/login"
+@using BlazorApp1.Services
+@inject AdminAccess Access
+<PageTitle>Yönetici girişi | Helal mi?</PageTitle>
+<main class="app-shell"><header class="topbar"><a class="brand" href="/" data-enhance-nav="false">← Kataloğa dön</a><span class="beta-pill">YÖNETİM</span></header>
+<section class="hero"><h1>Yönetici girişi</h1><p>Düzeltme önerileri ve inceleme notları yalnız yetkili yöneticiye gösterilir.</p></section>
+<section class="catalog-section">
+@if (!Access.Configured) { <div class="empty-state">Yönetici parolası henüz ayarlanmadı. Proje klasöründeki configure-admin.ps1 aracını çalıştırıp web uygulamasını yeniden başlatın. Varsayılan parola yoktur.</div> }
+else {
+    @if (Error is not null) { <p role="alert">Giriş yapılamadı. Kullanıcı adı ve parolayı kontrol edin.</p> }
+    <form method="post" action="/admin/signin" data-enhance="false"><AntiforgeryToken />
+    <label for="admin-user">Kullanıcı adı</label><input id="admin-user" name="username" value="admin" autocomplete="username" readonly />
+    <label for="admin-password">Parola</label><input id="admin-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required />
+    <button type="submit" class="search-button">Giriş yap</button></form>
+}
+</section></main>
+@code { [SupplyParameterFromQuery(Name="error")] public string? Error { get; set; } }

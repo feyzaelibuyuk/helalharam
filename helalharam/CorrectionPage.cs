@@ -50,7 +50,7 @@ public sealed class CorrectionPage : ContentPage
             var result = await response.Content.ReadFromJsonAsync<Result>();
             if (response.IsSuccessStatusCode && result?.Receipt is { } receipt)
             {
-                sent = true; status.Text = $"İnceleme bekliyor\nGönderim: {receipt.Id}\nKatalog bilgisi değiştirilmedi."; send.Text = "Gönderildi";
+                sent = true; status.Text = $"{CorrectionRules.StatusLabel(receipt.Status)}\nGönderim: {receipt.Id}\nKatalog bilgisi değiştirilmedi."; send.Text = "Gönderildi";
             }
             else
             {

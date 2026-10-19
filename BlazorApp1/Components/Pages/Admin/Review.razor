@@ -1,0 +1,41 @@
+@page "/admin/corrections/{Id:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using BlazorApp1.Services
+@using HelalRehber.Shared
+@attribute [Authorize(Policy = "Admin")]
+@inject ReviewService Reviews
+@inject IHttpContextAccessor Context
+<PageTitle>Öneri incele | Helal mi?</PageTitle>
+<main class="app-shell"><header class="topbar"><a class="brand" href="/admin" data-enhance-nav="false">← İnceleme kuyruğu</a><span class="beta-pill">ÖNERİ İNCELE</span></header>
+@if(detail is null){<div class="empty-state">Gönderim bulunamadı.</div>}
+else {
+    var row = detail.Submission;
+    <section class="hero"><h1>@row.TargetName</h1><p>@CorrectionRules.StatusLabel(row.Status)</p><p>Kayıt: @row.Kind · @row.TargetId · Alan: @row.Field<br />Gönderim: @row.Id<br />@row.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p></section>
+    <section class="catalog-section"><h2>Kullanıcının önerisi</h2><p class="ingredients" style="white-space:pre-wrap">@row.Suggestion</p>
+    @if(row.SourceUrl.Length > 0){<p class="ingredients">Kullanıcının paylaştığı kaynak (doğrulanmadı): @row.SourceUrl</p>@if(Safe(row.SourceUrl)){<a href="@row.SourceUrl" target="_blank" rel="noopener noreferrer">Kaynak bağlantısını aç ↗</a>}}
+    @if(CorrectionRules.ValidTarget(row.Kind, row.TargetId)){<p><a href="@TargetUrl(row.Kind,row.TargetId)" target="_blank" rel="noopener noreferrer">Güncel ürün/yemek detayını aç ↗</a></p>}
+    <p class="ingredients">İnceleme sonucu katalog, OFF kaydı veya sertifika bilgisini otomatik değiştirmez. Otomatik kullanıcı bildirimi gönderilmez.</p>
+    @if(message is not null){<p role="status">@message</p>}
+    <EditForm Model="Input" OnSubmit="Save" FormName="review"><input type="hidden" name="Input.ActionId" value="@Input!.ActionId" /><input type="hidden" name="Input.ExpectedRevision" value="@Input.ExpectedRevision" />
+    <label for="decision">İnceleme sonucu</label><InputSelect id="decision" @bind-Value="Input.Status">@foreach(var value in ReviewService.Statuses){<option value="@value">@CorrectionRules.StatusLabel(value)</option>}</InputSelect>
+    <label for="review-note">İnceleme notu ve gerekçe</label><InputTextArea id="review-note" @bind-Value="Input.Note" minlength="5" maxlength="2000" rows="6" style="width:100%" />
+    <button type="submit" class="search-button" disabled="@saved">İncelemeyi kaydet</button></EditForm>
+    <h2>İnceleme geçmişi</h2>
+    @if(detail.History.Count == 0){<p>Henüz inceleme yok.</p>}
+    @foreach(var item in detail.History){<article class="info-card"><h3>@CorrectionRules.StatusLabel(item.Status)</h3><p class="ingredients">Önceki: @CorrectionRules.StatusLabel(item.PreviousStatus) · Sürüm @item.Revision · @item.Reviewer · @item.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><p class="ingredients" style="white-space:pre-wrap">@item.Note</p></article>}
+    </section>
+}
+</main>
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [SupplyParameterFromForm] public ReviewInput? Input { get; set; }
+    private ReviewDetail? detail;
+    private string? message;
+    private bool saved;
+    private ClaimsPrincipal User => Context.HttpContext?.User ?? new ClaimsPrincipal();
+    protected override async Task OnInitializedAsync(){ detail = await Reviews.GetAsync(User, Id); Input ??= new(){ ActionId = Guid.NewGuid(), ExpectedRevision = detail?.Revision ?? 0, Status = detail?.Submission.Status ?? "pending" }; }
+    private async Task Save(){ if(Input is null) return; try { var result = await Reviews.SaveAsync(User, Id, Input); message = result.Message; saved = result.HttpStatus == 200; detail = await Reviews.GetAsync(User, Id); } catch(Exception){message = "İnceleme kaydedilemedi. Notunuz korunuyor; tekrar deneyin.";} }
+    private static bool Safe(string url) => Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == "https" && uri.UserInfo.Length == 0;
+    private static string TargetUrl(string kind,string id) => kind == "restaurant" ? "/restaurants/"+id : kind == "catalog" ? "/products/"+id : "/off?barcode="+id;
+}

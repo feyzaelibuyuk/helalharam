@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using HelalRehber.Shared;
@@ -21,20 +23,47 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<RestaurantCatalog>();
 builder.Services.AddScoped<CorrectionService>();
+builder.Services.AddSingleton<AdminAccess>();
+builder.Services.AddScoped<ReviewService>();
+builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
+    options.Cookie.Name = "helal-admin"; options.Cookie.HttpOnly = true; options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); options.SlidingExpiration = false;
+    options.LoginPath = "/admin/login"; options.AccessDeniedPath = "/admin/login";
+    options.Events.OnValidatePrincipal = async context => {
+        if (!context.HttpContext.RequestServices.GetRequiredService<AdminAccess>().IsCurrent(context.Principal))
+        { context.RejectPrincipal(); await context.HttpContext.SignOutAsync(AdminAccess.Scheme); }
+    };
+    options.Events.OnRedirectToLogin = async context => {
+        if (context.Request.Path.StartsWithSegments("/api/admin"))
+        { context.Response.StatusCode = 401; await context.Response.WriteAsJsonAsync(new { Message = "Yönetici girişi gerekiyor." }); }
+        else context.Response.Redirect(context.RedirectUri);
+    };
+    options.Events.OnRedirectToAccessDenied = async context => {
+        if (context.Request.Path.StartsWithSegments("/api/admin"))
+        { context.Response.StatusCode = 403; await context.Response.WriteAsJsonAsync(new { Message = "Yetkiniz yok." }); }
+        else context.Response.Redirect("/admin/login");
+    };
+});
+builder.Services.AddAuthorization(options => options.AddPolicy("Admin", policy => policy.RequireAuthenticatedUser().RequireRole(AdminAccess.Role)));
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddRateLimiter(options => {
     options.RejectionStatusCode = 429;
     options.OnRejected = async (context, token) => {
         context.HttpContext.Response.StatusCode = 429;
         context.HttpContext.Response.Headers.RetryAfter = "60";
-        if (context.HttpContext.Request.Path.StartsWithSegments("/corrections"))
+        if ((context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
         {
-            var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(context.HttpContext.Request.Path.ToString());
+            var retryPath = context.HttpContext.Request.Path.StartsWithSegments("/admin") ? "/admin/login" : context.HttpContext.Request.Path.ToString();
+            var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(retryPath);
             context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
             await context.HttpContext.Response.WriteAsync("<!doctype html><html lang='tr'><meta charset='utf-8'><title>Gönderim sınırı</title><main style='max-width:600px;margin:60px auto;font-family:system-ui'><h1>Biraz bekleyelim</h1><p>Gönderim sınırına ulaşıldı. Bir dakika sonra tekrar deneyin. Önceki forma dönmek için tarayıcınızın geri düğmesini kullanabilirsiniz.</p><a href=\"" + path + "\">Yeni form aç</a></main></html>", token);
             return;
         }
         await context.HttpContext.Response.WriteAsJsonAsync(new { Message = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı öneriyle tekrar deneyin.", Receipt = (CorrectionReceipt?)null }, cancellationToken: token);
     };
+    options.AddPolicy("admin-login", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("correction-posts", context =>
         context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections")
         ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -95,7 +124,24 @@ await using (var scope = app.Services.CreateAsyncScope())
     await CatalogSetup.InitializeAsync(db);
     await RestaurantCatalog.InitializeAsync(db);
     await CorrectionService.InitializeAsync(db);
+    await ReviewService.InitializeAsync(db);
 }
+
+app.MapPost("/admin/signin", async (HttpContext context, IAntiforgery antiforgery, AdminAccess access) => {
+    try { await antiforgery.ValidateRequestAsync(context); }
+    catch (AntiforgeryValidationException) { return Results.BadRequest("Form süresi doldu. Giriş sayfasını yenileyin."); }
+    var form = await context.Request.ReadFormAsync();
+    if (!access.Verify(form["username"].ToString(), form["password"].ToString())) return Results.Redirect("/admin/login?error=1");
+    await context.SignInAsync(AdminAccess.Scheme, access.Principal(), new AuthenticationProperties { IsPersistent = false, AllowRefresh = false });
+    return Results.Redirect("/admin");
+}).RequireRateLimiting("admin-login");
+app.MapPost("/admin/signout", async (HttpContext context, IAntiforgery antiforgery) => {
+    try { await antiforgery.ValidateRequestAsync(context); }
+    catch (AntiforgeryValidationException) { return Results.BadRequest("Form süresi doldu. Sayfayı yenileyin."); }
+    await context.SignOutAsync(AdminAccess.Scheme); return Results.Redirect("/admin/login");
+}).RequireAuthorization("Admin");
+app.MapGet("/api/admin/corrections", async (HttpContext context, ReviewService service, string? status, string? kind, int? page) =>
+    Results.Ok(await service.QueueAsync(context.User, status, kind, page ?? 1))).RequireAuthorization("Admin");
 
 app.MapPost("/favorites/{action}", async (string action, HttpContext context, IAntiforgery antiforgery, BrowserFavorites favorites, ProductCatalog catalog, OpenFoodFactsCatalog off) =>
 {
@@ -174,13 +220,15 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
-    if (context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections")))
+    if (context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
     {
         var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
         if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = 64 * 1024;
     }
     await next();
 });
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRateLimiter();
 app.UseAntiforgery();
 

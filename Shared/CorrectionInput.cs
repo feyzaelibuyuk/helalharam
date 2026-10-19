@@ -13,6 +13,10 @@ public sealed record CorrectionField(string Id, string Label);
 public sealed record CorrectionReceipt(Guid Id, string Status, string Message);
 public static class CorrectionRules
 {
+    public static string StatusLabel(string status) => status switch {
+        "pending" => "İnceleme bekliyor", "needs_info" => "Ek bilgi gerekiyor",
+        "accepted" => "Öneri uygun bulundu — kataloğa uygulanmadı", "rejected" => "Öneri reddedildi", _ => "Durum bilinmiyor"
+    };
     public static bool ValidTarget(string kind, string id) => kind == "restaurant"
         ? FavoriteList.Valid("catalog", id) : FavoriteList.Valid(kind, id);
     public static CorrectionField[] Fields(string kind) => kind == "restaurant"
