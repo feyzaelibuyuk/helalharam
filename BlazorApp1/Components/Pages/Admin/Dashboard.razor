@@ -8,6 +8,7 @@
 @inject IHttpContextAccessor Context
 <PageTitle>Gönderim yönetimi | Helal mi?</PageTitle>
 <main class="app-shell"><header class="topbar"><a class="brand" href="/" data-enhance-nav="false">← Katalog</a><span class="beta-pill">GÖNDERİM YÖNETİMİ</span><form method="post" action="/admin/signout" data-enhance="false"><AntiforgeryToken /><button type="submit">Çıkış yap</button></form></header>
+<p><a href="/admin/feedback" data-enhance-nav="false">Kullanıcı geri bildirimleri →</a></p>
 <section class="hero"><h1>İnceleme kuyruğu</h1><p>Kararlar öneri hakkındadır; helal onayı veya katalog değişikliği değildir.</p></section>
 @if (queue is not null) {
 <section class="catalog-section"><p>Bekleyen: @queue.Pending · Ek bilgi: @queue.NeedsInfo · Uygun bulunan: @queue.Accepted · Reddedilen: @queue.Rejected</p>

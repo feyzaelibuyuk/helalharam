@@ -1,0 +1,23 @@
+@page "/admin/feedback"
+@using Microsoft.AspNetCore.Authorization
+@using HelalRehber.Shared
+@using BlazorApp1.Services
+@attribute [Authorize(Policy = "Admin")]
+@inject FeedbackService Feedbacks
+@inject IHttpContextAccessor Context
+<PageTitle>Kullanıcı geri bildirimleri | Helal mi?</PageTitle>
+<main class="app-shell"><a href="/admin">← Gönderim yönetimi</a>
+<h1>Kullanıcı geri bildirimleri</h1><p>Özel yönetici listesi. Bu gönderiler ürün/sertifika onayı değildir. Sürüm ve platform gönderenin bildirdiği teknik bilgilerdir.</p>
+@if(queue is not null){
+<p>@queue.Total kayıt · Sayfa @queue.Page</p>
+@if(queue.Total == 0){<p>Henüz geri bildirim yok.</p>}
+@foreach(var row in queue.Items){<article class="info-card"><h2>@FeedbackRules.Label(row.Category)</h2><p style="white-space:pre-wrap">@row.Message</p><p>@row.Client · @row.Version · @row.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><p>Gönderim: @row.Id</p></article>}
+@if(queue.Page > 1){<a href="@($"/admin/feedback?page={queue.Page-1}")">← Önceki</a>}
+@if(queue.Page * 25 < queue.Total){<a href="@($"/admin/feedback?page={queue.Page+1}")">Sonraki →</a>}
+}
+</main>
+@code {
+    [SupplyParameterFromQuery(Name="page")] public int Page { get; set; } = 1;
+    private FeedbackQueue? queue;
+    protected override async Task OnInitializedAsync() => queue = await Feedbacks.QueueAsync(Context.HttpContext!.User, Page);
+}

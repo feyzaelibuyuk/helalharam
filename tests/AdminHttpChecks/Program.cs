@@ -33,6 +33,19 @@ try
     using(var response=await client.PostAsync("/admin/signin",new FormUrlEncodedContent(new Dictionary<string,string>{{"username","admin"},{"password","wrong-test-password"},{"__RequestVerificationToken",token}})))Check(response.Headers.Location!.ToString().Contains("error=1"),"Yanlış parola kabul edildi");
     using(var response=await client.PostAsync("/admin/signin",new FormUrlEncodedContent(new Dictionary<string,string>{{"username","admin"},{"password",password},{"__RequestVerificationToken",token}})))
     {Check(response.StatusCode==HttpStatusCode.Redirect && response.Headers.Location!.ToString()=="/admin","Yönetici girişi başarısız");Check(response.Headers.GetValues("Set-Cookie").Any(x=>x.Contains("httponly",StringComparison.OrdinalIgnoreCase)&&x.Contains("samesite=strict",StringComparison.OrdinalIgnoreCase)),"Oturum çerezi bayrakları eksik");}
+    using(var response=await new HttpClient().GetAsync("http://localhost:5091/api/admin/feedback"))Check(response.StatusCode==HttpStatusCode.Unauthorized,"Anonim geri bildirim listesi açıldı");
+    var feedbackInput=new HelalRehber.Shared.FeedbackInput { SubmissionId=Guid.NewGuid(), Category="bug", Message="TEST <script>alert(1)</script> arama sorunu", Client="android", Version="0.1.0" };
+    using(var response=await client.PostAsJsonAsync("/api/feedback",feedbackInput))Check(response.StatusCode==HttpStatusCode.Created,"Geri bildirim API kayıt");
+    using(var response=await client.PostAsJsonAsync("/api/feedback",feedbackInput))Check(response.StatusCode==HttpStatusCode.OK,"Geri bildirim tekrar");
+    feedbackInput.Message="TEST başka geri bildirim mesajı";
+    using(var response=await client.PostAsJsonAsync("/api/feedback",feedbackInput))Check(response.StatusCode==HttpStatusCode.Conflict,"Geri bildirim kimlik çakışması");
+    var feedbackForm=await client.GetStringAsync("/feedback");
+    var feedbackBody=new Dictionary<string,string>{{"_handler","feedback"},{"Input.SubmissionId",Value(feedbackForm,"Input.SubmissionId")},{"Input.Category","idea"},{"Input.Message","TEST kullanım önerisi açıklaması"},{"__RequestVerificationToken",Value(feedbackForm,"__RequestVerificationToken")}};
+    var feedbackMissing=new Dictionary<string,string>(feedbackBody);feedbackMissing.Remove("__RequestVerificationToken");
+    using(var response=await client.PostAsync("/feedback",new FormUrlEncodedContent(feedbackMissing)))Check(response.StatusCode==HttpStatusCode.BadRequest,"Geri bildirim CSRF");
+    using(var response=await client.PostAsync("/feedback",new FormUrlEncodedContent(feedbackBody)))Check(WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync()).Contains("Geri bildiriminiz kaydedildi"),"Geri bildirim web formu");
+    var feedbackList=await client.GetStringAsync("/admin/feedback");Check(feedbackList.Contains("arama sorunu")&&!feedbackList.Contains("<script>alert(1)</script>"),"Geri bildirim listesi/XSS");
+    var feedbackQueue=await client.GetFromJsonAsync<System.Text.Json.JsonElement>("/api/admin/feedback");Check(feedbackQueue.GetProperty("total").GetInt32()==2,"Geri bildirim kayıt sayısı");
     var dashboard=await client.GetStringAsync("/admin");Check(dashboard.Contains("İnceleme kuyruğu"),"Panel açılmadı");
     var detail=await client.GetStringAsync("/admin/corrections/"+id);Check(!detail.Contains("<script>alert(1)</script>"),"Öneri HTML olarak çalıştırılabilir");
     var body=new Dictionary<string,string>{{"_handler","review"},{"Input.ActionId",Value(detail,"Input.ActionId")},{"Input.ExpectedRevision",Value(detail,"Input.ExpectedRevision")},{"Input.Status","needs_info"},{"Input.Note","TEST kaynak açıklaması tamamlanmalı."},{"__RequestVerificationToken",Value(detail,"__RequestVerificationToken")}};
@@ -57,6 +70,11 @@ try
     login=await client.GetStringAsync("/admin/login");token=Value(login,"__RequestVerificationToken");var limited=false;
     for(var i=0;i<6;i++){using var response=await client.PostAsync("/admin/signin",new FormUrlEncodedContent(new Dictionary<string,string>{{"username","admin"},{"password","wrong-test-password"},{"__RequestVerificationToken",token}}));if(response.StatusCode==HttpStatusCode.TooManyRequests)limited=true;}
     Check(limited,"Giriş deneme sınırı yok");
-    Console.WriteLine("PASS: anonim erişim engeli, giriş/çıkış, CSRF, çerez bayrakları, XSS kaçışlama, inceleme/tekrar/eski sürüm, kuyruk, katalog değişmezliği ve giriş sınırı.");
+    limited=false;
+    for(var i=0;i<11;i++){using var response=await client.PostAsJsonAsync("/api/feedback",new HelalRehber.Shared.FeedbackInput());if(response.StatusCode==HttpStatusCode.TooManyRequests){limited=true;Check(response.Content.Headers.ContentType?.MediaType=="application/json","Geri bildirim 429 JSON değil");break;}}
+    Check(limited,"Geri bildirim gönderim sınırı yok");
+    using(var response=await client.PostAsync("/feedback",new FormUrlEncodedContent(feedbackBody)))Check(response.StatusCode==HttpStatusCode.TooManyRequests,"Web geri bildirim hız sınırı yok");
+
+    Console.WriteLine("PASS: anonim erişim engeli, giriş/çıkış, CSRF, çerez bayrakları, XSS kaçışlama, inceleme/tekrar/eski sürüm, kuyruk, katalog değişmezliği ve giriş sınırı; geri bildirim API/web/CSRF/XSS/özel liste.");
 }
 finally{if(!process.HasExited){process.Kill(entireProcessTree:true);await process.WaitForExitAsync();}await logs;await errors;}

@@ -85,4 +85,5 @@
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
   </PropertyGroup>
+  <ItemGroup><Compile Include="..\Shared\FeedbackInput.cs" Link="Shared\FeedbackInput.cs" /></ItemGroup>
 </Project>

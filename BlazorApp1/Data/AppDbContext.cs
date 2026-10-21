@@ -15,8 +15,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<CorrectionReview> CorrectionReviews => Set<CorrectionReview>();
 
+    public DbSet<FeedbackSubmission> FeedbackSubmissions => Set<FeedbackSubmission>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<FeedbackSubmission>().ToTable("FeedbackSubmissions");
+        modelBuilder.Entity<FeedbackSubmission>().HasKey(x => x.Id);
         modelBuilder.Entity<CorrectionReview>().ToTable("CorrectionReviews");
         modelBuilder.Entity<CorrectionReview>().HasKey(r => r.Id);
         modelBuilder.Entity<CorrectionReview>().HasIndex(r => new { r.SubmissionId, r.Revision }).IsUnique();

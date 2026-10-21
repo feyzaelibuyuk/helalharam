@@ -37,6 +37,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<RestaurantCatalog>();
 builder.Services.AddScoped<CorrectionService>();
+builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
@@ -66,7 +67,7 @@ builder.Services.AddRateLimiter(options => {
     options.OnRejected = async (context, token) => {
         context.HttpContext.Response.StatusCode = 429;
         context.HttpContext.Response.Headers.RetryAfter = "60";
-        if ((context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
+        if ((context.HttpContext.Request.Path.StartsWithSegments("/feedback") || context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
         {
             var retryPath = context.HttpContext.Request.Path.StartsWithSegments("/admin") ? "/admin/login" : context.HttpContext.Request.Path.ToString();
             var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(retryPath);
@@ -74,12 +75,12 @@ builder.Services.AddRateLimiter(options => {
             await context.HttpContext.Response.WriteAsync("<!doctype html><html lang='tr'><meta charset='utf-8'><title>Gönderim sınırı</title><main style='max-width:600px;margin:60px auto;font-family:system-ui'><h1>Biraz bekleyelim</h1><p>Gönderim sınırına ulaşıldı. Bir dakika sonra tekrar deneyin. Önceki forma dönmek için tarayıcınızın geri düğmesini kullanabilirsiniz.</p><a href=\"" + path + "\">Yeni form aç</a></main></html>", token);
             return;
         }
-        await context.HttpContext.Response.WriteAsJsonAsync(new { Message = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı öneriyle tekrar deneyin.", Receipt = (CorrectionReceipt?)null }, cancellationToken: token);
+        await context.HttpContext.Response.WriteAsJsonAsync(new { Message = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı gönderimle tekrar deneyin.", Receipt = (CorrectionReceipt?)null }, cancellationToken: token);
     };
     options.AddPolicy("admin-login", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("correction-posts", context =>
-        context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections")
+        context.Request.Method == "POST" && (context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections")
         ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
         : RateLimitPartition.GetNoLimiter("other-requests"));
@@ -139,6 +140,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await RestaurantCatalog.InitializeAsync(db);
     await CorrectionService.InitializeAsync(db);
     await ReviewService.InitializeAsync(db);
+    await FeedbackService.InitializeAsync(db);
 }
 
 app.MapPost("/admin/signin", async (HttpContext context, IAntiforgery antiforgery, AdminAccess access) => {
@@ -188,6 +190,13 @@ app.MapPost("/favorites/{action}", async (string action, HttpContext context, IA
     return Results.Redirect(action == "remove" ? "/favorites" : new FavoriteItem(kind, id, "", "").Url);
 });
 
+app.MapPost("/api/feedback", async (FeedbackInput input, FeedbackService service, CancellationToken token) => {
+    var result = await service.SubmitAsync(input, token);
+    return Results.Json(new { result.Message, result.Receipt }, statusCode: result.HttpStatus);
+}).RequireRateLimiting("correction-posts");
+app.MapGet("/api/admin/feedback", async (HttpContext context, FeedbackService service, int? page) =>
+    Results.Ok(await service.QueueAsync(context.User, page ?? 1))).RequireAuthorization("Admin");
+
 app.MapPost("/api/corrections", async (CorrectionInput input, CorrectionService service, CancellationToken token) => {
     var result = await service.SubmitAsync(input, token);
     return Results.Json(new { result.Message, result.Receipt }, statusCode: result.HttpStatus);
@@ -234,7 +243,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
-    if (context.Request.Method == "POST" && (context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
+    if (context.Request.Method == "POST" && (context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
     {
         var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
         if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = 64 * 1024;

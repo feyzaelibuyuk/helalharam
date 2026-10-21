@@ -1,0 +1,36 @@
+@page "/feedback"
+@using HelalRehber.Shared
+@using BlazorApp1.Services
+@inject FeedbackService Feedbacks
+<PageTitle>Geri bildirim | Helal mi?</PageTitle>
+<main class="app-shell">
+<header class="topbar"><a class="brand" href="/">← Katalog</a><a href="/privacy">Gizlilik</a></header>
+<h1>Deneyimini paylaş</h1>
+<p>Nerede zorlandın? Ne bekledin, ne oldu? Hangi adımlarla tekrar oluşuyor? Ad, e-posta, sağlık bilgisi veya parola yazma. Gönderi yalnız yetkili yöneticiye görünür; otomatik yanıt gönderilmez. Ürün bilgisi hataları için ürün detayındaki düzeltme formunu kullan.</p>
+@if (receipt is not null) {
+    <div role="status"><h2>Geri bildiriminiz kaydedildi</h2><p>Gönderim: @receipt</p><a href="/feedback" data-enhance-nav="false">Yeni geri bildirim</a></div>
+} else {
+    @foreach (var error in errors) { <p role="alert">@error</p> }
+    <EditForm Model="Input" OnSubmit="Submit" FormName="feedback">
+        <input type="hidden" name="Input.SubmissionId" value="@Input!.SubmissionId" />
+        <label for="feedback-kind">Tür</label>
+        <InputSelect id="feedback-kind" @bind-Value="Input.Category"><option value="">Seçin</option>@foreach(var category in FeedbackRules.Categories){<option value="@category.Id">@category.Label</option>}</InputSelect>
+        <label for="feedback-message">Açıklama</label>
+        <InputTextArea id="feedback-message" @bind-Value="Input.Message" rows="6" maxlength="2000" style="width:100%" />
+        <button type="submit" class="search-button">Geri bildirim gönder</button>
+    </EditForm>
+}
+</main>
+@code {
+    [SupplyParameterFromForm] public FeedbackInput? Input { get; set; }
+    private List<string> errors = [];
+    private Guid? receipt;
+    protected override void OnInitialized() { Input ??= new() { SubmissionId = Guid.NewGuid() }; Input.Client = "web"; Input.Version = "0.1"; }
+    private async Task Submit()
+    {
+        if (Input is null) return;
+        errors = FeedbackRules.Validate(Input); if (errors.Count > 0) return;
+        try { var result = await Feedbacks.SubmitAsync(Input); if (result.Receipt is not null) receipt = result.Receipt; else errors = [result.Message]; }
+        catch (Exception) { errors = ["Sonuç alınamadı. Metniniz korunuyor; aynı gönderimi tekrar deneyin."]; }
+    }
+}
