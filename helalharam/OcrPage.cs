@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using Plugin.Maui.OCR;
 
 namespace helalharam;
 
@@ -8,7 +7,8 @@ public sealed class OcrPage : ContentPage
     private readonly Image preview = new() { HeightRequest = 180, Aspect = Aspect.AspectFit, IsVisible = false };
     private readonly Editor text = new() { Placeholder = "Fotoğraftan okunan metni burada kontrol edip düzeltin.", HeightRequest = 210, MaxLength = 12000 };
     private readonly Picker mode = new() { Title = "Fotoğrafın türü", ItemsSource = new[] { "Paket içindekileri", "Restoran menüsü" }, SelectedIndex = 0 };
-    private readonly Picker language = new() { Title = "Metnin gerçek dili", ItemsSource = new[] { "Türkçe", "İngilizce", "Fransızca", "Almanca", "Diğer / bilinmiyor" }, SelectedIndex = 0 };
+    private readonly Picker script = new() { Title = "Fotoğraftaki alfabe (OCR modeli)", ItemsSource = ScriptOcr.Scripts.Select(x => x.Label).ToArray(), SelectedIndex = 0 };
+    private readonly Picker language = new() { Title = "Metnin gerçek dili", ItemsSource = new[] { "Türkçe", "İngilizce", "Fransızca", "Almanca", "İtalyanca", "İspanyolca", "Çince", "Japonca", "Korece", "Hintçe", "Arapça", "Rusça", "Diğer / bilinmiyor" }, SelectedIndex = 0 };
     private readonly CheckBox reviewed = new();
     private readonly Label status = new() { Text = "Net, düz ve yalnız ilgili metni içeren bir fotoğraf seçin." };
     private readonly VerticalStackLayout results = new() { Spacing = 12 };
@@ -26,7 +26,7 @@ public sealed class OcrPage : ContentPage
     private CancellationTokenSource lifetime = new();
     private bool busy;
     private bool visible;
-    private string Language => new[] { "tr", "en", "fr", "de", "other" }[Math.Max(0, language.SelectedIndex)];
+    private string Language => new[] { "tr", "en", "fr", "de", "it", "es", "zh", "ja", "ko", "hi", "ar", "ru", "other" }[Math.Max(0, language.SelectedIndex)];
 
     public OcrPage(int selectedMode = 0)
     {
@@ -35,11 +35,12 @@ public sealed class OcrPage : ContentPage
         mode.SelectedIndex = selectedMode;
         var stack = new VerticalStackLayout { Padding = 22, Spacing = 14 };
         stack.Add(new Label { Text = "Etiket / menü fotoğrafı", FontSize = 25, TextColor = Color.FromArgb("#166456") });
-        stack.Add(new Label { Text = "Latin harfli metinler cihazda okunur. OCR hata yapabilir; özellikle katkı kodlarını ve eksik satırları kontrol edin. Çeviri henüz eklenmedi." });
-        stack.Add(mode); stack.Add(capture); stack.Add(pick); stack.Add(status); stack.Add(preview); stack.Add(text);
-        stack.Add(new Label { Text = "Metnin gerçek dili (değerlendirme dili):" }); stack.Add(language);
+        stack.Add(new Label { Text = "Fotoğraftaki alfabeyi seçin: Latin, Çince, Japonca, Korece veya Devanagari. Android modelleri cihazda çalışır. Arapça ve Kiril OCR henüz yok. Okuma, çeviri veya helal değerlendirmesi değildir. Çeviri ayrı görevde eklenecek." });
+        stack.Add(mode); stack.Add(script); stack.Add(capture); stack.Add(pick); stack.Add(status); stack.Add(preview); stack.Add(text);
+        stack.Add(new Label { Text = "Metnin gerçek dili (arayüz dilinden ve OCR modelinden ayrıdır):" }); stack.Add(language);
         var confirm = new HorizontalStackLayout(); confirm.Add(reviewed);
         confirm.Add(new Label { Text = "Metni ve dilini kontrol ettim.", VerticalOptions = LayoutOptions.Center });
+        stack.Add(new Label { Text = "İçerik değerlendirme kuralları şu an yalnız TR/EN/FR/DE içindir. Diğer diller okunabilir ama kaynak dilinde değerlendirme ve çeviri henüz yoktur; sonuç yetersiz bilgi olarak kalır." });
         stack.Add(confirm); stack.Add(analyze); stack.Add(results);
         stack.Add(new Label { Text = "Fotoğraf sunucuya gönderilmez. Paket analizi düğmesine basınca düzelttiğiniz metin yerel C# API'ye gönderilir. Menü soruları cihazda hazırlanır." });
         Content = new ScrollView { Content = stack };
@@ -49,6 +50,7 @@ public sealed class OcrPage : ContentPage
         analyze.Clicked += async (_, _) => await AnalyzeAsync();
         text.TextChanged += (_, _) => ResetReview();
         language.SelectedIndexChanged += (_, _) => ResetReview();
+        script.SelectedIndexChanged += (_, _) => ResetReview();
         mode.SelectedIndexChanged += (_, _) => ResetReview();
     }
     private void ResetReview() { reviewed.IsChecked = false; results.Clear(); }
@@ -64,11 +66,13 @@ public sealed class OcrPage : ContentPage
     private void SetBusy(bool value)
     {
         busy = value; capture.IsEnabled = pick.IsEnabled = analyze.IsEnabled = !value;
-        text.IsEnabled = mode.IsEnabled = language.IsEnabled = reviewed.IsEnabled = !value;
+        text.IsEnabled = mode.IsEnabled = language.IsEnabled = script.IsEnabled = reviewed.IsEnabled = !value;
     }
     private async Task ReadPhotoAsync(bool useCamera)
     {
         if (busy) return;
+        var scriptCode = ScriptOcr.Scripts[Math.Max(0, script.SelectedIndex)].Code;
+        if(scriptCode == "unsupported") { status.Text = "Bu alfabe için OCR henüz yok. Metni elle girebilirsiniz; dilini doğru seçin."; return; }
         var token = lifetime.Token;
         SetBusy(true); ResetReview();
         try
@@ -92,18 +96,18 @@ public sealed class OcrPage : ContentPage
             text.Text = "";
             preview.Source = ImageSource.FromStream(() => new MemoryStream(data, writable: false));
             preview.IsVisible = true;
-            await OcrPlugin.Default.InitAsync(token);
-            var result = await OcrPlugin.Default.RecognizeTextAsync(data, false, token);
+            var recognized = await ScriptOcr.ReadAsync(data, scriptCode, token);
             token.ThrowIfCancellationRequested();
-            if (!result.Success || string.IsNullOrWhiteSpace(result.AllText))
-            { status.Text = "Metin okunamadı. Daha net bir Latin harfli fotoğraf deneyin veya metni yazın."; return; }
-            if (result.AllText.Length > 12000)
+            if (string.IsNullOrWhiteSpace(recognized))
+            { status.Text = "Metin okunamadı. Seçtiğiniz alfabeyi kontrol edip daha net bir fotoğraf deneyin veya metni yazın."; return; }
+            if (recognized.Length > 12000)
             { status.Text = "Okunan metin çok uzun. Yalnız içindekiler veya menü bölümünün fotoğrafını seçin."; return; }
-            text.Text = result.AllText;
+            text.Text = recognized;
             status.Text = "Metin okundu. Fotoğrafla karşılaştırın, hataları düzeltin ve gerçek dilini seçin.";
         }
         catch (OperationCanceledException) { }
         catch (PermissionException) { status.Text = "Fotoğraf izni verilmedi. Cihaz ayarlarından izin verebilir veya metni elle girebilirsiniz."; }
+        catch (NotSupportedException ex) { status.Text = ex.Message; }
         catch (InvalidDataException ex) { status.Text = ex.Message; }
         catch (Exception) { status.Text = "Fotoğraf okunamadı. JPG/PNG deneyin; daha net bir fotoğraf seçin veya metni yazın."; }
         finally { SetBusy(false); }

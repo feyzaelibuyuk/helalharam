@@ -54,3 +54,5 @@ Web yayın paketi ve kalıcı sunucu verileri: [WEB_YAYIN](docs/WEB_YAYIN.md).
 Android sunum/test paketi 0.1.0: [ANDROID_TEST](docs/ANDROID_TEST.md).
 
 İlk kullanıcı geri bildirim formu ve deneme planı: [GERI_BILDIRIM](docs/GERI_BILDIRIM.md).
+
+Çok alfabeli Android OCR ve kapsam sınırları: [COK_ALFABELI_OCR](docs/COK_ALFABELI_OCR.md).

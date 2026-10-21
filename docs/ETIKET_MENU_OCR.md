@@ -30,3 +30,5 @@ Debug APK yüklüyken yerel OCR testini tekrar çalıştırma:
 & 'C:\Android\Sdk\platform-tools\adb.exe' shell am broadcast -a com.companyname.helalharam.OCR_SMOKE -p com.companyname.helalharam
 & 'C:\Android\Sdk\platform-tools\adb.exe' logcat -d -s OcrSmoke:I
 ```
+
+Sonraki güncelleme: çok alfabeli Android OCR kapsamı ve sınırlamaları için [COK_ALFABELI_OCR](COK_ALFABELI_OCR.md). Önceki Latin-only test sonuçları tarihsel kayıttır.

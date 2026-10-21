@@ -86,4 +86,10 @@
     <AndroidPackageFormats>apk</AndroidPackageFormats>
   </PropertyGroup>
   <ItemGroup><Compile Include="..\Shared\FeedbackInput.cs" Link="Shared\FeedbackInput.cs" /></ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Chinese" Version="116.0.1.4" />
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Japanese" Version="116.0.1.4" />
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Korean" Version="116.0.1.4" />
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Devanagari" Version="116.0.1.4" />
+  </ItemGroup>
 </Project>
