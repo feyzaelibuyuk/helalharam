@@ -50,3 +50,5 @@ Yönetici erişimiyle kuyruk, inceleme kararı ve geçmiş eklendi. Varsayılan 
 Gizlilik ve hata ekranları: [HATA_GIZLILIK](docs/HATA_GIZLILIK.md). Web: /privacy; mobil: Profil → Gizlilik ve kullanım sınırları.
 
 Web yayın paketi ve kalıcı sunucu verileri: [WEB_YAYIN](docs/WEB_YAYIN.md).
+
+Android sunum/test paketi 0.1.0: [ANDROID_TEST](docs/ANDROID_TEST.md).

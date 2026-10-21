@@ -119,6 +119,8 @@ public sealed class HomePage : TabbedPage
         var stack = Stack("Beslenme profilim", "İlk sürüm: helal beslenme. Diğer dini profiller, kendilerine ait doğrulanmış kaynak ve kurallarla eklenecek.");
         stack.Add(Text("Seçili profil: Helal\n\nDemo değerlendirmeler dini hüküm veya sertifika değildir."));
         var personal = new Entry { Placeholder = "Ek olarak kaçındığın içerikler", Text = Preferences.Default.Get("avoid", "") };
+        stack.Add(Text($"Sürüm: {AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})"));
+        stack.Add(Text("Yerel test kurulumu: katalog ve analiz için bilgisayardaki web/API açık olmalıdır. Android emülatörü bilgisayara 10.0.2.2:5088 üzerinden bağlanır. Bu paket gerçek telefonda çevrimiçi kullanım için yapılandırılmadı."));
         stack.Add(personal);
         var feedback = Text("");
         stack.Add(Action("Tercihleri kaydet", (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = "Tercihler cihazda kaydedildi. Değerlendirme kurallarına bağlanması sonraki görevde yapılacak."; }));

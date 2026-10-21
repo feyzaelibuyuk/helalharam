@@ -35,7 +35,7 @@
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationVersion>2</ApplicationVersion>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -72,10 +72,17 @@
         <PackageReference Include="Plugin.Maui.OCR" Version="1.1.1" />
 	</ItemGroup>
 
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ItemGroup Condition="'$(Configuration)' == 'Debug' and '$(TestBuild)' != 'true'">
         <Compile Include="..\tests\OcrAndroidSmoke.cs" Link="Tests\OcrAndroidSmoke.cs" />
     </ItemGroup>
   <ItemGroup><Compile Include="..\Shared\FavoriteList.cs" Link="Shared\FavoriteList.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\CorrectionInput.cs" Link="Shared\CorrectionInput.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\PrivacyNotice.cs" Link="Shared\PrivacyNotice.cs" /></ItemGroup>
+  <PropertyGroup Condition="'$(TestBuild)' == 'true'">
+    <ApplicationTitle>Helal Rehber Test</ApplicationTitle>
+    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+  </PropertyGroup>
 </Project>
