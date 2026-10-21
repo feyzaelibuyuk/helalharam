@@ -38,6 +38,7 @@ builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<RestaurantCatalog>();
 builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<FeedbackService>();
+builder.Services.AddScoped<WebUi>();
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
@@ -143,6 +144,15 @@ await using (var scope = app.Services.CreateAsyncScope())
     await FeedbackService.InitializeAsync(db);
 }
 
+app.MapPost("/language", async (HttpContext context, IAntiforgery antiforgery) => {
+    try { await antiforgery.ValidateRequestAsync(context); }
+    catch (AntiforgeryValidationException) { return Results.BadRequest("Form süresi doldu. Sayfayı yenileyin."); }
+    var form = await context.Request.ReadFormAsync(); var language = form["language"].ToString();
+    if (!UiCatalog.Languages.Contains(language)) return Results.BadRequest("Geçersiz arayüz dili.");
+    context.Response.Cookies.Append(WebUi.CookieName, language, new CookieOptions { HttpOnly = true, Secure = context.Request.IsHttps, SameSite = SameSiteMode.Lax, IsEssential = true, Path = "/", MaxAge = TimeSpan.FromDays(365) });
+    return Results.Redirect("/");
+});
+
 app.MapPost("/admin/signin", async (HttpContext context, IAntiforgery antiforgery, AdminAccess access) => {
     try { await antiforgery.ValidateRequestAsync(context); }
     catch (AntiforgeryValidationException) { return Results.BadRequest("Form süresi doldu. Giriş sayfasını yenileyin."); }
@@ -243,7 +253,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
-    if (context.Request.Method == "POST" && (context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
+    if (context.Request.Method == "POST" && (context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
     {
         var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
         if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = 64 * 1024;

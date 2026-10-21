@@ -96,3 +96,5 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.top-row { height:auto; min-height:3.5rem; flex-wrap:wrap; padding-block:.5rem; gap:.75rem; }

@@ -2,22 +2,22 @@
 @using HelalRehber.Shared
 @using BlazorApp1.Services
 @inject FeedbackService Feedbacks
-<PageTitle>Geri bildirim | Helal mi?</PageTitle>
+<PageTitle>@Ui.T("feedback") | Helal mi?</PageTitle>
 <main class="app-shell">
-<header class="topbar"><a class="brand" href="/">← Katalog</a><a href="/privacy">Gizlilik</a></header>
-<h1>Deneyimini paylaş</h1>
-<p>Nerede zorlandın? Ne bekledin, ne oldu? Hangi adımlarla tekrar oluşuyor? Ad, e-posta, sağlık bilgisi veya parola yazma. Gönderi yalnız yetkili yöneticiye görünür; otomatik yanıt gönderilmez. Ürün bilgisi hataları için ürün detayındaki düzeltme formunu kullan.</p>
+<header class="topbar"><a class="brand" href="/">@Ui.T("backCatalog")</a><a href="/privacy">@Ui.T("privacy")</a></header>
+<h1>@Ui.T("feedbackHeading")</h1>
+<p>@Ui.T("feedbackPrompt")</p><p>@Ui.T("feedbackPrivacy")</p>
 @if (receipt is not null) {
-    <div role="status"><h2>Geri bildiriminiz kaydedildi</h2><p>Gönderim: @receipt</p><a href="/feedback" data-enhance-nav="false">Yeni geri bildirim</a></div>
+    <div role="status"><h2>@Ui.T("feedbackSaved")</h2><p>Gönderim: @receipt</p><a href="/feedback" data-enhance-nav="false">@Ui.T("newFeedback")</a></div>
 } else {
     @foreach (var error in errors) { <p role="alert">@error</p> }
     <EditForm Model="Input" OnSubmit="Submit" FormName="feedback">
         <input type="hidden" name="Input.SubmissionId" value="@Input!.SubmissionId" />
-        <label for="feedback-kind">Tür</label>
-        <InputSelect id="feedback-kind" @bind-Value="Input.Category"><option value="">Seçin</option>@foreach(var category in FeedbackRules.Categories){<option value="@category.Id">@category.Label</option>}</InputSelect>
-        <label for="feedback-message">Açıklama</label>
+        <label for="feedback-kind">@Ui.T("category")</label>
+        <InputSelect id="feedback-kind" @bind-Value="Input.Category"><option value="">@Ui.T("choose")</option>@foreach(var category in FeedbackRules.Categories){<option value="@category.Id">@Ui.T(category.Id)</option>}</InputSelect>
+        <label for="feedback-message">@Ui.T("description")</label>
         <InputTextArea id="feedback-message" @bind-Value="Input.Message" rows="6" maxlength="2000" style="width:100%" />
-        <button type="submit" class="search-button">Geri bildirim gönder</button>
+        <button type="submit" class="search-button">@Ui.T("feedbackSend")</button>
     </EditForm>
 }
 </main>

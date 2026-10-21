@@ -3,10 +3,10 @@ using HelalRehber.Shared;
 namespace helalharam;
 public sealed class FeedbackPage : ContentPage
 {
-    private readonly Picker category = new() { Title = "Geri bildirim türü", ItemsSource = FeedbackRules.Categories.Select(x => x.Label).ToArray() };
-    private readonly Editor message = new() { Placeholder = "Ne bekledin, ne oldu? Tekrar etmek için hangi adımları izledin?", MaxLength = 2000, HeightRequest = 180 };
+    private readonly Picker category = new() { Title = Ui.T("feedbackType"), ItemsSource = FeedbackRules.Categories.Select(x => Ui.T(x.Id)).ToArray() };
+    private readonly Editor message = new() { Placeholder = Ui.T("feedbackPrompt"), MaxLength = 2000, HeightRequest = 180 };
     private readonly Label status = new();
-    private readonly Button send = new() { Text = "Geri bildirim gönder" };
+    private readonly Button send = new() { Text = Ui.T("feedbackSend") };
     private readonly FeedbackInput draft = new() { SubmissionId = Guid.NewGuid(),
 #if ANDROID
         Client = "android",
@@ -24,12 +24,13 @@ public sealed class FeedbackPage : ContentPage
     private bool attempted, busy, sent;
     public FeedbackPage()
     {
-        Title = "Geri bildirim";
+        FlowDirection = Ui.Direction;
+        Title = Ui.T("feedback");
         var stack = new VerticalStackLayout { Padding = 22, Spacing = 14 };
-        stack.Add(new Label { Text = "Deneyimini paylaş", FontSize = 25 });
-        stack.Add(new Label { Text = "Ad, e-posta, sağlık bilgisi veya parola yazmayın. Açıklama, tür, platform ve sürüm uygulama sunucusuna gönderilir; yalnız yöneticiye görünür. Otomatik yanıt gönderilmez. Ürün bilgisi hataları için ürün detayındaki düzeltme formunu kullanın." });
+        stack.Add(new Label { Text = Ui.T("feedbackHeading"), FontSize = 25 });
+        stack.Add(new Label { Text = Ui.T("feedbackPrivacy") });
         stack.Add(category); stack.Add(message); stack.Add(status); stack.Add(send);
-        var close = new Button { Text = "Kapat" }; close.Clicked += async (_, _) => await Navigation.PopModalAsync(); stack.Add(close);
+        var close = new Button { Text = Ui.T("close") }; close.Clicked += async (_, _) => await Navigation.PopModalAsync(); stack.Add(close);
         Content = new ScrollView { Content = stack };
         send.Clicked += async (_, _) => await SubmitAsync();
     }
@@ -50,7 +51,7 @@ public sealed class FeedbackPage : ContentPage
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests) { status.Text = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı gönderimi tekrar deneyin."; return; }
             var result = await response.Content.ReadFromJsonAsync<Result>();
             if (response.IsSuccessStatusCode && result?.Receipt is { } receipt)
-            { sent = true; status.Text = $"Geri bildiriminiz kaydedildi.\nGönderim: {receipt}"; send.Text = "Gönderildi"; }
+            { sent = true; status.Text = $"Geri bildiriminiz kaydedildi.\nGönderim: {receipt}"; send.Text = Ui.T("sent"); }
             else
             {
                 status.Text = result?.Message ?? "Gönderim tamamlanamadı. Tekrar deneyin.";
@@ -59,7 +60,7 @@ public sealed class FeedbackPage : ContentPage
         }
         catch(Exception ex) when(ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         { status.Text = "Sonuç alınamadı. Metniniz korunuyor; bağlantıyı kontrol edip aynı gönderimi tekrar deneyin."; }
-        finally { busy = false; send.IsEnabled = !sent; if(!sent) send.Text = "Tekrar gönder"; }
+        finally { busy = false; send.IsEnabled = !sent; if(!sent) send.Text = Ui.T("retry"); }
     }
     private sealed class Result { public string Message { get; set; } = ""; public Guid? Receipt { get; set; } }
 }

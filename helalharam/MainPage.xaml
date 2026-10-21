@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:helalharam"
              x:Class="helalharam.MainPage"
              BackgroundColor="#F8F8F4"
              Title="helalmi?">
@@ -19,29 +20,29 @@
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="22,24,22,30" Spacing="18">
-                <Label Text="BİLGİLİ SEÇİM, İÇİN RAHATLIĞI" FontSize="10" CharacterSpacing="1.4" TextColor="#71867B" FontAttributes="Bold" />
+                <Label Text="{local:Tr eyebrow}" FontSize="10" CharacterSpacing="1.4" TextColor="#71867B" FontAttributes="Bold" />
                 <Label Text="Ne yediğini&#10;bilerek seç." FontSize="38" LineHeight="1.05" TextColor="#1D342C" FontAttributes="Bold" />
                 <Label Text="Ürün içeriğini incele, restoran yemekleri hakkında sorulacakları öğren." FontSize="14" TextColor="#68766F" LineHeight="1.5" />
 
                 <Border Padding="12,4" BackgroundColor="White" Stroke="#DFE3DC" StrokeThickness="1" StrokeShape="RoundRectangle 10">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Entry x:Name="SearchEntry" Placeholder="Ürün, marka veya içerik ara..." TextColor="#273C34" PlaceholderColor="#A2AAA4" ClearButtonVisibility="WhileEditing" Completed="OnSearchCompleted" />
+                        <Entry x:Name="SearchEntry" Placeholder="{local:Tr searchPlaceholder}" TextColor="#273C34" PlaceholderColor="#A2AAA4" ClearButtonVisibility="WhileEditing" Completed="OnSearchCompleted" />
                         <Button Grid.Column="1" Text="Ara  →" BackgroundColor="#245342" TextColor="White" CornerRadius="7" Padding="16,0" Clicked="OnSearchClicked" />
                     </Grid>
                 </Border>
 
-                <Label Text="Gerçek barkod sorgula · Open Food Facts" FontAttributes="Bold" TextColor="#245342" />
-                <Entry x:Name="OffBarcodeEntry" Placeholder="Ambalaj barkodu; örnek: 3017620422003" Keyboard="Numeric" MaxLength="14" />
-                <Button Text="Kamerayla barkod tara" Clicked="OnScanBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
-                <Button Text="Etiket fotoğrafını oku" Clicked="OnOcrClicked" BackgroundColor="#245342" TextColor="White" />
-                <Button Text="Gerçek ürünü getir" Clicked="OnOffBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
-                <Label Text="Aşağıdaki yerel katalog demo kayıtlarını içerir." FontSize="11" TextColor="#79847D" />
+                <Label Text="{local:Tr sourceBarcode}" FontAttributes="Bold" TextColor="#245342" />
+                <Entry x:Name="OffBarcodeEntry" Placeholder="{local:Tr barcodeHint}" Keyboard="Numeric" MaxLength="14" />
+                <Button Text="{local:Tr scanBarcode}" Clicked="OnScanBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
+                <Button Text="{local:Tr readLabel}" Clicked="OnOcrClicked" BackgroundColor="#245342" TextColor="White" />
+                <Button Text="{local:Tr fetchProduct}" Clicked="OnOffBarcodeClicked" BackgroundColor="#245342" TextColor="White" />
+                <Label Text="{local:Tr catalogInfo}" FontSize="11" TextColor="#79847D" />
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <Button x:Name="ProductsButton" Text="Paketli ürünler" BackgroundColor="#245342" TextColor="White" CornerRadius="8" FontSize="12" Clicked="OnProductsClicked" />
-                    <Button x:Name="RestaurantsButton" Grid.Column="1" Text="Restoran yemekleri" BackgroundColor="#EEEFEB" TextColor="#6F7D74" CornerRadius="8" FontSize="12" Clicked="OnRestaurantsClicked" />
+                    <Button x:Name="ProductsButton" Text="{local:Tr packaged}" BackgroundColor="#245342" TextColor="White" CornerRadius="8" FontSize="12" Clicked="OnProductsClicked" />
+                    <Button x:Name="RestaurantsButton" Grid.Column="1" Text="{local:Tr restaurantDishes}" BackgroundColor="#EEEFEB" TextColor="#6F7D74" CornerRadius="8" FontSize="12" Clicked="OnRestaurantsClicked" />
                 </Grid>
-                <Entry x:Name="CountryEntry" Placeholder="Satış ülkesi kodu (TR, DE…); boşsa tümü" MaxLength="2" Completed="OnSearchCompleted" />
-                <Entry x:Name="CityEntry" IsVisible="False" Placeholder="Restoran için Türkiye şehri: İstanbul, Ankara…" MaxLength="80" Completed="OnSearchCompleted" />
+                <Entry x:Name="CountryEntry" Placeholder="{local:Tr countryMobile}" MaxLength="2" Completed="OnSearchCompleted" />
+                <Entry x:Name="CityEntry" IsVisible="False" Placeholder="{local:Tr cityMobile}" MaxLength="80" Completed="OnSearchCompleted" />
                 <Label x:Name="ResultCount" Text="Kaynak durumuyla gösterilen örnek kayıtlar" FontSize="11" TextColor="#8A948D" />
 
                 <CollectionView x:Name="ResultsList" SelectionMode="None">
@@ -57,8 +58,8 @@
                                     <Label Text="{Binding Details}" TextColor="#79847D" FontSize="12" LineHeight="1.4" />
                                     <Label Text="{Binding Note}" TextColor="#7A6952" FontSize="11" LineHeight="1.35" />
                                     <Label Text="{Binding Source}" TextColor="#89948C" FontSize="10" LineBreakMode="WordWrap" />
-                                    <Button Text="Yemek detayını incele" IsVisible="{Binding IsRestaurant}" Clicked="OnDishDetailsClicked" BackgroundColor="#245342" TextColor="White" />
-                                    <Button Text="Detay ve alternatifler" IsVisible="{Binding IsProduct}" Clicked="OnDetailsClicked" BackgroundColor="#245342" TextColor="White" />
+                                    <Button Text="{local:Tr dishDetailButton}" IsVisible="{Binding IsRestaurant}" Clicked="OnDishDetailsClicked" BackgroundColor="#245342" TextColor="White" />
+                                    <Button Text="{local:Tr detailButton}" IsVisible="{Binding IsProduct}" Clicked="OnDetailsClicked" BackgroundColor="#245342" TextColor="White" />
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>

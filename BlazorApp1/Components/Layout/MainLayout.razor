@@ -7,11 +7,13 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="/feedback">Geri bildirim</a>
-            <a href="/privacy">Gizlilik ve kullanım sınırları</a>
+            <BlazorApp1.Components.Shared.LanguagePicker />
+            <a href="/feedback">@Ui.T("feedback")</a>
+            <a href="/privacy">@Ui.T("privacy")</a>
         </div>
 
         <article class="content px-4">
+            @if(Ui.Language != "tr") { <aside class="translation-scope" role="note">@Ui.T("scope") <strong>@Ui.T("limits")</strong></aside> }
             @Body
         </article>
     </main>
@@ -19,6 +21,6 @@
 
 <div id="blazor-error-ui" data-nosnippet>
     Beklenmeyen bir hata oluştu. Sayfayı yenileyip tekrar deneyin. Öneri gönderdiyseniz yeniden göndermeden önce sonucunu kontrol edin.
-    <a href="." class="reload">Sayfayı yenile</a>
+    <a href="." class="reload">@Ui.T("reload")</a>
     <span class="dismiss">🗙</span>
 </div>

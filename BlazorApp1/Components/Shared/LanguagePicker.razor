@@ -1,0 +1,10 @@
+<form method="post" action="/language" data-enhance="false" class="language-picker">
+<AntiforgeryToken />
+<label for="ui-language">@Ui.T("language")</label>
+<select id="ui-language" name="language" dir="ltr">
+<option value="tr" selected="@(Ui.Language == "tr")">Türkçe</option>
+<option value="en" selected="@(Ui.Language == "en")">English</option>
+<option value="ar" selected="@(Ui.Language == "ar")">العربية</option>
+</select><button type="submit">@Ui.T("applyLanguage")</button>
+<small>@Ui.T("languageNote")</small>
+</form>

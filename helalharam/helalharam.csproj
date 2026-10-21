@@ -92,4 +92,5 @@
     <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Korean" Version="116.0.1.4" />
     <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Devanagari" Version="116.0.1.4" />
   </ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\UiCatalog.cs" Link="Shared\UiCatalog.cs" /></ItemGroup>
 </Project>

@@ -2,3 +2,10 @@
 
 @media(max-width:850px){.card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app-shell{padding:0 28px}.hero{padding-top:59px}}
 @media(max-width:560px){.app-shell{padding:0 19px}.topbar{height:69px}.hero{padding:49px 0 40px}.hero h1{letter-spacing:-2px}.hero>p{font-size:13px}.search-box{height:54px}.search-button{height:40px;padding:0 12px}.section-heading{align-items:flex-start;flex-direction:column}.tabs{width:100%}.tabs button{flex:1;padding:10px 6px}.card-grid{grid-template-columns:1fr}.info-card{min-height:0}.site-footer{flex-direction:column}}
+
+.language-picker { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin:.5rem 0; }
+.language-picker small { flex-basis:100%; font-size:.75rem; }
+.top-row:has(.language-picker) { height:auto; min-height:3.5rem; flex-wrap:wrap; }
+.translation-scope { padding:1rem; margin-block-end:1rem; border:1px solid #cfddd3; background:#f0f5ef; }
+[dir="rtl"] .search-box input { text-align:start; }
+[dir="rtl"] .card-source, [dir="rtl"] .card-note { text-align:start; }

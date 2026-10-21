@@ -8,10 +8,11 @@ public sealed class HomePage : TabbedPage
     public HomePage()
     {
         Title = "Helal Rehber";
+        FlowDirection = Ui.Direction;
         BarBackgroundColor = green;
         BarTextColor = Colors.White;
-        Children.Add(new MainPage { Title = "Katalog" });
-        Children.Add(new FavoritesPage());
+        Children.Add(new MainPage { Title = Ui.T("catalog") });
+        Children.Add(new FavoritesPage { Title = Ui.T("favorites") });
         Children.Add(Products());
         Children.Add(Menu());
         Children.Add(Community());
@@ -61,10 +62,10 @@ public sealed class HomePage : TabbedPage
         }
         stack.Add(search);
         stack.Add(Action("Ürün ara", (_, _) => Find()));
-        stack.Add(Action("Etiket fotoğrafını oku", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage()))));
+        stack.Add(Action(Ui.T("readLabel"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage()))));
         stack.Add(results);
         Find();
-        return Page("Ürünler", stack);
+        return Page(Ui.T("products"), stack);
     }
 
     private ContentPage Menu()
@@ -81,12 +82,12 @@ public sealed class HomePage : TabbedPage
             output.Text = MenuQuestions.Prepare(value, "tr");
         }));
         stack.Add(output);
-        return Page("Menü", stack);
+        return Page(Ui.T("menu"), stack);
     }
 
     private ContentPage Community()
     {
-        var stack = Stack("Deneyimini paylaş", "İşletmeye ne sordun, ne yanıt aldın? Kayıtlar bu cihazda saklanır; yayınlanmaz ve doğrulanmış uygunluk sayılmaz.");
+        var stack = Stack(Ui.T("feedbackHeading"), "İşletmeye ne sordun, ne yanıt aldın? Kayıtlar bu cihazda saklanır; yayınlanmaz ve doğrulanmış uygunluk sayılmaz.");
         var shop = new Entry { Placeholder = "Dükkân ve şube" };
         var dish = new Entry { Placeholder = "Yediğin yemek" };
         var date = new DatePicker { Date = DateTime.Today, MaximumDate = DateTime.Today };
@@ -104,29 +105,38 @@ public sealed class HomePage : TabbedPage
         }));
         stack.Add(Action("Yerel deneyimi sil", (_, _) => { Preferences.Default.Remove("communityDraft"); saved.Text = "Yerel kayıt silindi."; }));
         stack.Add(saved);
-        return Page("Deneyimler", stack);
+        return Page(Ui.T("community"), stack);
     }
 
     private ContentPage Notifications()
     {
-        var stack = Stack("Bildirimler", "Gerçek bildirim servisi henüz bağlı değil. Planlanan bildirimler:");
+        var stack = Stack(Ui.T("notifications"), "Gerçek bildirim servisi henüz bağlı değil. Planlanan bildirimler:");
         stack.Add(Text("• Favori ürünün içerik veya değerlendirme bilgisi değişti.\n\n• Beklediğin ürünün eksik bilgisi tamamlandı.\n\n• Gönderdiğin deneyim veya düzeltme moderasyonda sonuçlandı."));
-        return Page("Bildirimler", stack);
+        return Page(Ui.T("notifications"), stack);
     }
 
     private ContentPage Profile()
     {
-        var stack = Stack("Beslenme profilim", "İlk sürüm: helal beslenme. Diğer dini profiller, kendilerine ait doğrulanmış kaynak ve kurallarla eklenecek.");
-        stack.Add(Text("Seçili profil: Helal\n\nDemo değerlendirmeler dini hüküm veya sertifika değildir."));
-        var personal = new Entry { Placeholder = "Ek olarak kaçındığın içerikler", Text = Preferences.Default.Get("avoid", "") };
+        var stack = Stack(Ui.T("profileHeading"), Ui.T("profileIntro"));
+        stack.Add(Text(Ui.T("profileLimit")));
+        var personal = new Entry { Placeholder = Ui.T("avoid"), Text = Preferences.Default.Get("avoid", "") };
         stack.Add(Text($"Sürüm: {AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})"));
-        stack.Add(Text("Yerel test kurulumu: katalog ve analiz için bilgisayardaki web/API açık olmalıdır. Android emülatörü bilgisayara 10.0.2.2:5088 üzerinden bağlanır. Bu paket gerçek telefonda çevrimiçi kullanım için yapılandırılmadı."));
+        stack.Add(Text(Ui.T("testSetup")));
+        var uiLanguage = new Picker { Title = Ui.T("language"), ItemsSource = new[] { "Türkçe", "English", "العربية" }, SelectedIndex = Array.IndexOf(HelalRehber.Shared.UiCatalog.Languages, Ui.Language) };
+        stack.Add(uiLanguage); stack.Add(Text(Ui.T("languageNote")));
+        stack.Add(Action(Ui.T("applyLanguage"), async (_, _) => {
+            if (uiLanguage.SelectedIndex < 0) return;
+            if (!await DisplayAlertAsync(Ui.T("confirmLanguage"), Ui.T("languageNote"), Ui.T("apply"), Ui.T("cancel"))) return;
+            Preferences.Default.Set("ui-language", HelalRehber.Shared.UiCatalog.Languages[uiLanguage.SelectedIndex]);
+            if (Window is { } window) { var home = new HomePage(); home.CurrentPage = home.Children.Last(); window.Page = home; }
+        }));
+        if(Ui.Language != "tr") stack.Add(Text(Ui.T("scope")));
         stack.Add(personal);
         var feedback = Text("");
-        stack.Add(Action("Tercihleri kaydet", (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = "Tercihler cihazda kaydedildi. Değerlendirme kurallarına bağlanması sonraki görevde yapılacak."; }));
+        stack.Add(Action(Ui.T("savePreferences"), (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = Ui.T("preferencesSaved"); }));
         stack.Add(feedback);
-        stack.Add(Action("Uygulama hakkında geri bildirim", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new FeedbackPage()))));
-        stack.Add(Action("Gizlilik ve kullanım sınırları", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new PrivacyPage()))));
-        return Page("Profil", stack);
+        stack.Add(Action(Ui.T("feedbackAction"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new FeedbackPage()))));
+        stack.Add(Action(Ui.T("privacy"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new PrivacyPage()))));
+        return Page(Ui.T("profile"), stack);
     }
 }

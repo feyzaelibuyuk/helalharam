@@ -24,4 +24,5 @@
     <None Remove="keys/**;helalharam.db*;.verification/**" />
   </ItemGroup>
   <ItemGroup><Compile Include="..\Shared\FeedbackInput.cs" Link="Shared\FeedbackInput.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\UiCatalog.cs" Link="Shared\UiCatalog.cs" /></ItemGroup>
 </Project>

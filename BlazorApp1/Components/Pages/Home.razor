@@ -11,84 +11,84 @@
 
 <main class="app-shell">
     <header class="topbar">
-        <a class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
-        <a href="/favorites" data-enhance-nav="false">Favorilerim ☆</a><span class="beta-pill">BETA · ÜRÜN KATALOĞU</span>
+        <a dir="ltr" class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
+        <a href="/favorites" data-enhance-nav="false">@Ui.T("myFavorites")</a><span class="beta-pill">@Ui.T("catalogBadge")</span>
     </header>
 
     <section class="hero">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> BİLGİLİ SEÇİM, İÇİN RAHATLIĞI</div>
-        <h1>Ne yediğini<br /><span>bilerek seç.</span></h1>
-        <p>Ürün içeriğini incele, restoran yemekleri hakkında sorulacakları öğren. Her bilgi için kaynağı ve belirsizliği açıkça gösteriyoruz.</p>
+        <div class="eyebrow"><span class="eyebrow-dot"></span> @Ui.T("eyebrow")</div>
+        <h1>@Ui.T("heroFirst")<br /><span>@Ui.T("heroSecond")</span></h1>
+        <p>@Ui.T("heroDescription")</p>
         <form method="get" action="/">
         <div class="search-box">
             <span class="search-icon">⌕</span>
-            <input name="q" aria-label="Ürün veya içerik ara" @bind="query" @bind:event="oninput" placeholder="Ürün, marka veya içerik ara..." />
-            <button class="search-button" type="submit">Ara <span>→</span></button>
+            <input name="q" aria-label="@Ui.T("searchLabel")" @bind="query" @bind:event="oninput" placeholder="@Ui.T("searchPlaceholder")" />
+            <button class="search-button" type="submit">@Ui.T("search") <span>→</span></button>
         </div>
         <input type="hidden" name="mode" value="@(showProducts ? "products" : "restaurants")" />
         @if (showProducts) {
-            <div class="quick-links"><label>Satış ülkesi kodu <input name="country" aria-label="Satış ülkesi kodu" @bind="country" maxlength="2" placeholder="TR, DE…; boşsa tümü" /></label></div>
+            <div class="quick-links"><label>@Ui.T("country") <input dir="ltr" name="country" aria-label="@Ui.T("country")" @bind="country" maxlength="2" placeholder="@Ui.T("countryHint")" /></label></div>
         }
         else {
-            <div class="quick-links"><label for="restaurant-city">Türkiye şehir filtresi</label><input id="restaurant-city" name="city" @bind="city" placeholder="İstanbul, Ankara…; boşsa tümü" maxlength="80" /></div>
+            <div class="quick-links"><label for="restaurant-city">@Ui.T("city")</label><input id="restaurant-city" name="city" @bind="city" placeholder="@Ui.T("cityHint")" maxlength="80" /></div>
         }
-</form><div class="quick-links"><span>Popüler aramalar:</span><button @onclick='() => QuickSearch("jelatin")'>jelatin</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>aroma verici</button></div>
+</form><div class="quick-links"><span>@Ui.T("popular")</span><button @onclick='() => QuickSearch("jelatin")'>@Ui.T("gelatin")</button><button @onclick='() => QuickSearch("E471")'>E471</button><button @onclick='() => QuickSearch("aroma verici")'>@Ui.T("flavour")</button></div>
     </section>
 
     <section class="catalog-section">
-        <h2>Gerçek barkod sorgula</h2><p><a href="/ingredients">İçindekiler metnini elle değerlendir →</a></p>
-        <p class="ingredients">Marka, ambalaj fotoğrafı ve içerikler Open Food Facts'ten alınır. Aşağıdaki yerel katalog demo kayıtlarını içerir.</p>
+        <h2>@Ui.T("realBarcode")</h2><p><a href="/ingredients">@Ui.T("manualIngredients")</a></p>
+        <p class="ingredients">@Ui.T("offDescription")</p>
         <form method="get" action="/off" class="search-box">
-            <input name="barcode" aria-label="Gerçek ürün barkodu" inputmode="numeric" maxlength="14" placeholder="Ambalaj barkodu; örnek: 3017620422003" />
-            <button type="submit" class="search-button">Barkodu sorgula →</button>
+            <input dir="ltr" name="barcode" aria-label="@Ui.T("sourceBarcodeAria")" inputmode="numeric" maxlength="14" placeholder="@Ui.T("barcodeHint")" />
+            <button type="submit" class="search-button">@Ui.T("lookupBarcode")</button>
         </form>
     </section>
     <section class="catalog-section">
         <div class="section-heading">
-            <div><div class="section-kicker">KEŞFET</div><h2>Bilgiye göz at</h2></div>
-            <div class="tabs" role="tablist"><button class="@(showProducts ? "active" : "")" @onclick="ShowProducts">Paketli ürünler</button><button class="@(!showProducts ? "active" : "")" @onclick="ShowRestaurants">Restoran yemekleri</button></div>
+            <div><div class="section-kicker">@Ui.T("explore")</div><h2>@Ui.T("browse")</h2></div>
+            <div class="tabs" role="tablist"><button class="@(showProducts ? "active" : "")" @onclick="ShowProducts">@Ui.T("packaged")</button><button class="@(!showProducts ? "active" : "")" @onclick="ShowRestaurants">@Ui.T("restaurantDishes")</button></div>
         </div>
 
         @if (showProducts)
         {
             @if (searchError is not null) { <div class="empty-state" role="alert">@searchError</div> }
-            <div class="results-label">@products.Count ürün kaydı <span>·</span> Bilgiler kaynak durumuyla gösterilir</div>
+            <div class="results-label">@Ui.F("productCount", products.Count)</div>
             <div class="card-grid">
                 @foreach (var product in products)
                 {
                     <article class="info-card">
                         <div class="card-top"><div class="product-icon">@(product.Name.StartsWith("Örnek Sütlü") ? "▧" : product.Name.StartsWith("Örnek Çilek") ? "◉" : "◇")</div><span class="status status-review">@product.Assessment</span></div>
-                        <div class="product-brand">@product.Brand</div><h3>@product.Name</h3>
-                        <p class="ingredients">@product.Ingredients</p>
+                        <div class="product-brand">@product.Brand</div><h3 dir="auto">@product.Name</h3>
+                        <p dir="auto" class="ingredients">@product.Ingredients</p>
                         <div class="card-note"><span>ⓘ</span> @product.Note</div>
-                        <div class="card-source">KAYNAK DURUMU <strong>@product.Source</strong></div>
-<div class="card-source">@product.Category · @(product.CountryCode == "" ? "Ülke belirtilmedi" : product.CountryCode) · @(product.IsDemo ? "DEMO" : "Katalog kaydı")</div><a href="@($"/products/{product.Id}")">Detay ve alternatifler →</a>
+                        <div class="card-source">@Ui.T("sourceStatus") <strong dir="auto">@product.Source</strong></div>
+<div class="card-source">@product.Category · @(product.CountryCode == "" ? Ui.T("countryUnspecified") : product.CountryCode) · @(product.IsDemo ? "DEMO" : Ui.T("catalogRecord"))</div><a href="@($"/products/{product.Id}")">@Ui.T("details")</a>
                     </article>
                 }
             </div>
-            @if (products.Count == 0) { <div class="empty-state">Bu aramayla eşleşen kayıt yok. Ülke filtresini kontrol edin. Barkod bulunamazsa içindekiler metnini kullanın; kamera ve OCR sonraki sürümde eklenecek.</div> }
+            @if (products.Count == 0) { <div class="empty-state">@Ui.T("emptyProducts")</div> }
         }
         else
         {
-            <div class="results-label">@restaurants.Count yemek kaydı <span>·</span> İşletme bilgileri henüz doğrulanmadı</div>
+            <div class="results-label">@Ui.F("dishCount", restaurants.Count)</div>
             <div class="card-grid">
                 @foreach (var restaurant in restaurants)
                 {
                     <article class="info-card restaurant-card">
-                        <div class="card-top"><div class="product-icon restaurant-icon">⌂</div><span class="status status-review">İşletmeye danışın</span></div>
-                        <div class="product-brand">@restaurant.Name</div><h3>@restaurant.Dish</h3><p class="ingredients">@(restaurant.IsDemo ? "DEMO · Kurgu işletme" : "Kaynak bilgisi doğrulanmalı") · @(restaurant.City.Length == 0 ? "Şehir belirtilmedi" : restaurant.City) · @restaurant.Branch</p>
+                        <div class="card-top"><div class="product-icon restaurant-icon">⌂</div><span class="status status-review">@Ui.T("askBusiness")</span></div>
+                        <div class="product-brand">@restaurant.Name</div><h3 dir="auto">@restaurant.Dish</h3><p class="ingredients">@(restaurant.IsDemo ? Ui.T("demoBusiness") : Ui.T("sourceUnverified")) · @(restaurant.City.Length == 0 ? Ui.T("cityUnspecified") : restaurant.City) · @restaurant.Branch</p>
                         <p class="ingredients">@restaurant.PossibleIngredients</p>
-                        <div class="card-note"><span>?</span> Sorulabilecekler: @restaurant.Questions</div>
-                        <div class="card-source">BİLGİ KAYNAĞI <strong>@restaurant.InformationSource</strong></div><a href="@($"/restaurants/{restaurant.Id}")">Yemek detayını incele →</a>
+                        <div class="card-note"><span>?</span> @Ui.T("questions") @restaurant.Questions</div>
+                        <div class="card-source">@Ui.T("source") <strong>@restaurant.InformationSource</strong></div><a href="@($"/restaurants/{restaurant.Id}")">@Ui.T("dishDetails")</a>
                     </article>
                 }
             </div>
-            @if (restaurants.Count == 0) { <div class="empty-state">Bu aramayla eşleşen yemek kaydı yok.</div> }
+            @if (restaurants.Count == 0) { <div class="empty-state">@Ui.T("noDishes")</div> }
         }
     </section>
 
-    <footer class="disclaimer"><span>ⓘ</span><p><strong>Bilgi notu</strong> — Bu uygulama kesin dini hüküm veya sertifika vermez. Örnek kayıtlar gösterim amaçlıdır; gerçek ürün ya da işletme bilgisi olarak kullanılmamalıdır. Paketli ürünlerde şüpheli içerik ve eksik bilgi uyarılarını inceleyin. Restoran ve açık yemeklerde içerik ve hazırlama bilgisi için işletmeye danışın.</p></footer>
-    <footer class="site-footer"><span>helalmi? <span class="brand-dot">·</span> Kaynağıyla bilgi</span><span>İçerik ve değerlendirmeler bilgilendirme amaçlıdır.</span></footer>
+    <footer class="disclaimer"><span>ⓘ</span><p><strong>@Ui.T("infoNote")</strong> — @Ui.T("homeDisclaimer")</p></footer>
+    <footer class="site-footer"><span>helalmi? <span class="brand-dot">·</span> @Ui.T("withSources")</span><span>@Ui.T("footer")</span></footer>
 </main>
 
 @code {

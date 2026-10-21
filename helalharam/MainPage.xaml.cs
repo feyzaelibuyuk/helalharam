@@ -57,12 +57,12 @@ public partial class MainPage : ContentPage
         if (!_showRestaurants && country.Length > 0 &&
             (country.Length != 2 || !country.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z')))
         {
-            ConnectionStatus.Text = "Ülke için iki harfli kod kullanın (TR, DE gibi).";
+            ConnectionStatus.Text = Ui.T("countryInvalid");
             ResultsList.ItemsSource = Array.Empty<CatalogCard>();
-            ResultCount.Text = "Ülke filtresini düzeltin.";
+            ResultCount.Text = Ui.T("countryFix");
             return;
         }
-        ConnectionStatus.Text = "Bilgiler yükleniyor…";
+        ConnectionStatus.Text = Ui.T("loading");
         var query = Uri.EscapeDataString(SearchEntry.Text?.Trim() ?? "");
         try
         {
@@ -70,7 +70,7 @@ public partial class MainPage : ContentPage
             {
                 var records = await _httpClient.GetFromJsonAsync<List<RestaurantDto>>($"api/restaurants?q={query}&city={Uri.EscapeDataString(CityEntry.Text?.Trim() ?? "")}") ?? [];
                 ResultsList.ItemsSource = records.Select(r => new CatalogCard(r.Dish, r.Name, r.PossibleIngredients,
-                    $"Sorulabilecekler: {r.Questions}", $"{(r.IsDemo ? "DEMO · Kurgu işletme" : "Kaynak bilgisi doğrulanmalı")} · {r.City} · {r.Branch}\nBilgi kaynağı: {r.InformationSource}", "İşletmeye danışın", RestaurantId: r.Id)).ToList();
+                    $"Sorulabilecekler: {r.Questions}", $"{(r.IsDemo ? "DEMO · Kurgu işletme" : "Kaynak bilgisi doğrulanmalı")} · {r.City} · {r.Branch}\nBilgi kaynağı: {r.InformationSource}", Ui.T("askBusiness"), RestaurantId: r.Id)).ToList();
                 ResultCount.Text = $"{records.Count} yemek kaydı · İşletme bilgileri kaynağıyla gösterilir";
             }
             else
@@ -85,12 +85,12 @@ public partial class MainPage : ContentPage
         catch (HttpRequestException)
         {
             ResultsList.ItemsSource = Array.Empty<CatalogCard>();
-            ResultCount.Text = "Kayıtlar henüz alınamadı";
-            ConnectionStatus.Text = "Bilgisayarda Blazor web projesi çalışırken tekrar dene.";
+            ResultCount.Text = Ui.T("notLoaded");
+            ConnectionStatus.Text = Ui.T("apiUnavailable");
         }
         catch (TaskCanceledException)
         {
-            ConnectionStatus.Text = "Sunucu yanıt vermedi. Web projesinin çalıştığını kontrol et.";
+            ConnectionStatus.Text = Ui.T("apiTimeout");
         }
     }
 
@@ -105,7 +105,7 @@ public partial class MainPage : ContentPage
         var code = OffBarcodeEntry.Text?.Trim() ?? "";
         if (!ProductBarcode.IsValid(code))
         {
-            await DisplayAlertAsync("Barkod", "8, 12, 13 veya 14 rakamlı barkod girin.", "Tamam");
+            await DisplayAlertAsync(Ui.T("barcode"), Ui.T("barcodeInvalid"), Ui.T("ok"));
             return;
         }
         await Navigation.PushModalAsync(new NavigationPage(new OffProductPage(code, _httpClient)));
