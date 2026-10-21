@@ -135,6 +135,7 @@ public sealed class HomePage : TabbedPage
         var feedback = Text("");
         stack.Add(Action(Ui.T("savePreferences"), (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = Ui.T("preferencesSaved"); }));
         stack.Add(feedback);
+        stack.Add(Action("Etiket / menü çevirisi", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new TranslationPage()))));
         stack.Add(Action(Ui.T("feedbackAction"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new FeedbackPage()))));
         stack.Add(Action(Ui.T("privacy"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new PrivacyPage()))));
         return Page(Ui.T("profile"), stack);

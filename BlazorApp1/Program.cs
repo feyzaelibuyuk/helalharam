@@ -39,6 +39,8 @@ builder.Services.AddScoped<RestaurantCatalog>();
 builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<WebUi>();
+builder.Services.AddSingleton<TranslationService>();
+builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("https://api.cognitive.microsofttranslator.com/"); client.Timeout = TimeSpan.FromSeconds(20); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false }).RedactLoggedHeaders(new[] { "Ocp-Apim-Subscription-Key" });
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
@@ -65,10 +67,15 @@ builder.Services.AddAuthorization(options => options.AddPolicy("Admin", policy =
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddRateLimiter(options => {
     options.RejectionStatusCode = 429;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext,string>(context =>
+        context.Request.Method=="POST" && context.Request.Path.StartsWithSegments("/translate")
+        ? RateLimitPartition.GetFixedWindowLimiter("translate-web:"+(context.Connection.RemoteIpAddress?.ToString() ?? "unknown"),
+            _=>new FixedWindowRateLimiterOptions { PermitLimit=5, Window=TimeSpan.FromMinutes(1), QueueLimit=0 })
+        : RateLimitPartition.GetNoLimiter("other-global"));
     options.OnRejected = async (context, token) => {
         context.HttpContext.Response.StatusCode = 429;
         context.HttpContext.Response.Headers.RetryAfter = "60";
-        if ((context.HttpContext.Request.Path.StartsWithSegments("/feedback") || context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
+        if ((context.HttpContext.Request.Path.StartsWithSegments("/translate") || context.HttpContext.Request.Path.StartsWithSegments("/feedback") || context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
         {
             var retryPath = context.HttpContext.Request.Path.StartsWithSegments("/admin") ? "/admin/login" : context.HttpContext.Request.Path.ToString();
             var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(retryPath);
@@ -78,6 +85,8 @@ builder.Services.AddRateLimiter(options => {
         }
         await context.HttpContext.Response.WriteAsJsonAsync(new { Message = "Gönderim sınırına ulaşıldı. Bir dakika sonra aynı gönderimle tekrar deneyin.", Receipt = (CorrectionReceipt?)null }, cancellationToken: token);
     };
+    options.AddPolicy("translation", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("admin-login", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("correction-posts", context =>
@@ -200,6 +209,12 @@ app.MapPost("/favorites/{action}", async (string action, HttpContext context, IA
     return Results.Redirect(action == "remove" ? "/favorites" : new FavoriteItem(kind, id, "", "").Url);
 });
 
+app.MapGet("/api/translation/options", async (TranslationService service, CancellationToken token) => Results.Ok(await service.OptionsAsync(token)));
+app.MapPost("/api/translation", async (TranslationInput input, TranslationService service, HttpContext context, CancellationToken token) => {
+    context.Response.Headers.CacheControl = "no-store";
+    var result = await service.TranslateAsync(input, token); return Results.Json(result, statusCode: result.HttpStatus);
+}).RequireRateLimiting("translation");
+
 app.MapPost("/api/feedback", async (FeedbackInput input, FeedbackService service, CancellationToken token) => {
     var result = await service.SubmitAsync(input, token);
     return Results.Json(new { result.Message, result.Receipt }, statusCode: result.HttpStatus);
@@ -253,10 +268,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
-    if (context.Request.Method == "POST" && (context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
+    if(context.Request.Path.StartsWithSegments("/translate")) context.Response.Headers.CacheControl = "no-store";
+    if (context.Request.Method == "POST" && (context.Request.Path == "/translate" || context.Request.Path.StartsWithSegments("/api/translation") || context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
     {
         var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
-        if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = 64 * 1024;
+        if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = (context.Request.Path.StartsWithSegments("/translate") || context.Request.Path.StartsWithSegments("/api/translation")) ? 256 * 1024 : 64 * 1024;
     }
     await next();
 });

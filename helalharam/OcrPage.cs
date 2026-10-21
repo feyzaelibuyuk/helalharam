@@ -42,10 +42,13 @@ public sealed class OcrPage : ContentPage
         var confirm = new HorizontalStackLayout(); confirm.Add(reviewed);
         confirm.Add(new Label { Text = Ui.T("reviewed"), VerticalOptions = LayoutOptions.Center });
         stack.Add(new Label { Text = Ui.T("ocrCoverage") });
-        stack.Add(confirm); stack.Add(analyze); stack.Add(results);
+        stack.Add(confirm); stack.Add(analyze);
+        var translate=new Button { Text="Metnin tamamını çevir (etiket / menü)" };
+        translate.Clicked+=async(_,_)=>{ if(busy)return; await Navigation.PushAsync(new TranslationPage(text.Text??"",Language=="other" ? "auto" : Language,mode.SelectedIndex)); };
+        stack.Add(translate);stack.Add(results);
         stack.Add(new Label { Text = Ui.T("ocrPrivacy") });
         Content = new ScrollView { Content = stack };
-        ToolbarItems.Add(new ToolbarItem(Ui.T("close"), null, async () => await Navigation.PopModalAsync()));
+        ToolbarItems.Add(new ToolbarItem(Ui.T("close"), null, async () => { if(Navigation.NavigationStack.Count>1)await Navigation.PopAsync();else await Navigation.PopModalAsync(); }));
         capture.Clicked += async (_, _) => await ReadPhotoAsync(true);
         pick.Clicked += async (_, _) => await ReadPhotoAsync(false);
         analyze.Clicked += async (_, _) => await AnalyzeAsync();

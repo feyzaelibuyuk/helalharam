@@ -25,4 +25,5 @@
   </ItemGroup>
   <ItemGroup><Compile Include="..\Shared\FeedbackInput.cs" Link="Shared\FeedbackInput.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\UiCatalog.cs" Link="Shared\UiCatalog.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Shared\TranslationInput.cs" Link="Shared\TranslationInput.cs" /></ItemGroup>
 </Project>

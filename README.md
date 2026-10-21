@@ -58,3 +58,5 @@ Android sunum/test paketi 0.1.0: [ANDROID_TEST](docs/ANDROID_TEST.md).
 Çok alfabeli Android OCR ve kapsam sınırları: [COK_ALFABELI_OCR](docs/COK_ALFABELI_OCR.md).
 
 Arayüz dili ilk çeviri seti ve kapsam: [ARAYUZ_DILLERI](docs/ARAYUZ_DILLERI.md).
+
+Etiket/menü tam metin çevirisi ve Azure kurulumu: [ETIKET_MENU_CEVIRI](docs/ETIKET_MENU_CEVIRI.md).

@@ -19,6 +19,7 @@
         @if (result.Product is { } p)
         {
             <section class="catalog-section"><a href="@($"/corrections/off/{p.Barcode}")" data-enhance-nav="false">Bilgi düzeltme öner →</a>
+<p><a href="@($"/translate/off/{p.Barcode}")" data-enhance-nav="false">Özgün içindekilerin tamamını çevir →</a></p>
 <BlazorApp1.Components.Shared.FavoriteButton Kind="off" Id="@(p.Barcode)" /><h2>İçerik değerlendirmesi</h2>
                 <p class="ingredients">@p.IngredientAssessment.Profile · Kural sürümü: @p.IngredientAssessment.RuleVersion</p>
                 <p class="ingredients">@p.IngredientAssessment.Coverage</p>
@@ -66,7 +67,7 @@
                 </article>
             </div></section>
         }
-        else { <div class="empty-state" role="alert">@result.Message</div> }
+        else { <div class="empty-state" role="alert">@result.Message</div><p><a href="/translate">Barkod bulunmadıysa etiket metniyle çeviriye devam et →</a></p> }
     }
     <footer class="disclaimer"><p>Ürün verileri: <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer">Open Food Facts</a> · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a>. Fotoğraflar: CC BY-SA. Bu akış yalnızca veriyi okur; dış servise ürün/fotoğraf yüklemez.</p></footer>
 </main>

@@ -32,6 +32,7 @@ public sealed class OffProductPage : ContentPage
             if (result?.Product is not { } p)
             {
                 Text(result?.Message ?? "Ürün bilgisi alınamadı.");
+                var ocr=new Button { Text="Barkod bulunamadıysa etiket fotoğrafını oku / çevir" };ocr.Clicked+=async(_,_)=>await Navigation.PushAsync(new OcrPage());body.Add(ocr);
                 if (response.StatusCode is System.Net.HttpStatusCode.BadGateway or System.Net.HttpStatusCode.TooManyRequests) Retry();
                 return;
             }
@@ -75,6 +76,7 @@ public sealed class OffProductPage : ContentPage
                     body.Add(reference);
                 }
             }
+            var translate=new Button { Text="İçindekilerin tamamını çevir" };translate.Clicked+=async(_,_)=>await Navigation.PushAsync(new TranslationPage(p.Ingredients,p.IngredientsLanguage));body.Add(translate);
             Text("Özgün içindekiler", 20); Text(string.IsNullOrWhiteSpace(p.Ingredients) ? "Kaynakta içerik bulunmuyor." : p.Ingredients);
             Text($"Dil: {p.IngredientsLanguage}\nSatış ülke etiketleri: {Join(p.Countries)}\nKategori etiketleri: {Join(p.Categories)}");
             Text($"Kaynak etiketleri: {Join(p.Labels)}\nHelal etiketi, kontrol edilmiş sertifika anlamına gelmez.");
