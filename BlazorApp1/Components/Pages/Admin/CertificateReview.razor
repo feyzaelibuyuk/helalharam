@@ -1,0 +1,40 @@
+﻿@page "/admin/certificates/{Id:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using System.Text.Json
+@attribute [Authorize(Policy="Admin")]
+@inject CertificateEvidenceService Service
+@inject IHttpContextAccessor Context
+<PageTitle>Sertifika belgesi incele</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/admin/certificates" data-enhance-nav="false">← Belgeler</a></header>
+@if(detail is null){<p>Belge bulunamadı.</p>}else{
+<section class="hero"><h1>@detail.Input.Name</h1><p>@CertificateEvidenceRules.StatusLabel(detail.Row.Status)</p></section><section class="catalog-section"><h2>Gönderilen bilgiler (doğrulanmadı)</h2>
+<p>@detail.Input.Kind · Referans: @detail.Input.Reference</p><p>Kuruluş: @detail.Input.Issuer · Numara: @detail.Input.Number</p><p style="white-space:pre-wrap">Kapsam: @detail.Input.Scope</p><p>Tarih: @detail.Input.ValidFrom — @detail.Input.ValidUntil</p><p style="white-space:pre-wrap">@detail.Input.Notes</p>
+@if(CertificateAuthorities.SafeHttps(detail.Input.SourceUrl)){<a href="@detail.Input.SourceUrl" target="_blank" rel="noopener noreferrer">Gönderilen kaynak (doğrulanmadı) ↗</a>}
+@if(detail.Row.FileBytes>0){<p>Dosya: @detail.Row.FileName · @detail.Row.FileBytes bayt</p><p style="overflow-wrap:anywhere">SHA-256: @detail.Row.Sha256</p><p>Dosya imzası kontrol edildi; virüs taraması yapılmadı. Bilinmeyen dosyaları güvenilir bir görüntüleyiciyle açın.</p><a href="@($"/api/admin/certificates/{Id}/file")" data-enhance-nav="false">Belgeyi özel olarak indir</a>}
+<p><a href="/certificates" target="_blank" rel="noopener noreferrer">Resmî kaynak dizini ↗</a></p>
+<h2>Kaynak kontrolü</h2><p>İsim/logo eşleşmesi yeterli değildir. Belgeye özgü resmî kaydı karşılaştırın. “Diğer” kuruluşlar bu sürümde inceleme tamamlandı durumuna geçirilemez.</p>
+@if(message is not null){<p role="status">@message</p>}
+<EditForm Model="Input" OnSubmit="Save" FormName="certificate-review">
+<input type="hidden" name="Input.ActionId" value="@Input!.ActionId"/><input type="hidden" name="Input.ExpectedRevision" value="@Input.ExpectedRevision"/>
+<label><InputCheckbox @bind-Value="Input.SourceChecked"/> Resmî kuruluş/kaynak kontrol edildi</label>
+<label><InputCheckbox @bind-Value="Input.NumberMatched"/> Sertifika numarası eşleşti</label>
+<label><InputCheckbox @bind-Value="Input.ScopeMatched"/> Ürün ve üretim yeri/şube kapsamı eşleşti</label>
+<label><InputCheckbox @bind-Value="Input.DatesChecked"/> Geçerlilik tarihleri kontrol edildi</label>
+<label><InputCheckbox @bind-Value="Input.RevocationChecked"/> İptal/askı durumu kontrol edildi</label>
+<label for="checked-url">Belgeye özgü resmî kayıt bağlantısı</label><InputText id="checked-url" @bind-Value="Input.CheckedUrl" maxlength="1000"/>
+<label for="cert-status">Sonuç</label><InputSelect id="cert-status" @bind-Value="Input.Status">@foreach(var status in new[]{"pending","needs_info","reviewed","rejected"}){<option value="@status">@CertificateEvidenceRules.StatusLabel(status)</option>}</InputSelect>
+<label for="cert-note">İnceleme notu ve gerekçe</label><InputTextArea id="cert-note" @bind-Value="Input.Note" minlength="5" maxlength="2000" rows="5"/>
+<button class="search-button" type="submit" disabled="@saved">İncelemeyi kaydet</button></EditForm>
+<p>Karar özel inceleme geçmişine kaydedilir. Katalog, OFF kaydı veya doğrulanmış sertifika listesi otomatik değişmez.</p>
+<h2>İnceleme geçmişi</h2>@foreach(var item in detail.History){var checks=JsonSerializer.Deserialize<EvidenceDecision>(item.ChecksJson)!;<article class="info-card"><h3>@CertificateEvidenceRules.StatusLabel(item.Status)</h3><p>Sürüm @item.Revision · @item.Reviewer · @item.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><p style="white-space:pre-wrap">@item.Note</p><p>Kaynak: @checks.SourceChecked · Numara: @checks.NumberMatched · Kapsam: @checks.ScopeMatched · Tarihler: @checks.DatesChecked · İptal: @checks.RevocationChecked</p><p style="overflow-wrap:anywhere">@checks.CheckedUrl</p></article>}
+</section>}
+</main>
+@code {
+[Parameter] public Guid Id {get;set;}
+[SupplyParameterFromForm] public EvidenceDecision? Input {get;set;}
+private EvidenceDetail? detail;private string? message;private bool saved;
+private ClaimsPrincipal User=>Context.HttpContext?.User??new ClaimsPrincipal();
+protected override async Task OnInitializedAsync(){detail=await Service.GetAsync(User,Id);Input??=new(){ActionId=Guid.NewGuid(),ExpectedRevision=detail?.Row.Revision??0,Status=detail?.Row.Status??"pending"};}
+private async Task Save(){if(Input is null)return;try{var result=await Service.ReviewAsync(User,Id,Input);message=result.Message;saved=result.HttpStatus==200;detail=await Service.GetAsync(User,Id);}catch(Exception){message="İnceleme kaydedilemedi. Notunuz korunuyor; tekrar deneyin.";}}
+}

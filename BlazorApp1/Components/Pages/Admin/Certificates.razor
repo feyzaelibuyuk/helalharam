@@ -1,0 +1,14 @@
+﻿@page "/admin/certificates"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using System.Text.Json
+@using BlazorApp1.Models
+@attribute [Authorize(Policy="Admin")]
+@inject CertificateEvidenceService Service
+@inject IHttpContextAccessor Context
+<PageTitle>Belge inceleme kuyruğu</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/admin">← Yönetim</a></header><section class="hero"><h1>Sertifika belgeleri</h1><p>Yalnız yöneticiye açık. İnceleme tamamlanması katalog veya helal onayı değildir.</p></section><section class="catalog-section">
+@if(rows.Count==0){<p>Henüz belge gönderimi yok.</p>}
+@foreach(var row in rows){var input=JsonSerializer.Deserialize<CertificateEvidenceInput>(row.Payload)!;<article class="info-card"><h2>@input.Name</h2><p>@input.Issuer · @input.Number · @CertificateEvidenceRules.StatusLabel(row.Status)</p><p>@row.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><a href="@($"/admin/certificates/{row.Id}")" data-enhance-nav="false">Belgeyi incele →</a></article>}
+</section></main>
+@code { private List<CertificateEvidence> rows=[];protected override async Task OnInitializedAsync(){rows=await Service.QueueAsync(Context.HttpContext?.User??new ClaimsPrincipal());} }

@@ -1,0 +1,26 @@
+﻿@page "/certificates"
+<PageTitle>Sertifika kaynakları | Helal Rehber</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/">← Katalog</a><span class="beta-pill">BELGE KONTROLÜ</span></header>
+<section class="hero"><h1>Helal sertifikası kaynakları</h1><p>Etiketteki helal beyanı, yüklenen belge ve resmî kaydı kontrol edilmiş sertifika ayrı bilgilerdir. Logo veya fotoğraf tek başına doğrulama değildir.</p></section>
+<section class="catalog-section"><h2>Resmî sorgulama kaynakları</h2><p>Bu başlangıç listesi tüm ülkeleri veya kuruluşları kapsamaz. Ürün, üretim yeri/şube, numara, tarihler ve iptal durumunu kaynaktan karşılaştırın.</p><div class="card-grid">
+@foreach(var authority in CertificateAuthorities.All){<article class="info-card"><h3>@authority.Id · @authority.Name</h3><p>@authority.Region</p><p>@authority.Purpose</p><a href="@authority.Url" target="_blank" rel="noopener noreferrer">Resmî kaynağı aç ↗</a></article>}
+</div></section>
+<section class="catalog-section"><h2>Belge inceleme talebi</h2><p>Belgeniz yalnız yöneticiye görünür. İnceleme, ürüne otomatik helal onayı veya katalog değişikliği sağlamaz. Kimlik, imza, iletişim ve kişisel bilgileri kaldırın; paylaşma hakkınız olan belgeyi gönderin. Dosyalar için virüs tarama hizmeti yoktur.</p>
+<form method="post" enctype="multipart/form-data" action="/api/certificates/submissions" data-evidence-form data-enhance="false">
+<AntiforgeryToken/><input type="hidden" name="SubmissionId" value="@submission"/>
+<label for="cert-kind">Kayıt türü</label><select id="cert-kind" name="Kind"><option value="product">Paketli ürün</option><option value="restaurant">Restoran / şube</option></select>
+<label for="cert-name">Ürün veya işletme adı</label><input id="cert-name" name="Name" required minlength="2" maxlength="160"/>
+<label for="cert-ref">Barkod veya kayıt referansı (isteğe bağlı)</label><input id="cert-ref" name="Reference" maxlength="100"/>
+<label for="cert-issuer">Belgeyi düzenleyen kuruluş</label><select id="cert-issuer" name="Issuer">@foreach(var a in CertificateAuthorities.All.Where(x=>x.Id!="HAK")){<option value="@a.Id">@a.Id · @a.Name</option>}<option value="OTHER">Diğer kuruluş</option></select>
+<label for="cert-number">Sertifika numarası</label><input id="cert-number" name="Number" required minlength="2" maxlength="100"/>
+<label for="cert-scope">Ürün, üretim yeri veya şube kapsamı</label><textarea id="cert-scope" name="Scope" required minlength="3" maxlength="1000" rows="3"></textarea>
+<label for="cert-from">Belge başlangıcı (biliniyorsa)</label><input id="cert-from" type="date" name="ValidFrom"/>
+<label for="cert-until">Belge bitişi (biliniyorsa)</label><input id="cert-until" type="date" name="ValidUntil"/>
+<label for="cert-url">Kaynak bağlantısı (https)</label><input id="cert-url" type="url" dir="ltr" name="SourceUrl" maxlength="1000"/>
+<label for="cert-file">Belge dosyası (PDF/JPG/PNG, en fazla 5 MiB)</label><input id="cert-file" type="file" name="File" accept="application/pdf,image/png,image/jpeg"/>
+<p>Dosya veya kaynak bağlantısından en az birini ekleyin.</p>
+<label for="cert-notes">Not (isteğe bağlı)</label><textarea id="cert-notes" name="Notes" maxlength="2000" rows="3"></textarea>
+<label><input type="checkbox" name="Consent" value="true" required/> Belgeyi paylaşma hakkım var; yalnız yönetici tarafından incelenmesi için saklanmasını kabul ediyorum.</label>
+<button type="submit" class="search-button">İncelemeye gönder</button><p role="status" data-evidence-status aria-live="polite"></p>
+</form></section></main>
+@code { private readonly Guid submission=Guid.NewGuid(); }

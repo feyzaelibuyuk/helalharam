@@ -1,4 +1,4 @@
-using BlazorApp1.Models;
+﻿using BlazorApp1.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp1.Data;
@@ -17,8 +17,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<FeedbackSubmission> FeedbackSubmissions => Set<FeedbackSubmission>();
 
+    public DbSet<CertificateEvidence> CertificateEvidence => Set<CertificateEvidence>();
+    public DbSet<CertificateEvidenceReview> CertificateEvidenceReviews => Set<CertificateEvidenceReview>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CertificateEvidence>().ToTable("CertificateEvidence");
+        modelBuilder.Entity<CertificateEvidence>().Property(x=>x.Revision).IsConcurrencyToken();
+        modelBuilder.Entity<CertificateEvidenceReview>().ToTable("CertificateEvidenceReviews");
+        modelBuilder.Entity<CertificateEvidenceReview>().HasIndex(x=>new{x.SubmissionId,x.Revision}).IsUnique();
+        modelBuilder.Entity<CertificateEvidenceReview>().HasOne<CertificateEvidence>().WithMany().HasForeignKey(x=>x.SubmissionId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<FeedbackSubmission>().ToTable("FeedbackSubmissions");
         modelBuilder.Entity<FeedbackSubmission>().HasKey(x => x.Id);
         modelBuilder.Entity<CorrectionReview>().ToTable("CorrectionReviews");

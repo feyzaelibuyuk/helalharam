@@ -1,6 +1,6 @@
-using BlazorApp1.Services;
+﻿using BlazorApp1.Services;
 var today = new DateOnly(2026,10,14);
-CertificateRecord Fixture() => new() { Barcode="TEST", ProductName="Test", Issuer="DHCE", Number="TEST-ONLY", Factory="Test üretim yeri", VerificationUrl="https://halalcertification.ie/register/test-only", ScopeConfirmed=true, ValidFrom=today.AddDays(-30), ValidUntil=today.AddDays(30), CheckedOn=today };
+CertificateRecord Fixture() => new() { Barcode="TEST", ProductName="Test", Issuer="DHCE", Number="TEST-ONLY", Factory="Test üretim yeri", VerificationUrl="https://halalcertification.ie/register/test-only", ScopeConfirmed=true, ReviewedBy="Test reviewer", EvidenceNote="Synthetic test only; no real certificate", ValidFrom=today.AddDays(-30), ValidUntil=today.AddDays(30), CheckedOn=today };
 void Check(string expected, CertificateRecord[] records, string[]? labels=null)
 {
     var result=CertificateRegistry.Check("TEST","Test",labels??[],records,today);
@@ -21,3 +21,7 @@ var issuer=Fixture(); issuer.Issuer="Başka kurum"; Check("unverified",[issuer])
 var generic=Fixture(); generic.VerificationUrl="https://halalcertification.ie/verify-halal-certificates/"; Check("unverified",[generic]);
 Check("scope_uncertain",[Fixture(),Fixture()]);
 Console.WriteLine("PASS: etiket/sertifika ayrımı, ürün kapsamı, resmî kaynak, geçerlilik, iptal, kontrol tazeliği ve eksik kayıt kontrolleri. Test belgeleri gerçek katalogda yok.");
+
+var noReviewer=Fixture();noReviewer.ReviewedBy="";Check("unverified",[noReviewer]);
+var credentials=Fixture();credentials.VerificationUrl="https://user@halalcertification.ie/register/test-only";Check("unverified",[credentials]);
+var genericSlash=Fixture();genericSlash.VerificationUrl="https://ifanca.org/halal-certified-products";genericSlash.Issuer="IFANCA";Check("unverified",[genericSlash]);

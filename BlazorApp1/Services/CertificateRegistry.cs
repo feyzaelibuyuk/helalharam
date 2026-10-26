@@ -1,4 +1,5 @@
-using System.Text.Json;
+﻿using System.Text.Json;
+using HelalRehber.Shared;
 
 namespace BlazorApp1.Services;
 
@@ -16,6 +17,8 @@ public sealed class CertificateRecord
     public DateOnly? ValidFrom { get; set; }
     public DateOnly? ValidUntil { get; set; }
     public DateOnly? CheckedOn { get; set; }
+    public string ReviewedBy { get; set; } = "";
+    public string EvidenceNote { get; set; } = "";
     public bool ScopeConfirmed { get; set; }
     public bool Revoked { get; set; }
 }
@@ -46,10 +49,8 @@ public sealed class CertificateRegistry(IWebHostEnvironment environment)
         if (record is null) return new(hasLabel ? "label_only" : "not_found", hasLabel
             ? "Kaynakta helal etiketi var; sertifika numarası ve ürün kapsamı bağımsız doğrulanmadı."
             : "Sertifika bilgisi bulunamadı. Bu, ürünün haram olduğu anlamına gelmez.", hasLabel);
-        var official = Uri.TryCreate(record.VerificationUrl, UriKind.Absolute, out var url) && url.Scheme == "https" &&
-            ((record.Issuer?.Trim().ToUpperInvariant() == "DHCE" && url.Host == "halalcertification.ie") || (record.Issuer?.Trim().ToUpperInvariant() == "IFANCA" && (url.Host == "ifanca.org" || url.Host == "www.ifanca.org"))) &&
-            url.AbsolutePath.Length > 1 && url.AbsolutePath.TrimEnd('/') != "/verify-halal-certificates";
-        if (!record.ScopeConfirmed || !official || string.IsNullOrWhiteSpace(record.Factory) || string.IsNullOrWhiteSpace(record.Issuer) ||
+        var official = CertificateAuthorities.IsRecordUrl(record.Issuer?.Trim().ToUpperInvariant()??"",record.VerificationUrl);
+        if (string.IsNullOrWhiteSpace(record.ReviewedBy) || string.IsNullOrWhiteSpace(record.EvidenceNote) || !record.ScopeConfirmed || !official || string.IsNullOrWhiteSpace(record.Factory) || string.IsNullOrWhiteSpace(record.Issuer) ||
             string.IsNullOrWhiteSpace(record.Number) || record.ValidFrom is null || record.ValidUntil is null ||
             record.CheckedOn is null || record.ValidFrom > record.ValidUntil || record.CheckedOn > today)
             return new("unverified", "Belge veya ürün/üretim yeri kapsamı eksik. Sertifika doğrulanmış olarak gösterilmez.", hasLabel);

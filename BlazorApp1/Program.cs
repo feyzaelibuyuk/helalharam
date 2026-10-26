@@ -45,6 +45,7 @@ builder.Services.AddHttpClient("Overpass", client => { client.BaseAddress=new Ur
 builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("http://127.0.0.1:5000/"); client.Timeout = TimeSpan.FromSeconds(120); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
+builder.Services.AddSingleton<CertificateEvidenceService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
     options.Cookie.Name = "helal-admin"; options.Cookie.HttpOnly = true; options.Cookie.SameSite = SameSiteMode.Strict;
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
@@ -153,6 +154,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await CorrectionService.InitializeAsync(db);
     await ReviewService.InitializeAsync(db);
     await FeedbackService.InitializeAsync(db);
+    await CertificateEvidenceService.InitializeAsync(db);
 }
 
 app.MapPost("/language", async (HttpContext context, IAntiforgery antiforgery) => {
@@ -274,6 +276,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
+    if(context.Request.Path.StartsWithSegments("/certificates") || context.Request.Path.StartsWithSegments("/api/certificates") || context.Request.Path.StartsWithSegments("/admin/certificates") || context.Request.Path.StartsWithSegments("/api/admin/certificates")) context.Response.Headers.CacheControl="no-store";
+    if(context.Request.Path=="/api/certificates/submissions") {var body=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();if(body is {IsReadOnly:false})body.MaxRequestBodySize=6*1024*1024;}
     if(context.Request.Path.StartsWithSegments("/translate")) context.Response.Headers.CacheControl = "no-store";
     if (context.Request.Path.StartsWithSegments("/travel") || context.Request.Path.StartsWithSegments("/api/travel")) context.Response.Headers.CacheControl="no-store";
     if (context.Request.Method == "POST" && (context.Request.Path == "/travel" || context.Request.Path.StartsWithSegments("/api/travel") || context.Request.Path == "/translate" || context.Request.Path.StartsWithSegments("/api/translation") || context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
@@ -288,6 +292,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.UseAntiforgery();
 
+app.MapCertificateEvidence();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode().RequireRateLimiting("correction-posts");

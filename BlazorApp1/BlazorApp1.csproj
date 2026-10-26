@@ -29,4 +29,6 @@
 <ItemGroup><Compile Include="..\helalharam\QuestionCards.cs" Link="Shared/QuestionCards.cs" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\TravelModels.cs" Link="Shared\TravelModels.cs" /></ItemGroup>
 <ItemGroup><Content Update="Data/travel-cities.json" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+<ItemGroup><Compile Include="..\Shared\CertificateEvidence.cs" Link="Shared\CertificateEvidence.cs" /></ItemGroup>
+<ItemGroup><Content Remove="certificate-evidence/**" /><None Remove="certificate-evidence/**" /></ItemGroup>
 </Project>

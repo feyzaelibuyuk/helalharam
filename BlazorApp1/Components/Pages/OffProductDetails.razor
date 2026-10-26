@@ -1,4 +1,4 @@
-@page "/off"
+﻿@page "/off"
 @page "/off/{Barcode}"
 @rendermode InteractiveServer
 @using BlazorApp1.Services
@@ -47,7 +47,7 @@
                     <p class="ingredients">Kategori etiketleri: @Join(p.Categories)</p>
                     <p class="ingredients">Bir ürünün birden çok satış ülkesi olabilir. Bu kayıt her ülkenin formülünü ayrı doğrulamaz.</p>
                 </article>
-                <article class="info-card"><h2>Helal sertifikası</h2>
+                <article class="info-card"><h2>Helal sertifikası</h2><p><a href="/certificates">Resmî kaynaklar ve belge inceleme talebi →</a></p>
                     <p class="ingredients">@p.Certificate.Message</p>
                     @if (p.Certificate.Number.Length > 0)
                     {

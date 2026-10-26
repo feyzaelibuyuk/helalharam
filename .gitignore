@@ -1,4 +1,4 @@
-**/bin/
+﻿**/bin/
 **/obj/
 **/.vs/
 .dotnet-cli/
@@ -18,3 +18,5 @@ migration-backup/
 artifacts/
 
 .local-translate/
+
+**/certificate-evidence/
