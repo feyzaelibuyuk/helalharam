@@ -39,6 +39,7 @@ var findings=check.Findings.Where(x=>x.Severity==severity).ToList();
 }
 </main>
 @code {
+    [SupplyParameterFromQuery(Name="target")] public string? Target { get; set; }
     [Parameter] public string? Barcode { get; set; }
     [SupplyParameterFromForm] public TranslationInput? Input { get; set; }
     private TranslationOptions? options;
@@ -46,8 +47,9 @@ var findings=check.Findings.Where(x=>x.Severity==severity).ToList();
     private List<string> errors=[];
     protected override async Task OnInitializedAsync()
     {
-        var fresh=Input is null; Input ??= new() { TargetLanguage=Ui.Language };
+        var fresh=Input is null; Input ??= new() { TargetLanguage=Target??Ui.Language };
         options=await Translator.OptionsAsync();
+        if(fresh && Target is not null && !options.Languages.Any(x=>x.Code==Target)) errors.Add("Seyahat için seçilen hedef dilin çeviri modeli yüklü değil. Çeviri dilini mevcut listeden seçin.");
         if(fresh && Barcode is not null){ var result=await Products.FindAsync(Barcode); if(result.Product is { } product){Input.Text=product.Ingredients;Input.SourceLanguage=product.IngredientsLanguage=="zh-Hans" ? "zh" : product.IngredientsLanguage;if(!options.Languages.Any(x=>x.Code==Input.SourceLanguage))Input.SourceLanguage="auto";}else errors=["Ürün bulunamadı. Etiket metnini elle girin veya mobil OCR kullanın."]; }
     }
     private async Task Submit()

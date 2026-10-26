@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net10.0-android</TargetFrameworks>
@@ -94,4 +94,5 @@
   </ItemGroup>
   <ItemGroup><Compile Include="..\Shared\UiCatalog.cs" Link="Shared\UiCatalog.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\TranslationInput.cs" Link="Shared\TranslationInput.cs" /></ItemGroup>
+<ItemGroup><Compile Include="..\Shared\TravelModels.cs" Link="Shared\TravelModels.cs" /></ItemGroup>
 </Project>

@@ -73,6 +73,7 @@ public sealed class HomePage : TabbedPage
         var stack = Stack("Menüden soruya", "Menüdeki yemek adlarını ve varsa içerik açıklamalarını yaz. Sorular işletmeden bilgi almak içindir; uygunluk sonucu değildir.");
         var input = new Editor { Placeholder = "Örnek: Mercimek çorbası, tavuk ızgara, kremalı makarna", HeightRequest = 130 };
         var output = Text("");
+        stack.Add(Action("Yakındaki restoranlar · Harita", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new TravelPage()))));
         stack.Add(Action("Menü fotoğrafını oku", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage(1)))));
         stack.Add(Action("Çok dilli soru kartları ve seslendirme", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new QuestionCardsPage()))));
         stack.Add(input);
@@ -136,6 +137,7 @@ public sealed class HomePage : TabbedPage
         var feedback = Text("");
         stack.Add(Action(Ui.T("savePreferences"), (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = Ui.T("preferencesSaved"); }));
         stack.Add(feedback);
+        stack.Add(Action("Harita ve seyahat", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new TravelPage()))));
         stack.Add(Action("Etiket / menü çevirisi", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new TranslationPage()))));
         stack.Add(Action(Ui.T("feedbackAction"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new FeedbackPage()))));
         stack.Add(Action(Ui.T("privacy"), async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new PrivacyPage()))));

@@ -40,6 +40,8 @@ builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<WebUi>();
 builder.Services.AddSingleton<TranslationService>();
+builder.Services.AddSingleton<TravelCatalog>();
+builder.Services.AddHttpClient("Overpass", client => { client.BaseAddress=new Uri(builder.Configuration["Maps:OverpassEndpoint"]??"https://overpass-api.de/api/interpreter");client.Timeout=TimeSpan.FromSeconds(30);client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber-StudentDemo/0.1"); }).ConfigurePrimaryHttpMessageHandler(()=>new HttpClientHandler {AllowAutoRedirect=false});
 builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("http://127.0.0.1:5000/"); client.Timeout = TimeSpan.FromSeconds(120); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
@@ -68,8 +70,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddRateLimiter(options => {
     options.RejectionStatusCode = 429;
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext,string>(context =>
-        context.Request.Method=="POST" && context.Request.Path.StartsWithSegments("/translate")
-        ? RateLimitPartition.GetFixedWindowLimiter("translate-web:"+(context.Connection.RemoteIpAddress?.ToString() ?? "unknown"),
+        context.Request.Method=="POST" && (context.Request.Path.StartsWithSegments("/translate") || context.Request.Path.StartsWithSegments("/travel"))
+        ? RateLimitPartition.GetFixedWindowLimiter("translate-travel-web:"+(context.Connection.RemoteIpAddress?.ToString() ?? "unknown"),
             _=>new FixedWindowRateLimiterOptions { PermitLimit=5, Window=TimeSpan.FromMinutes(1), QueueLimit=0 })
         : RateLimitPartition.GetNoLimiter("other-global"));
     options.OnRejected = async (context, token) => {
@@ -209,6 +211,10 @@ app.MapPost("/favorites/{action}", async (string action, HttpContext context, IA
     return Results.Redirect(action == "remove" ? "/favorites" : new FavoriteItem(kind, id, "", "").Url);
 });
 
+app.MapGet("/api/travel/cities", (TravelCatalog catalog,string? q)=>Results.Ok(catalog.Cities(q)));
+app.MapPost("/api/travel/search", async (TravelSearch input,TravelCatalog catalog,HttpContext context,CancellationToken token)=>{
+    context.Response.Headers.CacheControl="no-store";var result=await catalog.SearchAsync(input,token);return Results.Json(result,statusCode:result.HttpStatus);
+}).RequireRateLimiting("translation");
 app.MapGet("/api/translation/options", async (TranslationService service, CancellationToken token) => Results.Ok(await service.OptionsAsync(token)));
 app.MapPost("/api/translation", async (TranslationInput input, TranslationService service, HttpContext context, CancellationToken token) => {
     context.Response.Headers.CacheControl = "no-store";
@@ -269,7 +275,8 @@ if (!app.Environment.IsDevelopment())
 
 app.Use(async (context, next) => {
     if(context.Request.Path.StartsWithSegments("/translate")) context.Response.Headers.CacheControl = "no-store";
-    if (context.Request.Method == "POST" && (context.Request.Path == "/translate" || context.Request.Path.StartsWithSegments("/api/translation") || context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
+    if (context.Request.Path.StartsWithSegments("/travel") || context.Request.Path.StartsWithSegments("/api/travel")) context.Response.Headers.CacheControl="no-store";
+    if (context.Request.Method == "POST" && (context.Request.Path == "/travel" || context.Request.Path.StartsWithSegments("/api/travel") || context.Request.Path == "/translate" || context.Request.Path.StartsWithSegments("/api/translation") || context.Request.Path == "/language" || context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/api/corrections") || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path.StartsWithSegments("/admin")))
     {
         var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
         if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = (context.Request.Path.StartsWithSegments("/translate") || context.Request.Path.StartsWithSegments("/api/translation")) ? 256 * 1024 : 64 * 1024;

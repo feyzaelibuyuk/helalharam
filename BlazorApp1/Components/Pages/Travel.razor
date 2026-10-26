@@ -1,0 +1,54 @@
+﻿@page "/travel"
+@using System.Text.Json
+@using System.Globalization
+@using helalharam
+@inject TravelCatalog Catalog
+@inject IConfiguration Configuration
+<PageTitle>Harita ve seyahat | Helal Rehber</PageTitle>
+<main class="app-shell">
+<header class="topbar"><a href="/" data-enhance-nav="false">← Katalog</a><a href="/privacy" data-enhance-nav="false">Gizlilik</a></header>
+<h1>Harita ve seyahat</h1>
+<p>Restoran veri sağlayıcısı: @ProviderHost · Ücretsiz topluluk servisi; kesintisiz çalışma garantisi yoktur.</p>
+<p>Dünyadan şehir seçin veya arama konumu girin. Yaklaşık merkezin 3 km çevresindeki, OSM'de diet:halal=yes/only olarak işaretlenmiş yemek işletmeleri aranır. Liste eksik veya eski olabilir; yemek içeriği ve sertifika doğrulanmış değildir.</p>
+<form action="/travel" method="get" data-enhance="false"><label for="travel-city-query">Şehir adı (kişisel adres yazmayın)</label><input id="travel-city-query" name="q" value="@Query" maxlength="80" placeholder="İstanbul, Roma, Tokyo…" /><button type="submit">Şehir bul</button></form>
+<p>Şehirler: <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. 15.000 nüfus üstü şehirler ve başkentler listesi; tüm yerleşimleri kapsamaz. Aynı adlı şehirlerde ülke kodunu kontrol edin.</p>
+<EditForm Model="Input" OnSubmit="Search" FormName="travel" Enhance="false">
+<label for="travel-city">Şehir / ülke</label><InputSelect id="travel-city" @bind-Value="Input!.CityId"><option value="0">Önce şehir arayın veya koordinat kullanın</option>@foreach(var city in cities){<option value="@city.Id">@city.Name · @city.Country</option>}</InputSelect>
+<p><label><InputCheckbox id="travel-use-coordinates" @bind-Value="Input.UseCoordinates" /> Şehir merkezi yerine aşağıdaki koordinatları kullan</label></p>
+<label for="travel-lat">Enlem</label><InputNumber id="travel-lat" @bind-Value="Input.Latitude" />
+<label for="travel-lon">Boylam</label><InputNumber id="travel-lon" @bind-Value="Input.Longitude" />
+<button type="button" data-travel-locate>Konumumu forma getir</button><p role="status" data-location-status>Konum yalnız bu düğmeyle istenir; sonra ayrıca arama düğmesine basın. Konum izin vermezse şehir/koordinat kullanabilirsiniz.</p>
+<p><label><InputCheckbox @bind-Value="Input.Consent" /> Yaklaşık arama bölgesinin Overpass'a, harita görüntüsünün OpenStreetMap'e gönderilmesini onaylıyorum. Konum kalıcı kaydedilmez; arama 0,01 dereceye yuvarlanır (yaklaşık 1 km). Harita sağlayıcısı IP ve görüntülenen alanı görebilir.</label></p>
+<label for="travel-language">Seyahatte göstereceğim soru / hedef çeviri dili</label><InputSelect id="travel-language" @bind-Value="Input.CardLanguage">@foreach(var lang in QuestionCards.Languages){<option value="@lang.Code">@lang.Name</option>}</InputSelect>
+<button type="submit" class="search-button">Bu bölgede ara</button>
+</EditForm>
+<p><a data-travel-questions data-enhance-nav="false" href="@($"/questions?language={SafeLanguage}")">Seçili dilde soru kartları →</a> · <a data-travel-translate data-enhance-nav="false" href="@($"/translate?target={SafeLanguage}")">Menü / etiket çevirisi →</a></p>
+<p>Çeviride yalnız kurulu model dilleri çalışır; bu dil listesi genel çeviri desteği vaadi değildir.</p>
+@if(result is not null){
+<p role="status">@result.Message</p>
+@if(result.HasCenter){
+<p>Yaklaşık arama merkezi: @result.Latitude, @result.Longitude · @(result.HttpStatus==200?$"{result.Places.Count} kayıt · Veri alındı: {result.FetchedUtc:u}":"Restoran verisi alınamadı; işaret/liste gösterilmiyor.")</p>
+<div data-travel-map data-lat="@Invariant(result.Latitude)" data-lon="@Invariant(result.Longitude)" data-places="@JsonSerializer.Serialize(result.Places)" data-tiles="@TileUrl" style="height:380px;border-radius:16px" role="region" aria-label="Restoran haritası"></div>
+<p role="status" data-map-status>Harita yüklenmezse aşağıdaki metin listesini kullanın.</p>
+<p>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap katkıcıları · ODbL</a>. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Harita sorununu bildir</a>. Harita alanını kaydırmak restoran sorgusunu otomatik yenilemez.</p>
+<div class="card-grid">@foreach(var place in result.Places){
+<article class="info-card"><h2>@place.Name</h2><p>Yaklaşık merkezden kuş uçuşu: @place.DistanceKm km · Yol mesafesi değildir.</p>
+<p>Adres: @(place.Address.Length==0?"Kaynakta belirtilmedi":place.Address)<br />Mutfak etiketi: @(place.Cuisine.Length==0?"Belirtilmedi":place.Cuisine)</p>
+<p><strong>OSM beyanı: diet:halal=@place.HalalTag</strong><br />Doğrulanmış sertifika: bu kayıt için yok. Belgeyi ve kapsamını işletmeden isteyin.<br />Kaynak kontrol tarihi etiketi (doğrulanmadı): @(place.SourceDate.Length==0?"Belirtilmedi":place.SourceDate)</p>
+<a href="@place.SourceUrl" target="_blank" rel="noopener noreferrer">OSM kaynak kaydı</a> · <a href="@place.DirectionsUrl" target="_blank" rel="noopener noreferrer">Yol tarifi aç</a>
+<p><a href="@($"/questions?language={SafeLanguage}")" data-enhance-nav="false">İşletmeye sor →</a></p></article>
+}</div>
+}}
+</main>
+@code {
+    [SupplyParameterFromQuery(Name="q")] public string? Query { get; set; }
+    [SupplyParameterFromForm] public TravelSearch? Input { get; set; }
+    private List<TravelCity> cities=[];
+    private TravelResult? result;
+    private string SafeLanguage=>QuestionCards.Languages.Any(x=>x.Code==Input?.CardLanguage)?Input!.CardLanguage:"en";
+    private string ProviderHost=>new Uri(Configuration["Maps:OverpassEndpoint"]??"https://overpass-api.de/api/interpreter").Host;
+    private string TileUrl=>Configuration["Maps:TileUrl"]??"https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+    private static string Invariant(double value)=>value.ToString(CultureInfo.InvariantCulture);
+    protected override void OnInitialized(){Input??=new();cities=Catalog.Cities(Query);if(Input.CityId>0&&!cities.Any(c=>c.Id==Input.CityId)&&Catalog.City(Input.CityId) is { } selected)cities.Insert(0,selected);}
+    private async Task Search(){if(Input is not null)result=await Catalog.SearchAsync(Input);}
+}
