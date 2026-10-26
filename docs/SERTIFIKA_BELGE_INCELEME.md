@@ -29,3 +29,9 @@ Yönetici: `/admin → Sertifika belgelerini incele`. Yüklenen bilgiler başlan
 EvidenceChecks ayrı SQLite/test klasörü ve rastgele test parolası kullanır; gerçek yönetici parolasını okumaz/değiştirmez. Dosya/uzantı/boyut, izin, CSRF, özel indirme başlıkları, XSS kaçışlama, özet bütünlüğü, tekrar gönderim, kontrol listesi, eski sürüm ve katalog ayrımı kontrol edildi. Sentetik test belgesi gerçek ürün/sertifika değildir ve uygulama kataloğuna eklenmez.
 
 Web formu tarayıcıda kaynak bağlantısıyla gönderildi ve başarı mesajı görüldü. Android paketi derlendi: 0 hata, önceki OCR kitaplıklarından 4 XA4301 uyarısı. Web derlemesi 0 hata/0 uyarı; mevcut AdminHttpChecks testi de geçti. cihaz üzerinde dosya seçme/gönderme ve gerçek belgeyle insan incelemesi ayrıca denenmelidir. 28'in bu temel akışı uygulanmıştır; tüm kurumlarla otomatik sertifika doğrulaması yapılmış sayılmaz.
+
+## Anlık kullanım ve kamera
+
+Mobil sertifika ekranının başında **İçindekiler fotoğrafını şimdi oku** ve **Menü fotoğrafını şimdi oku** bağlantıları bulunur. Bunlar mevcut cihazda OCR / metin kontrolü / çeviri akışını açar; belge formu veya yönetici incelemesi gerekmez. Çeviri için yerel çeviri servisi ve desteklenen dil modeli gerekir. OCR ve içerik bulgusu otomatik sertifika doğrulaması değildir.
+
+Sertifika paylaşmak isteyen kullanıcı **Sertifikanın fotoğrafını şimdi çek** ile kamerayı açabilir. Fotoğraf cihazda yönü düzeltilip boyutu düşürülerek önizlenir; gönder düğmesine kadar yüklenmez. Yeniden çekme veya kaldırma önceki seçimi değiştirebilir; iptal/hata önceki seçimi korur. Fotoğraf için 5 MiB sınırı geçerlidir. PDF/fotoğraf seçme alternatifi korunur. Kamera uygulamasının oluşturduğu özgün fotoğraf otomatik silinmez; uygulamanın geçici görüntü işleme dosyası işlem sonunda kaldırılır. Kamera izni/gerçek cihaz çekimi ayrıca denenmelidir.
