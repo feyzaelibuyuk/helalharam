@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @rendermode InteractiveServer
 @using BlazorApp1.Data
 @using BlazorApp1.Models
@@ -12,6 +12,7 @@
 <main class="app-shell">
     <header class="topbar">
         <a dir="ltr" class="brand" href="/" aria-label="Helal mi ana sayfa"><span class="brand-mark">H</span><span>helal<span class="brand-dot">mi?</span></span></a>
+        <a href="/questions" data-enhance-nav="false">Çok dilli soru kartları</a>
         <a href="/favorites" data-enhance-nav="false">@Ui.T("myFavorites")</a><span class="beta-pill">@Ui.T("catalogBadge")</span>
     </header>
 

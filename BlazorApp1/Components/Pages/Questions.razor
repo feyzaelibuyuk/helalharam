@@ -1,0 +1,34 @@
+﻿@page "/questions"
+@using helalharam
+<PageTitle>Çok dilli soru kartları | Helal Rehber</PageTitle>
+<main class="app-shell" data-question-cards>
+<header class="topbar"><a href="/">← Katalog</a><a href="/translate">Etiket / menü çevirisi</a></header>
+<h1>Restoranda sor, yanıtı doğrula</h1>
+<p>İşletmeye gösterebileceğiniz sabit soru kartları. Menüde bu bileşenlerin bulunduğu anlamına gelmez; işletmenin cevabı veya sertifikası bu ekranda doğrulanmaz.</p>
+<p>İlk sürümde 10 dil vardır. Metinler taslaktır; ana dili konuşan kişilerce kontrol edilmelidir. Bu liste OCR, menü çevirisi veya arayüz dili desteği listesi değildir.</p>
+<form action="/questions" method="get" data-enhance="false">
+<label for="question-language">İşletmeye göstereceğim dil</label>
+<select name="language" id="question-language">@foreach(var option in QuestionCards.Languages){<option value="@option.Code" selected="@(option.Code==selected.Code)">@option.Name</option>}</select>
+<button type="submit">Kartları göster</button></form>
+@if(invalid){<p role="alert">Bu kart dili desteklenmiyor. Türkçe kartlar gösteriliyor.</p>}
+<p>Seslendirme tarayıcıdaki yerel seslerle çalışır; uygun ses yoksa metni gösterebilirsiniz. Ücretli çeviri/ses API’si kullanılmaz.</p>
+<noscript>Seslendirme için tarayıcıda JavaScript gerekir. Kart metinlerini işletmeye gösterebilirsiniz.</noscript>
+<button type="button" data-question-stop>Sesi durdur</button>
+<p role="status" aria-live="polite" data-question-status>Seslendirmek için bir kartın düğmesine basın.</p>
+<div class="card-grid">
+@foreach(var card in QuestionCards.Get(selected.Code)){
+<article class="info-card" data-question-card data-language="@selected.Code">
+<h2>@card.Turkish</h2>
+@if(selected.Code!="tr"){<p>İşletmeye gösterilecek metin:</p>}
+<p class="question-phrase" lang="@selected.Code" dir="@selected.Direction" style="font-size:1.3rem;white-space:pre-wrap">@card.Text</p>
+<button type="button" data-question-speak aria-label="@($"Soruyu {selected.Name} seslendir")">Seslendir · @selected.Name</button>
+</article>
+}
+</div>
+</main>
+@code {
+    [SupplyParameterFromQuery(Name="language")] public string? Language { get; set; }
+    private QuestionLanguage selected=QuestionCards.Languages[0];
+    private bool invalid;
+    protected override void OnParametersSet(){var code=Language??Ui.Language;var found=QuestionCards.Languages.FirstOrDefault(x=>x.Code==code);invalid=found is null;selected=found??QuestionCards.Languages[0];}
+}

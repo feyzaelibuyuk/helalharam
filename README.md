@@ -60,3 +60,5 @@ Android sunum/test paketi 0.1.0: [ANDROID_TEST](docs/ANDROID_TEST.md).
 Arayüz dili ilk çeviri seti ve kapsam: [ARAYUZ_DILLERI](docs/ARAYUZ_DILLERI.md).
 
 Etiket/menü tam metin çevirisi ve ücretsiz yerel LibreTranslate kurulumu: [ETIKET_MENU_CEVIRI](docs/ETIKET_MENU_CEVIRI.md).
+
+Çok dilli sabit soru kartları ve ücretsiz cihaz seslendirmesi: [COK_DILLI_SORU_KARTLARI](docs/COK_DILLI_SORU_KARTLARI.md).

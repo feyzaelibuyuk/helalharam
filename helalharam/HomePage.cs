@@ -1,4 +1,4 @@
-namespace helalharam;
+﻿namespace helalharam;
 
 public sealed class HomePage : TabbedPage
 {
@@ -74,6 +74,7 @@ public sealed class HomePage : TabbedPage
         var input = new Editor { Placeholder = "Örnek: Mercimek çorbası, tavuk ızgara, kremalı makarna", HeightRequest = 130 };
         var output = Text("");
         stack.Add(Action("Menü fotoğrafını oku", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new OcrPage(1)))));
+        stack.Add(Action("Çok dilli soru kartları ve seslendirme", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new QuestionCardsPage()))));
         stack.Add(input);
         stack.Add(Action("Sorulacak soruları hazırla", (_, _) =>
         {

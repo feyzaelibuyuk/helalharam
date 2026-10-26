@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -26,4 +26,5 @@
   <ItemGroup><Compile Include="..\Shared\FeedbackInput.cs" Link="Shared\FeedbackInput.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\UiCatalog.cs" Link="Shared\UiCatalog.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Shared\TranslationInput.cs" Link="Shared\TranslationInput.cs" /></ItemGroup>
+<ItemGroup><Compile Include="..\helalharam\QuestionCards.cs" Link="Shared/QuestionCards.cs" /></ItemGroup>
 </Project>

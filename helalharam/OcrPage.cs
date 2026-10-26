@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace helalharam;
 
@@ -123,7 +123,7 @@ public sealed class OcrPage : ContentPage
         if (string.IsNullOrWhiteSpace(text.Text)) { status.Text = Ui.T("textRequired"); return; }
         if (!reviewed.IsChecked) { status.Text = Ui.T("reviewRequired"); return; }
         if (mode.SelectedIndex == 1)
-        { results.Add(new Label { Text = MenuQuestions.Prepare(text.Text, Language) }); status.Text = "İşletmeye sorulabilecek sorular hazırlandı."; return; }
+        { results.Add(new Label { Text = MenuQuestions.Prepare(text.Text, Language) }); var cardsButton=new Button { Text="Çok dilli soru kartları ve seslendirme" };cardsButton.Clicked+=async(_,_)=>await Navigation.PushAsync(new QuestionCardsPage());results.Add(cardsButton); status.Text = "İşletmeye sorulabilecek sorular hazırlandı."; return; }
         var token = lifetime.Token;
         SetBusy(true);
         try
