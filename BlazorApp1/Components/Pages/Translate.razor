@@ -1,4 +1,4 @@
-@page "/translate"
+﻿@page "/translate"
 @page "/translate/off/{Barcode}"
 @inject TranslationService Translator
 @inject OpenFoodFactsCatalog Products
@@ -12,11 +12,11 @@
 <EditForm Model="Input" OnSubmit="Submit" FormName="translation">
 <label for="translate-mode">Metin türü</label><InputSelect id="translate-mode" @bind-Value="Input!.Mode"><option value="label">Paketin arka yüzü / etiket</option><option value="menu">Restoran menüsü</option></InputSelect>
 <label for="translation-text">Özgün metnin tamamı (en fazla 12.000 karakter)</label>
-<InputTextArea id="translation-text" dir="auto" @bind-Value="Input!.Text" rows="10" maxlength="12000" style="width:100%" />
+<InputTextArea id="translation-text" dir="auto" @bind-Value="Input!.Text" rows="10" style="width:100%" />
 <label for="source-language">Kaynak dil</label><InputSelect id="source-language" @bind-Value="Input.SourceLanguage"><option value="auto">Otomatik algıla — sonucu kontrol edin</option>@foreach(var lang in options?.Languages ?? []){<option value="@lang.Code">@lang.NativeName (@lang.Code)</option>}</InputSelect>
 <label for="target-language">Çeviri dili</label><InputSelect id="target-language" @bind-Value="Input.TargetLanguage"><option value="">Dil seçin</option>@foreach(var lang in options?.Languages ?? []){<option value="@lang.Code">@lang.NativeName (@lang.Code)</option>}</InputSelect>
 <p><label><InputCheckbox @bind-Value="Input.ReviewedSource" /> Metni özgün etiket / menü ile karşılaştırıp düzelttim. Eksik veya okunmayan bölümleri ayrıca kontrol edeceğim.</label></p>
-<p><label><InputCheckbox @bind-Value="Input.CloudConsent" /> Bu metnin çeviri için Microsoft Translator'a gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ön kontrol için ek İngilizce çeviri kullanılır; karakter kotasına dahildir. Kişisel / sağlık bilgisi yazmayacağım.</label></p>
+<p><label><InputCheckbox @bind-Value="Input.CloudConsent" /> Bu metnin çeviri için sunucunun bilgisayarındaki yerel LibreTranslate servisine gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ön kontrol için ek İngilizce çeviri kullanılır; karakter kotasına dahildir. Kişisel / sağlık bilgisi yazmayacağım.</label></p>
 <button type="submit" class="search-button" disabled="@(options?.Configured != true || options.Languages.Count==0)">Metnin tamamını çevir</button>
 </EditForm>
 @if(document is not null){
@@ -48,7 +48,7 @@ var findings=check.Findings.Where(x=>x.Severity==severity).ToList();
     {
         var fresh=Input is null; Input ??= new() { TargetLanguage=Ui.Language };
         options=await Translator.OptionsAsync();
-        if(fresh && Barcode is not null){ var result=await Products.FindAsync(Barcode); if(result.Product is { } product){Input.Text=product.Ingredients;Input.SourceLanguage=product.IngredientsLanguage=="zh" ? "zh-Hans" : product.IngredientsLanguage;if(!options.Languages.Any(x=>x.Code==Input.SourceLanguage))Input.SourceLanguage="auto";}else errors=["Ürün bulunamadı. Etiket metnini elle girin veya mobil OCR kullanın."]; }
+        if(fresh && Barcode is not null){ var result=await Products.FindAsync(Barcode); if(result.Product is { } product){Input.Text=product.Ingredients;Input.SourceLanguage=product.IngredientsLanguage=="zh-Hans" ? "zh" : product.IngredientsLanguage;if(!options.Languages.Any(x=>x.Code==Input.SourceLanguage))Input.SourceLanguage="auto";}else errors=["Ürün bulunamadı. Etiket metnini elle girin veya mobil OCR kullanın."]; }
     }
     private async Task Submit()
     {

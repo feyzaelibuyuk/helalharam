@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -40,7 +40,7 @@ builder.Services.AddScoped<CorrectionService>();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<WebUi>();
 builder.Services.AddSingleton<TranslationService>();
-builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("https://api.cognitive.microsofttranslator.com/"); client.Timeout = TimeSpan.FromSeconds(20); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false }).RedactLoggedHeaders(new[] { "Ocp-Apim-Subscription-Key" });
+builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("http://127.0.0.1:5000/"); client.Timeout = TimeSpan.FromSeconds(120); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {

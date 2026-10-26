@@ -1,39 +1,46 @@
-# Etiket / menü tam metin çevirisi — Trello 25
+﻿# Ücretsiz yerel etiket / menü çevirisi — Trello 25
 
-## Kullanım
+Azure/Google hesabı, API anahtarı ve ücretli abonelik kullanılmaz. C# web/API ve MAUI uygulaması, sunucunun bilgisayarındaki LibreTranslate servisini çağırır. Çeviri motoru Python tabanlı dış bağımlılıktır; uygulama kodu C# kalır. Hocanın C# şartı sunumda bu ayrımla anlatılmalıdır.
 
-Web: /translate. OFF ürününde /translate/off/{barcode} özgün içindekileri forma getirir. Barkod bulunamadığında boş metin formu veya mobil OCR yolu kullanılabilir. Mobil: Profil → Etiket / menü çevirisi; OCR ekranından okunan metni çeviri sayfasına gönder; gerçek ürün detayından içindekileri çevir.
+## Yerel kurulum
 
-İçindekiler, alerjen/eser miktar uyarıları, besin değerleri ve diğer açıklamaları kapsayan tüm kaynak metni girin. Metin 12.000 karakteri aşarsa reddedilir; otomatik kısaltma/özetleme yapılmaz. Eksik fotoğraf/OCR satırı tamamlanmış sayılmaz. Kaynak ve hedef dil arayüz dilinden ayrıdır; hedef diller Microsoft'un güncel translation dil listesinden gelir. Arapça/Kiril fotoğraf OCR desteği bu görevle eklenmez; o dillerde elle girilmiş metin çevrilebilir.
+Python 3.12 ile depo kökünde (PowerShell script çalıştırmak gerekmez):
 
-İki onay gerekir: özgün metni kontrol etme ve metnin Microsoft Translator'a gönderilmesi. Fotoğraf dış servise yüklenmez. Web formu metni URL'ye koymaz, çeviri yanıtları no-store kullanır, metin/çeviri DB veya kalıcı önbelleğe yazılmaz. Anahtar yalnız sunucuda kalır. Kullanıcı metni uygulama günlüklerine yazılmaz.
+```powershell
+py -3.12 -m venv .local-translate
+.local-translate\Scripts\python.exe -m pip install --index-url https://pypi.org/simple libretranslate==1.9.6
+$env:PYTHONIOENCODING="utf-8"
+.local-translate\Scripts\python.exe tools/LocalTranslation/server.py --host 127.0.0.1 --port 5000 --load-only en,tr
+```
 
-Etiket modunda özgün dil kuralları TR/EN/FR/DE ise kaynak değerlendirmesi ayrı verilir. Çeviri üzerindeki kısıtlı/şüpheli eşleşmeler yalnız ön kontroldür; ürün veya alerjen onayı değildir. Hedef bu dört dil dışındaysa açıkça gösterilen ek İngilizce çeviri ön kontrolde kullanılır; iki hedef karakter kotasına dahildir. Dil algılama güveni düşükse özgün değerlendirme yapılmaz. E kodu çeviride eşleşmezse uyarı verilir. Bu kontroller tüm anlam kayıplarını veya alerjen hatalarını yakalama garantisi değildir. Menü modunda ürün uygunluk sınıflaması yapılmaz; işletmeye tarif/hazırlama sorulur.
+İlk açılışta EN/TR modelleri internetten indirilir; disk alanı ve süre gerekir. Sonraki çeviriler yerelde çalışır. Diğer diller gerektiğinde `--load-only en,tr,ar,ja` gibi eklenebilir; yalnız gerçekten yüklenen dil çiftleri desteklenir. Tüm dünya dilleri vaadi verilmez. Kurulumdan sonra `start-local-translation.cmd` dosyasına çift tıklamak servisi başlatır. Pencereyi açık bırakın. Web/API ayrı terminalde Development ortamında başlatılır. Android aynı mevcut web/API üzerinden bu servise erişir; telefonda Python kurulmaz. Bilgisayar kapalıyken bu yerel sunum düzeni çalışmaz.
 
-## Gerçek servisi açma — kullanıcının yapacağı bölüm
+Servis yalnız 127.0.0.1:5000 adresine bağlanır; genel internete veya rastgele ücretsiz servis sağlayıcısına metin gönderilmez. HTTP yönlendirmeleri ve sistem proxy kullanımı kapalıdır. Çeviri motoru adresi kullanıcı girdisiyle değiştirilemez. Eski Azure anahtarı kullanılmaz; eski TranslatorSetup aracı bu kurulumda çalıştırılmaz.
 
-Bu geliştirmede Azure hesabı/anahtarı olmadığı için gerçek kullanıcı metni çevirisi etkin değildir. Sahte/demonstrasyon çevirisi başarı gibi gösterilmez. Dil listesi anahtarsız resmî uç noktadan alınabilir; bu, çeviri anahtarı yerine geçmez.
+## Kullanım ve sınırlar
 
-1. Azure hesabından Translator kaynağı oluşturun; yalnız F0 ücretsiz katmanını seçin. Ücretli plan seçmeyin. F0 seçeneği yoksa devam etmeden koşulları kontrol edin. Microsoft fiyatlandırması: https://azure.microsoft.com/en-us/pricing/details/translator/ . F0 aylık 2 milyon karakter olarak listelenir; kota ve hesap koşullarını portalda doğrulayın.
-2. Kaynak oluşturulunca Keys and Endpoint bölümündeki key ve region/location bilgilerini bilgisayarınızda kullanın. Anahtarı sohbete, GitHub'a veya ekran görüntüsüne koymayın.
-3. Depo kökünde `dotnet build tools/TranslatorSetup/TranslatorSetup.csproj` çalıştırın.
-4. `dotnet tools/TranslatorSetup/bin/Debug/net10.0/TranslatorSetup.dll BlazorApp1/BlazorApp1.csproj` çalıştırın. Bölgeyi ve görünmeyen anahtarı yerel konsola girin. Araç Translation:Enabled, Key, Region ve DailyCharacterLimit ayarlarını User Secrets'a ekler; yönetici ayarını silmez. User Secrets şifrelenmiş kasa değildir; Windows kullanıcı hesabı erişimiyle korunmalıdır.
-5. Development web/API'yi yeniden başlatın. /translate ekranında kısa, kişisel bilgi içermeyen gerçek etiket metniyle çeviriyi ve özgün metni karşılaştırın.
+Web /translate; mobil Profil → Etiket / menü çevirisi veya OCR sonrası çeviri. Kaynak/hedef dil arayüz dilinden bağımsızdır. /languages gerçek model listesini ve desteklenen hedef çiftlerini sağlar (24 saat önbellek; modeller değişince webi yeniden başlatın). Yüklü olmayan çiftler açık hata verir. Servis kapalıysa metin korunur; sahte çeviri gösterilmez.
 
-Üretimde anahtar hosting secret ayarından Translation__Key, Translation__Region, Translation__Enabled=true ile sağlanır. Anahtar istemciye/APK'ya gönderilmez.
+Etiketin tüm içindekiler, alerjen/eser miktar, besin değerleri ve diğer metni girilebilir. 12.000 karakter üstü reddedilir; otomatik kısaltılmaz. Özgün metin ve makine çevirisi ayrı gösterilir. Fotoğraf gönderilmez; yalnız kontrol edilip onaylanan metin yerel servise iletilir. Metin URL/DB/kalıcı çeviri önbelleğine yazılmaz. Otomatik dil güveni %80 altında elle kaynak dil seçilmesi istenir.
 
-## Sınırlar ve test
+TR/EN/FR/DE özgün kuralları ayrı uygulanır. Makine çevirisi ön kontrolü helal/alerjen güvenliği garantisi değildir. Diğer hedefler için ek İngilizce ön kontrol ayrı gösterilir; gerekli model yoksa işlem başarısız olur. E kodu kaybı uyarılır; tüm anlam kayıpları saptanamaz. Menü, gerçek tarifi/et kaynağını doğrulamaz.
 
-Uygulama IP başına dakikada 5 çeviri POST'una izin verir; web ve API ayrı IP pencereleri kullanır. Uygulama genelinde varsayılan UTC gününe göre günlük 50.000 hedef karakter sınırı vardır; ek İngilizce hedef iki kat sayılır. Sayaç RAM'dedir, yeniden başlatmada sıfırlanır ve birden fazla sunucuda paylaşılmaz; faturalama garantisi değildir. Gerçek kota/plan Azure'da yönetilir. Otomatik ücretli plan geçişi veya çeviri tekrar denemesi yapılmaz; başarısız istekler de yerel bütçede sayılır. Dil listesi 24 saat önbellekte tutulur; kullanıcı metni tutulmaz.
+Dakikada 5 POST ve RAM içinde UTC günlük 50.000 hedef karakter uygulama sınırı sürer; ücret kotası değildir, bilgisayar yükünü sınırlar. Servis zaman aşımı 120 saniyedir; ilk modelleri başlatmak zaman alabilir. Otomatik tekrar denemesi yapılmaz.
 
-/api/translation/options GET yapılandırma durumu ve dil listesi, /api/translation POST çeviri sağlar. Onaysız/boş/aşırı uzun/yanlış dil girişleri 400; yapılandırılmamış/yanlış anahtar 503; servis/kota 429; dış servis hatası 502; zaman aşımı 504. Kişisel metin kaybolmadan tekrar denenebilir. Çeviri POST gövdesi 256 KB (12.000 Unicode karakterin JSON/form kaçışları için); diğer formlar 64 KB kalır.
+## Doğrulama
 
-Kaynak: https://learn.microsoft.com/en-us/azure/ai-services/translator/text-translation/reference/v3/translate ve https://learn.microsoft.com/en-us/azure/ai-services/translator/text-translation/reference/v3/languages . Kontrollü test yanıtları yalnız testte kullanılmalı; gerçek çeviri doğruluğu anahtar bağlanıp gerçek metinle doğrulanmadan Trello 25 tamamlanmış sayılmaz.
+Derleme ve kontrollü test sonuçları geliştirme sonunda raporlanır. Gerçek çeviri ancak yerel motor/model kurulumu ve gerçek metin testi tamamlanınca doğrulanmış sayılır. Android yeni APK akışı ayrıca test edilmelidir; Trello 25 bu kontroller bitmeden tamamlandı sayılmaz.
 
-## Bu oturumun gerçek doğrulama durumu
+Resmî kaynaklar: https://docs.libretranslate.com/ ve https://docs.libretranslate.com/api/operations/translate/ . Açık kaynak yazılım ve indirilen modellerin lisans bildirimleri dağıtımda korunmalıdır.
 
-Web, TranslationChecks ve TranslatorSetup projeleri 0 hata/0 uyarıyla derlendi. TranslationChecks çalıştırması ve yeni web DLL'sinin başlatılması Windows Uygulama Denetimi tarafından 0x800711C7 ile engellendi. Koruma devre dışı bırakılmadı; kopyalama/yeniden adlandırma yoluyla engel aşılmadı. Servis mock testleri ve web uçtan uca kontrolleri başarılı sayılmadı; gerçek çeviri doğrulanmadı. Önceki çalışan web süreci korunur; yeni çeviri endpoint'leri orada henüz yoktur.
+Bu uyarlamada C# web ve TranslationChecks derlemesi 0 hata/0 uyarı verdi. Kontrollü servis testleri geçti (gerçek çeviri değildir); sonradan eklenen yüklü olmayan dil çifti testi derlendi. Yeni web uygulamasını başlatma Windows Uygulama Denetimi tarafından 0x800711C7 ile engellendi; tarayıcı uçtan uca test geçmedi. Koruma değiştirilmedi.
 
-Anahtarsız resmî Microsoft dil uç noktası bağımsız HTTP kontrolünde 138 dil döndürdü; tr/en/ar/ja/ko/zh-Hans/hi mevcut. Bu yalnız dil listesi doğrulamasıdır, gerçek çeviri değildir. Azure hesabı/anahtarı oluşturulmadı veya okunmadı.
+Android TestBuild de 0 hata ve önceden bilinen 4 XA4301 OCR kitaplık uyarısıyla derlendi. Yeni mobil akış emülatörde çalıştırılmadı.
 
-Son Android TestBuild 0 hata ve mevcut 4 XA4301 OCR uyarısıyla derlendi. APK imzası doğrulandı. artifacts/android-translation-preview/ altında ayrı önizleme paketi hazırlandı; çalışan emülatör sürümünün yerine kurulmadı. Yeni sunucu çalışmadan mobil çeviri dil listesi alınamaz ve düğme kapalı kalır. Mobil dokunma akışı ve gerçek Azure yanıtı henüz test edilmedi. Trello 25 devam eder.
+## Gerçek yerel motor denemesi
+
+LibreTranslate 1.9.6 kuruldu; resmi Argos indeksinden EN→TR 1.5 ve TR→EN 1.5 modelleri indirildi. Büyük dosya bağlantısı kesildiğinden resmi HTTPS sunucusunun Range desteğiyle parçalı indirme tamamlandı. /languages yalnız en/tr çiftlerini verdi; /detect İngilizce test metnine %100 döndürdü. /translate gerçek metni çevirdi, satırlar/E471/sayısal besin değerleri korundu. Ancak MILK/WHEAT/SOY gibi bazı büyük harfli sözcükler İngilizce kaldı ve “fat” yanlış anlamda “şişman” çevrildi. Bu modelin kalite sınırı gerçektir: tam ve doğru etiket çevirisi henüz sağlanmış sayılmaz, özellikle alerjen güvenliği için kullanılmaz. Sözlük eklemek genel çeviri doğruluğu garantisi vermez. Trello 25 devam ediyor.
+
+Windows kullanıcı adındaki Türkçe karakterleri SentencePiece okuyamadığından başlatıcı model klasörünün Windows kısa yol adını kullanır; güvenlik koruması değişmez. Argos varsayılan INFO günlüğü kullanıcı metni içerdiğinden başlatıcı bu günlüğü devre dışı bırakır. Gerçek testten sonra konsolda kaynak metin görünmedi. Bu başlatıcıyla çalıştırın; ham libretranslate komutunu kullanmayın.
+
+Gerçek motor testi C# web uçtan uca testinin yerine geçmez. Windows Uygulama Denetimi engeli devam eder; yeni web/Android çeviri akışı gerçek servise karşı henüz doğrulanmadı. Azure hesabı/anahtarı gerekmez, dış ücretli çeviri çağrısı yapılmadı.
