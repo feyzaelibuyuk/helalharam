@@ -49,7 +49,10 @@ public sealed class TravelCatalog(IWebHostEnvironment env,IHttpClientFactory cli
             var now=DateTimeOffset.UtcNow;var today=DateOnly.FromDateTime(now.UtcDateTime);if(today!=day){day=today;requests=0;downloaded=0;}
             if(now<nextRequest||requests>=50||downloaded>6*1024*1024)return Fail(429,"Ücretsiz demo harita isteği sınırına ulaşıldı. Bir süre sonra tekrar deneyin.");
             nextRequest=now.AddSeconds(10);requests++;
-            var query=FormattableString.Invariant($"[out:json][timeout:20][maxsize:4194304];nwr(around:3000,{lat:F2},{lon:F2})[amenity~\"^(restaurant|cafe|fast_food|food_court)$\"][\"diet:halal\"~\"^(yes|only)$\"];out center 100;");
+            // Exact indexed halal values avoid a broad regex scan before the spatial filter.
+            var area=FormattableString.Invariant($"(around:3000,{lat:F2},{lon:F2})");
+            var amenity="[amenity~\"^(restaurant|cafe|fast_food|food_court)$\"]";
+            var query=$"[out:json][timeout:25][maxsize:16777216];(nwr[\"diet:halal\"=\"yes\"]{amenity}{area};nwr[\"diet:halal\"=\"only\"]{amenity}{area};);out center 100;";
             using var request=new HttpRequestMessage(HttpMethod.Post,""){Content=new FormUrlEncodedContent(new Dictionary<string,string>{{"data",query}})};
             using var response=await clients.CreateClient("Overpass").SendAsync(request,HttpCompletionOption.ResponseHeadersRead,token);
             if((int)response.StatusCode is 429 or 406 or 504){nextRequest=DateTimeOffset.UtcNow.AddSeconds(30);return Fail((int)response.StatusCode==406?429:(int)response.StatusCode,"Ücretsiz harita veri servisi yoğun. Otomatik tekrar denenmez; en az 30 saniye sonra yeniden deneyin.");}

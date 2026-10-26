@@ -9,8 +9,9 @@ using Microsoft.Extensions.FileProviders;
 void Check(bool value,string why){if(!value)throw new Exception(why);}
 if(args.Contains("--live"))
 {
+    using var trace=args.Contains("--trace")?new NetTrace():null;
     var real=new TravelCatalog(new Env(),new LiveClients(args.FirstOrDefault(x=>x.StartsWith("--endpoint="))?[11..]??"https://overpass-api.de/api/interpreter"),new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{{"Maps:Enabled","true"}}).Build(),new MemoryCache(new MemoryCacheOptions()));
-    var live=await real.SearchAsync(new TravelSearch{UseCoordinates=true,Latitude=41.01,Longitude=28.97,Consent=true});
+    var live=await real.SearchAsync(new TravelSearch{UseCoordinates=true,Latitude=41.01,Longitude=args.Contains("--city-center")?28.95:28.97,Consent=true});
     Console.WriteLine($"LIVE: HTTP {live.HttpStatus}, {live.Places.Count} records. {live.Message}");return;
 }
 var handler=new Handler();
@@ -57,7 +58,7 @@ sealed class Handler:HttpMessageHandler
 
 sealed class LiveClients(string endpoint):IHttpClientFactory
 {
- public HttpClient CreateClient(string name){var client=new HttpClient(new ProbeHandler()){BaseAddress=new Uri(endpoint),Timeout=TimeSpan.FromSeconds(30)};client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber-StudentDemo/0.1");return client;}
+ public HttpClient CreateClient(string name){var client=new HttpClient(new ProbeHandler()){BaseAddress=new Uri(endpoint),Timeout=TimeSpan.FromSeconds(45)};client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber-StudentDemo/0.1");return client;}
 }
 sealed class ProbeHandler:DelegatingHandler
 {
@@ -65,7 +66,14 @@ sealed class ProbeHandler:DelegatingHandler
  protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
  {
   var response=await base.SendAsync(request,token);
-  if(!response.IsSuccessStatusCode){var body=await response.Content.ReadAsStringAsync(token);Console.WriteLine($"Upstream {(int)response.StatusCode}: {body[..Math.Min(body.Length,200)]}");}
+  if(!response.IsSuccessStatusCode){var body=await response.Content.ReadAsStringAsync(token);var plain=System.Text.RegularExpressions.Regex.Replace(System.Text.RegularExpressions.Regex.Replace(body,"<[^>]*>"," "),@"\s+"," ");Console.WriteLine($"Upstream {(int)response.StatusCode}: {plain[..Math.Min(plain.Length,700)]}");}
   return response;
  }
+}
+
+sealed class NetTrace:System.Diagnostics.Tracing.EventListener
+{
+ private readonly System.Diagnostics.Stopwatch timer=System.Diagnostics.Stopwatch.StartNew();
+ protected override void OnEventSourceCreated(System.Diagnostics.Tracing.EventSource source){if(source.Name is "System.Net.Http" or "System.Net.Sockets" or "System.Net.NameResolution" or "System.Net.Security")EnableEvents(source,System.Diagnostics.Tracing.EventLevel.Informational);}
+ protected override void OnEventWritten(System.Diagnostics.Tracing.EventWrittenEventArgs e)=>Console.WriteLine($"NET {timer?.ElapsedMilliseconds??0} {e.EventSource.Name} {e.EventName}");
 }

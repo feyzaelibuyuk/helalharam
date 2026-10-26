@@ -63,4 +63,4 @@ Etiket/menü tam metin çevirisi ve ücretsiz yerel LibreTranslate kurulumu: [ET
 
 Çok dilli sabit soru kartları ve ücretsiz cihaz seslendirmesi: [COK_DILLI_SORU_KARTLARI](docs/COK_DILLI_SORU_KARTLARI.md).
 
-Ücretsiz harita, dünya şehir araması ve seyahat ekranı: [HARITA_SEYAHAT](docs/HARITA_SEYAHAT.md) (canlı restoran bağlantısı ve mobil GPS testi açık).
+Ücretsiz harita, dünya şehir araması ve seyahat ekranı: [HARITA_SEYAHAT](docs/HARITA_SEYAHAT.md) (canlı web restoran araması doğrulandı; mobil GPS testi bekliyor).
