@@ -38,7 +38,7 @@
                 <article class="info-card">
                     @if (p.ImageUrl.Length > 0) { <img src="@p.ImageUrl" alt="@($"{p.Name} ambalaj fotoğrafı — Open Food Facts")" style="width:100%;height:220px;object-fit:contain" loading="lazy" referrerpolicy="no-referrer" /> }
                     <div class="product-brand">@p.Brand</div><h2>@p.Name</h2><p class="ingredients">Barkod: @p.Barcode</p>
-                    <span class="status status-review">@p.Assessment</span><p class="ingredients">@p.AssessmentNote</p>
+                    <span class="status status-review">Helal kaynak kuralları: @p.Assessment</span><p class="ingredients">@p.AssessmentNote</p>
                 </article>
                 <article class="info-card"><h2>Özgün içindekiler</h2><p class="ingredients">@(p.Ingredients.Length == 0 ? "Kaynakta içerik bulunmuyor." : p.Ingredients)</p>
                     <p class="ingredients">Kaynak alerjen etiketleri: @Join(p.Allergens)<br/>Kaynak eser miktar etiketleri: @Join(p.Traces)</p><p class="ingredients">Boş etiket listesi alerjen veya çapraz temas yokluğu anlamına gelmez.</p>

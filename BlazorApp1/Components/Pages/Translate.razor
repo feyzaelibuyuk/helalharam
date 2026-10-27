@@ -1,11 +1,14 @@
 ﻿@page "/translate"
 @page "/translate/off/{Barcode}"
+@page "/translate/catalog/{CatalogId:int}"
 @inject TranslationService Translator
 @inject OpenFoodFactsCatalog Products
+@inject ProductCatalog LocalProducts
 <PageTitle>Etiket / menü çevirisi | Helal mi?</PageTitle>
 <main class="app-shell">
 <header class="topbar"><a href="/">← Katalog</a></header>
 <h1>Etiketin veya menünün tamamını çevir</h1>
+@if(CatalogId is not null){<p>Metin yerel ürün kaydından aktarılır; demo veya eksik kayıt olabilir. Özgün etiketle karşılaştırın. <a href="@($"/products/{CatalogId}")" data-enhance-nav="false">Ürün kaydına dön →</a></p>}
 <p>Barkod bulunmasa da metinle çalışır. İçindekiler, alerjen / eser miktar uyarıları, besin değerleri ve diğer açıklamalar dahil çevirmek istediğiniz tüm metni girin. Yalnız girilen metin çevrilir; okunmayan bölümler tamamlanmış sayılmaz.</p>
 @if(options is null || options.Message.Length>0){<p role="status">@(options?.Message ?? "Dil listesi yüklenemedi.")</p>}
 @foreach(var error in errors){<p role="alert">@error</p>}
@@ -43,6 +46,7 @@ var findings=check.Findings.Where(x=>x.Severity==severity).ToList();
 @code {
     [SupplyParameterFromQuery(Name="target")] public string? Target { get; set; }
     [Parameter] public string? Barcode { get; set; }
+    [Parameter] public int? CatalogId { get; set; }
     [SupplyParameterFromForm] public TranslationInput? Input { get; set; }
     private TranslationOptions? options;
     private TranslationDocument? document;
@@ -52,6 +56,11 @@ var findings=check.Findings.Where(x=>x.Severity==severity).ToList();
         var fresh=Input is null; Input ??= new() { TargetLanguage=Target??Ui.Language };
         options=await Translator.OptionsAsync();
         if(fresh && Target is not null && !options.Languages.Any(x=>x.Code==Target)) errors.Add("Seyahat için seçilen hedef dilin çeviri modeli yüklü değil. Çeviri dilini mevcut listeden seçin.");
+        if(fresh && CatalogId is { } id){
+            var detail=await LocalProducts.GetDetailAsync(id);
+            if(detail is not null){var product=detail.Product;Input.Text=string.IsNullOrWhiteSpace(product.OriginalIngredients)?product.Ingredients:product.OriginalIngredients;Input.SourceLanguage=string.IsNullOrWhiteSpace(product.IngredientsLanguage)?"auto":product.IngredientsLanguage;if(!options.Languages.Any(x=>x.Code==Input.SourceLanguage))Input.SourceLanguage="auto";}
+            else errors.Add("Yerel ürün bulunamadı. Etiket metnini elle girebilirsiniz.");
+        }
         if(fresh && Barcode is not null){ var result=await Products.FindAsync(Barcode); if(result.Product is { } product){Input.Text=product.Ingredients;Input.SourceLanguage=product.IngredientsLanguage=="zh-Hans" ? "zh" : product.IngredientsLanguage;if(!options.Languages.Any(x=>x.Code==Input.SourceLanguage))Input.SourceLanguage="auto";}else errors=["Ürün bulunamadı. Etiket metnini elle girin veya mobil OCR kullanın."]; }
     }
     private async Task Submit()

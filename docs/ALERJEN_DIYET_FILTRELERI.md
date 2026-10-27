@@ -26,7 +26,7 @@ OFF yanıtındaki alerjen/iz etiketleri tercih seçilmemiş olsa da ürünün ka
 
 Mobil seçimler MAUI SecureStorage'da tutulur, ağ isteğine eklenmez. Web seçimleri Data Protection ile korunan HttpOnly/SameSite=Strict çerezde en fazla 365 gündür; HTTPS'te Secure kullanılır. Uygulama sunucusu sayfayı oluştururken çerezi okur; veritabanına, OFF'ye veya LibreTranslate'e göndermez. Web ve mobil arasında hesap/eşitleme yoktur. Tercihler ekranından temizlenebilir. Güvenli depo okunamazsa mobil ekranda kişisel kontrolün uygulanamadığı yazılır.
 
-Web kaydetme/temizleme POST+CSRF korumalı; istek gövdesi 16 KiB ile sınırlı. Tercih sayfası ve kişisel sonuçlar no-store kullanır. Ürün detayları normal sunucu render'ıyla tercih çerezini her açılışta okur; yeniden deneme tam sayfa isteğidir. Tercih değişikliğinden sonra ürünü yeniden açmak veya metni tekrar değerlendirmek gerekir.
+Web kaydetme/temizleme POST+CSRF korumalı; istek gövdesi 16 KiB ile sınırlı. Tercih sayfası ve kişisel sonuçlar no-store kullanır. Ürün detayları normal sunucu render'ıyla tercih çerezini her açılışta okur; yeniden deneme tam sayfa isteğidir. Webde tercih değişikliğinden sonra ürünü yeniden açmak veya metni tekrar değerlendirmek gerekir. Mobilde tercihlerden geri dönünce açık kişisel paneller güncellenir; metin ve çeviri korunur. Etkileşim için cihaz kontrolü ayrıca gerekir.
 
 ## Dayanak kaynaklar
 

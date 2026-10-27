@@ -26,7 +26,7 @@
             <h1>@p.Name</h1>
             <a href="@($"/corrections/catalog/{p.Id}")" data-enhance-nav="false">Bilgi düzeltme öner →</a>
 <BlazorApp1.Components.Shared.FavoriteButton Kind="catalog" Id="@(p.Id.ToString())" /><p>@p.Brand · @p.Category</p>
-            <span class="status status-review">@p.Assessment</span>
+            <span class="status status-review">Helal kaynak değerlendirmesi: @p.Assessment</span>
             <p>@p.Note</p>
         </section>
         <BlazorApp1.Components.Shared.FoodPreferencePanel Text="@(p.OriginalIngredients.Length>0?p.OriginalIngredients:p.Ingredients)" Language="@p.IngredientsLanguage"/>
@@ -34,7 +34,8 @@
             <article class="info-card"><h2>İçindekiler</h2><p class="ingredients">@p.Ingredients</p>
                 <h3>Özgün etiket metni</h3><p class="ingredients">@(p.OriginalIngredients.Length == 0 ? "Özgün metin henüz kaydedilmedi." : p.OriginalIngredients)</p>
                 <div class="card-source">İçerik dili: @(p.IngredientsLanguage.Length == 0 ? "Belirtilmedi" : p.IngredientsLanguage)</div>
-                <p class="ingredients">Otomatik çeviri henüz bağlı değil. Özgün metin değiştirilmeden saklanır.</p>
+                <p><a href="@($"/translate/catalog/{p.Id}")" data-enhance-nav="false">İçindekilerin tamamını çevir →</a></p>
+                <p class="ingredients">Özgün metin korunur. Çeviri için aşağıdaki bağlantıdan metni kontrol edip ayrıca onay verin.</p>
             </article>
             <article class="info-card"><h2>Kaynak ve kayıt bilgisi</h2>
                 <p class="ingredients">Barkod: @p.Barcode</p>

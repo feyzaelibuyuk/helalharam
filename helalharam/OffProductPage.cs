@@ -44,7 +44,7 @@ public sealed class OffProductPage : ContentPage
             if (Uri.TryCreate(p.ImageUrl, UriKind.Absolute, out var image) && image.Scheme == "https" && image.Host == "images.openfoodfacts.org")
                 body.Add(new Image { Source = ImageSource.FromUri(image), HeightRequest = 220, Aspect = Aspect.AspectFit });
             await DeviceFoodPreferences.AppendAsync(this,body,p.Ingredients,p.IngredientsLanguage,p.Allergens,p.Traces);
-            Text(p.Assessment, 20); Text(p.AssessmentNote);
+            Text("Helal kaynak kuralları: "+p.Assessment, 20); Text(p.AssessmentNote);
             if (p.IngredientAssessment is { } evaluation)
             {
                 Text(evaluation.Profile); Text($"Kural sürümü: {evaluation.RuleVersion}", 13); Text(evaluation.Coverage, 13);
