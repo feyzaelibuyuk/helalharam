@@ -122,7 +122,7 @@ public sealed class HomePage : TabbedPage
     {
         var stack = Stack(Ui.T("profileHeading"), Ui.T("profileIntro"));
         stack.Add(Text(Ui.T("profileLimit")));
-        var personal = new Entry { Placeholder = Ui.T("avoid"), Text = Preferences.Default.Get("avoid", "") };
+        var personal = new Entry { Placeholder = "Eski not alanı — otomatik filtre değildir", Text = Preferences.Default.Get("avoid", "") };
         stack.Add(Text($"Sürüm: {AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})"));
         stack.Add(Text(Ui.T("testSetup")));
         var uiLanguage = new Picker { Title = Ui.T("language"), ItemsSource = new[] { "Türkçe", "English", "العربية" }, SelectedIndex = Array.IndexOf(HelalRehber.Shared.UiCatalog.Languages, Ui.Language) };
@@ -134,6 +134,7 @@ public sealed class HomePage : TabbedPage
             if (Window is { } window) { var home = new HomePage(); home.CurrentPage = home.Children.Last(); window.Page = home; }
         }));
         if(Ui.Language != "tr") stack.Add(Text(Ui.T("scope")));
+        stack.Add(Action("Alerjen / diyet tercihleri", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new FoodPreferencesPage()))));
         stack.Add(personal);
         var feedback = Text("");
         stack.Add(Action(Ui.T("savePreferences"), (_, _) => { Preferences.Default.Set("avoid", personal.Text ?? ""); feedback.Text = Ui.T("preferencesSaved"); }));

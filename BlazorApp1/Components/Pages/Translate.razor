@@ -23,6 +23,8 @@
 <section class="catalog-section"><h2>Çeviri sonucu · @document.Provider</h2><p>Kaynak: @document.SourceLanguage → Hedef: @document.TargetLanguage</p>
 @foreach(var warning in document.Warnings){<p role="note">@warning</p>}
 <div class="translation-columns"><article class="info-card"><h3>Özgün metin</h3><p dir="auto" style="white-space:pre-wrap">@document.OriginalText</p></article><article class="info-card"><h3>Makine çevirisi</h3><p dir="@document.Direction" style="white-space:pre-wrap">@document.TranslatedText</p></article></div>
+<h3>Özgün metin: kişisel filtreler</h3><BlazorApp1.Components.Shared.FoodPreferencePanel Text="@document.OriginalText" Language="@document.SourceLanguage"/>
+<h3>Çeviri: kişisel filtreler — makine çevirisi hatalı olabilir</h3><BlazorApp1.Components.Shared.FoodPreferencePanel Text="@document.TranslatedText" Language="@document.TargetLanguage"/>
 @if(document.OriginalAssessment is { } source){<h3>Özgün metin değerlendirmesi</h3><p>@source.Status · @source.Summary</p>@foreach(var finding in source.Findings){<article class="info-card"><h4>@finding.Ingredient · @finding.MatchedText</h4><p>@finding.Reason</p><a href="@finding.SourceUrl" target="_blank" rel="noopener noreferrer">@finding.SourceTitle</a></article>}}
 @if(document.TranslationPrecheck is { } check){
 <h3>Makine çevirisi üzerinde ön kontrol — ürün onayı değildir</h3><p>@check.Summary</p>

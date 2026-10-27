@@ -1,0 +1,8 @@
+﻿@using HelalRehber.Shared
+@inject BrowserFoodPreferences Preferences
+<section class="info-card food-preferences" lang="tr" dir="ltr"><h2>Kişisel alerjen ve diyet kontrolü</h2><p><a href="/food-preferences" data-enhance-nav="false">Tercihlerimi düzenle →</a></p>
+@{var result=FoodPreferenceRules.Evaluate(Preferences.Read(),Text,Language,Allergens,Traces);}
+<p role="status">@result.Summary</p><p>@FoodPreferenceRules.Limits</p>
+@foreach(var finding in result.Findings){<article class="food-finding"><h3>@finding.Item</h3><p>@finding.Context</p><p style="white-space:pre-wrap">@finding.Match</p></article>}
+<p>@result.Coverage</p><a href="@FoodPreferenceRules.Sources" target="_blank" rel="noopener noreferrer">Alerjen grupları: resmî kaynak ↗</a></section>
+@code {[Parameter] public string? Text {get;set;}[Parameter]public string? Language {get;set;}[Parameter]public string[]? Allergens {get;set;}[Parameter]public string[]? Traces {get;set;}}

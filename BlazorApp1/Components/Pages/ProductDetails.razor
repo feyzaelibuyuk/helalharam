@@ -1,5 +1,4 @@
-@page "/products/{Id:int}"
-@rendermode InteractiveServer
+﻿@page "/products/{Id:int}"
 @using BlazorApp1.Models
 @using BlazorApp1.Services
 @inject ProductCatalog Catalog
@@ -9,7 +8,7 @@
     <header class="topbar"><a class="brand" href="/">← Kataloğa dön</a><span class="beta-pill">ÜRÜN DETAYI</span></header>
     @if (error is not null)
     {
-        <div class="empty-state" role="alert">@error <button @onclick="Load">Tekrar dene</button></div>
+        <div class="empty-state" role="alert">@error <a href="@($"/products/{Id}")" data-enhance-nav="false">Tekrar dene</a></div>
     }
     else if (loading)
     {
@@ -30,6 +29,7 @@
             <span class="status status-review">@p.Assessment</span>
             <p>@p.Note</p>
         </section>
+        <BlazorApp1.Components.Shared.FoodPreferencePanel Text="@(p.OriginalIngredients.Length>0?p.OriginalIngredients:p.Ingredients)" Language="@p.IngredientsLanguage"/>
         <section class="catalog-section"><div class="card-grid">
             <article class="info-card"><h2>İçindekiler</h2><p class="ingredients">@p.Ingredients</p>
                 <h3>Özgün etiket metni</h3><p class="ingredients">@(p.OriginalIngredients.Length == 0 ? "Özgün metin henüz kaydedilmedi." : p.OriginalIngredients)</p>

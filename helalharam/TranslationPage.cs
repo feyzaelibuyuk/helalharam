@@ -78,6 +78,10 @@ public sealed class TranslationPage : ContentPage
             results.Add(new Label { Text="ÖZGÜN METİN",FontAttributes=FontAttributes.Bold });results.Add(new Label { Text=doc.OriginalText });
             results.Add(new Label { Text=$"MAKİNE ÇEVİRİSİ · {doc.SourceLanguage} → {doc.TargetLanguage} · {doc.Provider}",FontAttributes=FontAttributes.Bold });
             results.Add(new Label { Text=doc.TranslatedText,FlowDirection=doc.Direction=="rtl"?FlowDirection.RightToLeft:FlowDirection.LeftToRight });
+            results.Add(new Label {Text="Özgün metin: kişisel filtreler",FontAttributes=FontAttributes.Bold});
+            await DeviceFoodPreferences.AppendAsync(this,results,doc.OriginalText,doc.SourceLanguage);
+            results.Add(new Label {Text="Çeviri: kişisel filtreler — çeviri hatalı olabilir",FontAttributes=FontAttributes.Bold});
+            await DeviceFoodPreferences.AppendAsync(this,results,doc.TranslatedText,doc.TargetLanguage);
             if(doc.OriginalAssessment is { } originalAssessment)
             {
                 results.Add(new Label { Text="Özgün metin değerlendirmesi",FontAttributes=FontAttributes.Bold });

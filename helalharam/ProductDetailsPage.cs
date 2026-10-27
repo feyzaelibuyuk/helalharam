@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace helalharam;
 
@@ -39,6 +39,7 @@ public sealed class ProductDetailsPage : ContentPage
             body.Add(DeviceFavorites.Button(this, new HelalRehber.Shared.FavoriteItem("catalog", productId.ToString(), p.Name, p.Brand)));
             if (p.IsDemo) Text("DEMO • Kurgu kayıt; gerçek ürün veya uygunluk kararı değildir.");
             Text(p.Name, 26); Text($"{p.Brand} • {p.Category}"); Text(p.Assessment, 20); Text(p.Note);
+            await DeviceFoodPreferences.AppendAsync(this,body,string.IsNullOrWhiteSpace(p.OriginalIngredients)?p.Ingredients:p.OriginalIngredients,p.IngredientsLanguage);
             Text("İçindekiler", 20); Text(p.Ingredients);
             Text("Özgün etiket metni", 20); Text(string.IsNullOrEmpty(p.OriginalIngredients) ? "Kaydedilmedi" : p.OriginalIngredients);
             Text($"Dil: {Known(p.IngredientsLanguage)} • Satış ülkesi: {Known(p.CountryCode)}\nBarkod: {p.Barcode}");

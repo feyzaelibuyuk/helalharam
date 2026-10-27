@@ -1,6 +1,5 @@
 ﻿@page "/off"
 @page "/off/{Barcode}"
-@rendermode InteractiveServer
 @using BlazorApp1.Services
 @inject OpenFoodFactsCatalog Catalog
 
@@ -18,6 +17,7 @@
     {
         @if (result.Product is { } p)
         {
+            <BlazorApp1.Components.Shared.FoodPreferencePanel Text="@p.Ingredients" Language="@p.IngredientsLanguage" Allergens="@p.Allergens" Traces="@p.Traces"/>
             <section class="catalog-section"><a href="@($"/corrections/off/{p.Barcode}")" data-enhance-nav="false">Bilgi düzeltme öner →</a>
 <p><a href="@($"/translate/off/{p.Barcode}")" data-enhance-nav="false">Özgün içindekilerin tamamını çevir →</a></p>
 <BlazorApp1.Components.Shared.FavoriteButton Kind="off" Id="@(p.Barcode)" /><h2>İçerik değerlendirmesi</h2>
@@ -41,8 +41,9 @@
                     <span class="status status-review">@p.Assessment</span><p class="ingredients">@p.AssessmentNote</p>
                 </article>
                 <article class="info-card"><h2>Özgün içindekiler</h2><p class="ingredients">@(p.Ingredients.Length == 0 ? "Kaynakta içerik bulunmuyor." : p.Ingredients)</p>
+                    <p class="ingredients">Kaynak alerjen etiketleri: @Join(p.Allergens)<br/>Kaynak eser miktar etiketleri: @Join(p.Traces)</p><p class="ingredients">Boş etiket listesi alerjen veya çapraz temas yokluğu anlamına gelmez.</p>
                     <div class="card-source">İçerik dili: @(p.IngredientsLanguage.Length == 0 ? "Belirtilmedi" : p.IngredientsLanguage)</div>
-                    <p class="ingredients">Çeviri henüz bağlı değil. Özgün etiket metni gösterilir.</p>
+                    <p class="ingredients">Özgün etiket metni korunur; tam çeviri için yukarıdaki bağlantıyı kullanın.</p>
                     <p class="ingredients">Satış ülke etiketleri: @Join(p.Countries)</p>
                     <p class="ingredients">Kategori etiketleri: @Join(p.Categories)</p>
                     <p class="ingredients">Bir ürünün birden çok satış ülkesi olabilir. Bu kayıt her ülkenin formülünü ayrı doğrulamaz.</p>

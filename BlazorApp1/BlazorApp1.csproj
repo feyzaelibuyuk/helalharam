@@ -31,4 +31,5 @@
 <ItemGroup><Content Update="Data/travel-cities.json" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\CertificateEvidence.cs" Link="Shared\CertificateEvidence.cs" /></ItemGroup>
 <ItemGroup><Content Remove="certificate-evidence/**" /><None Remove="certificate-evidence/**" /></ItemGroup>
+<ItemGroup><Compile Include="..\Shared\FoodPreferences.cs" Link="Shared/FoodPreferences.cs" /></ItemGroup>
 </Project>

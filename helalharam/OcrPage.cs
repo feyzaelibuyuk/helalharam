@@ -123,11 +123,23 @@ public sealed class OcrPage : ContentPage
         if (string.IsNullOrWhiteSpace(text.Text)) { status.Text = Ui.T("textRequired"); return; }
         if (!reviewed.IsChecked) { status.Text = Ui.T("reviewRequired"); return; }
         if (mode.SelectedIndex == 1)
-        { results.Add(new Label { Text = MenuQuestions.Prepare(text.Text, Language) }); var cardsButton=new Button { Text="Çok dilli soru kartları ve seslendirme" };cardsButton.Clicked+=async(_,_)=>await Navigation.PushAsync(new QuestionCardsPage());results.Add(cardsButton); status.Text = "İşletmeye sorulabilecek sorular hazırlandı."; return; }
+        {
+            SetBusy(true);
+            try {
+                await DeviceFoodPreferences.AppendAsync(this,results,text.Text,Language);
+                lifetime.Token.ThrowIfCancellationRequested();
+                results.Add(new Label { Text = MenuQuestions.Prepare(text.Text, Language) });
+                var cardsButton=new Button {Text="Çok dilli soru kartları ve seslendirme"};cardsButton.Clicked+=async(_,_)=>await Navigation.PushAsync(new QuestionCardsPage());results.Add(cardsButton);
+                status.Text="İşletmeye sorulabilecek sorular hazırlandı.";
+            }catch(OperationCanceledException){}finally{SetBusy(false);}
+            return;
+        }
         var token = lifetime.Token;
         SetBusy(true);
         try
         {
+            await DeviceFoodPreferences.AppendAsync(this,results,text.Text,Language);
+            token.ThrowIfCancellationRequested();
             using var response = await client.PostAsJsonAsync("api/ingredients/assess", new { Ingredients = text.Text, Language }, token);
             response.EnsureSuccessStatusCode();
             var assessment = await response.Content.ReadFromJsonAsync<Assessment>(cancellationToken: token);

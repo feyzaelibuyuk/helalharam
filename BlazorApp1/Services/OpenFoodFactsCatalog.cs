@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -7,7 +7,8 @@ namespace BlazorApp1.Services;
 public sealed record OffProduct(string Barcode, string Name, string Brand, string Ingredients,
     string IngredientsLanguage, string[] Countries, string[] Categories, string[] Labels,
     string ImageUrl, string SourceUrl, DateTimeOffset FetchedAtUtc, DateTimeOffset? SourceUpdatedUtc,
-    string Assessment, string AssessmentNote, IngredientAssessment IngredientAssessment, CertificateInfo Certificate);
+    string Assessment, string AssessmentNote, IngredientAssessment IngredientAssessment, CertificateInfo Certificate)
+{ public string[] Allergens {get;init;}=[]; public string[] Traces {get;init;}=[]; }
 public sealed record OffResult(string Status, OffProduct? Product, string Message, bool FromCache = false);
 
 public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCache cache, CertificateRegistry? certificates = null)
@@ -22,7 +23,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         var code = barcode?.Trim() ?? "";
         if (!ValidBarcode(code)) return new("invalid_barcode", null, "8, 12, 13 veya 14 rakamlı barkod girin.");
         code = NormalizeBarcode(code);
-        var key = "off-v3:" + IngredientEvaluator.Version + ":" + code;
+        var key = "off-v4:" + IngredientEvaluator.Version + ":" + code;
         if (cache.TryGetValue<OffResult>(key, out var cached) && cached is not null) return WithCertificate(cached with { FromCache = true });
         await gate.WaitAsync(cancellationToken);
         try
@@ -33,7 +34,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
             if (requests.Count >= 15) return new("rate_limited", null, "Sorgu sınırına ulaşıldı. Bir dakika sonra tekrar deneyin.");
             requests.Enqueue(now);
             var client = clients.CreateClient("OpenFoodFacts");
-            const string fields = "code,product_name,brands,ingredients_text,lang,countries_tags,categories_tags,labels_tags,image_front_url,last_modified_t";
+            const string fields = "code,product_name,brands,ingredients_text,allergens_tags,traces_tags,lang,countries_tags,categories_tags,labels_tags,image_front_url,last_modified_t";
             using var response = await client.GetAsync($"api/v3.6/product/{code}.json?fields={fields}", cancellationToken);
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 return new("rate_limited", null, "Open Food Facts sorgu sınırına ulaşıldı. Daha sonra tekrar deneyin.");
@@ -86,7 +87,7 @@ public sealed class OpenFoodFactsCatalog(IHttpClientFactory clients, IMemoryCach
         return new("found", new OffProduct(code, Text(product, "product_name") is { Length: > 0 } name ? name : "Ürün adı belirtilmemiş",
             Text(product, "brands"), ingredients, Text(product, "lang"), Tags(product, "countries_tags"),
             Tags(product, "categories_tags"), Tags(product, "labels_tags"), image,
-            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, evaluation.Status, evaluation.Summary, evaluation, CertificateRegistry.Check(code, Text(product, "product_name"), Tags(product, "labels_tags"), [], DateOnly.FromDateTime(fetchedAt.Date))),
+            $"https://world.openfoodfacts.org/product/{code}", fetchedAt, updated, evaluation.Status, evaluation.Summary, evaluation, CertificateRegistry.Check(code, Text(product, "product_name"), Tags(product, "labels_tags"), [], DateOnly.FromDateTime(fetchedAt.Date))) {Allergens=Tags(product,"allergens_tags"),Traces=Tags(product,"traces_tags")},
             "Gerçek ürün kaydı: Open Food Facts. Topluluk verileri eksik veya eski olabilir.");
     }
     private static string Text(JsonElement root, string property) => root.ValueKind == JsonValueKind.Object &&

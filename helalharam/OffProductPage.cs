@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace helalharam;
 
@@ -43,6 +43,7 @@ public sealed class OffProductPage : ContentPage
             Text(p.Name, 26); Text(p.Brand); Text($"Barkod: {p.Barcode}");
             if (Uri.TryCreate(p.ImageUrl, UriKind.Absolute, out var image) && image.Scheme == "https" && image.Host == "images.openfoodfacts.org")
                 body.Add(new Image { Source = ImageSource.FromUri(image), HeightRequest = 220, Aspect = Aspect.AspectFit });
+            await DeviceFoodPreferences.AppendAsync(this,body,p.Ingredients,p.IngredientsLanguage,p.Allergens,p.Traces);
             Text(p.Assessment, 20); Text(p.AssessmentNote);
             if (p.IngredientAssessment is { } evaluation)
             {
@@ -78,10 +79,11 @@ public sealed class OffProductPage : ContentPage
             }
             var translate=new Button { Text="İçindekilerin tamamını çevir" };translate.Clicked+=async(_,_)=>await Navigation.PushAsync(new TranslationPage(p.Ingredients,p.IngredientsLanguage));body.Add(translate);
             Text("Özgün içindekiler", 20); Text(string.IsNullOrWhiteSpace(p.Ingredients) ? "Kaynakta içerik bulunmuyor." : p.Ingredients);
+            Text($"Kaynak alerjen etiketleri: {Join(p.Allergens)}\nKaynak eser miktar etiketleri: {Join(p.Traces)}\nBoş liste alerjen veya çapraz temas yokluğu anlamına gelmez.");
             Text($"Dil: {p.IngredientsLanguage}\nSatış ülke etiketleri: {Join(p.Countries)}\nKategori etiketleri: {Join(p.Categories)}");
             Text($"Kaynak etiketleri: {Join(p.Labels)}\nHelal etiketi, kontrol edilmiş sertifika anlamına gelmez.");
             Text($"Kaynak güncellemesi: {p.SourceUpdatedUtc?.ToString("dd.MM.yyyy") ?? "Belirtilmedi"}\nVeri alınma tarihi: {p.FetchedAtUtc:dd.MM.yyyy}{(result.FromCache ? " (önbellekten)" : "")}\nİçerik değerlendirmesi ve sertifika bilgisi ayrı gösterilir.");
-            Text("Birden çok satış ülkesi, her ülkedeki formülün ayrı doğrulandığı anlamına gelmez. Çeviri henüz bağlı değil.");
+            Text("Birden çok satış ülkesi, her ülkedeki formülün ayrı doğrulandığı anlamına gelmez.");
             Text("Veri: Open Food Facts · ODbL. Ambalaj fotoğrafları: CC BY-SA.", 13);
             if (Uri.TryCreate(p.SourceUrl, UriKind.Absolute, out var source) && source.Scheme == "https" && source.Host == "world.openfoodfacts.org")
             {
@@ -139,6 +141,8 @@ public sealed class OffProductPage : ContentPage
         public string Brand { get; set; } = "";
         public string Ingredients { get; set; } = "";
         public string IngredientsLanguage { get; set; } = "";
+        public string[] Allergens {get;set;}=[];
+        public string[] Traces {get;set;}=[];
         public string[] Countries { get; set; } = [];
         public string[] Categories { get; set; } = [];
         public string[] Labels { get; set; } = [];

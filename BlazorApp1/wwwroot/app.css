@@ -19,3 +19,5 @@
 .community-form input:not([type=checkbox]),.community-form select,.community-form textarea {width:100%;padding:10px;border:1px solid #b7c9c1;border-radius:8px;}
 .community-card {margin-block:20px;overflow-wrap:anywhere;}
 .community-card form {margin-block:12px;}
+
+.food-preference-form {display:grid;gap:12px;max-width:720px;}.food-preference-form fieldset {display:grid;gap:8px;}.food-finding {border-left:4px solid #b15c20;padding:12px;background:#fff5e8;margin-block:12px;}.food-preferences {overflow-wrap:anywhere;}

@@ -96,4 +96,5 @@
   <ItemGroup><Compile Include="..\Shared\TranslationInput.cs" Link="Shared\TranslationInput.cs" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\TravelModels.cs" Link="Shared\TravelModels.cs" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\CertificateEvidence.cs" Link="Shared\CertificateEvidence.cs" /></ItemGroup>
+<ItemGroup><Compile Include="..\Shared\FoodPreferences.cs" Link="Shared/FoodPreferences.cs" /></ItemGroup>
 </Project>

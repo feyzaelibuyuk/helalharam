@@ -47,6 +47,7 @@ builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddSingleton<CertificateEvidenceService>();
 builder.Services.AddSingleton<CommunityIdentity>();
+builder.Services.AddScoped<BrowserFoodPreferences>();
 builder.Services.AddScoped<CommunityService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
     options.Cookie.Name = "helal-admin"; options.Cookie.HttpOnly = true; options.Cookie.SameSite = SameSiteMode.Strict;
@@ -279,6 +280,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
+    if(context.Request.Path.StartsWithSegments("/off")||context.Request.Path.StartsWithSegments("/products")||context.Request.Path.StartsWithSegments("/ingredients"))context.Response.Headers.CacheControl="private, no-store";
+    if(context.Request.Path.StartsWithSegments("/food-preferences")){context.Response.Headers.CacheControl="no-store";if(context.Request.Method=="POST"){var body=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();if(body is {IsReadOnly:false})body.MaxRequestBodySize=16*1024;}}
     if(context.Request.Path.StartsWithSegments("/community")){
         context.Response.Headers.CacheControl="no-store";
         if(context.Request.Method=="GET")context.RequestServices.GetRequiredService<CommunityIdentity>().Ensure(context);
@@ -300,6 +303,13 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.UseAntiforgery();
 
+app.MapPost("/food-preferences/{action}",async(string action,HttpContext ctx,IAntiforgery af,BrowserFoodPreferences preferences)=>{
+    try{await af.ValidateRequestAsync(ctx);}catch(AntiforgeryValidationException){return Results.BadRequest("Form süresi dolmuş. Tercihler sayfasını yeniden açın.");}
+    if(action=="clear"){preferences.Write(ctx,new());return Results.Redirect("/food-preferences?saved=1");}
+    if(action!="save")return Results.NotFound();var f=await ctx.Request.ReadFormAsync();
+    var input=new FoodPreferences {Allergens=f["allergens"].Select(x=>x??"").ToArray(),Diet=f["diet"].ToString(),AvoidGluten=f["gluten"]=="true",AvoidLactose=f["lactose"]=="true",Custom=f["custom"].ToString()};
+    var errors=FoodPreferenceRules.Validate(input);if(errors.Count>0)return Results.BadRequest(string.Join(" ",errors));preferences.Write(ctx,input);return Results.Redirect("/food-preferences?saved=1");
+});
 app.MapCommunity();
 app.MapCertificateEvidence();
 app.MapStaticAssets();

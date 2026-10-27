@@ -1,0 +1,18 @@
+﻿@page "/food-preferences"
+@inject BrowserFoodPreferences Preferences
+<PageTitle>Alerjen ve diyet tercihleri</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/">← Katalog</a></header><h1>Alerjen ve diyet tercihleri</h1>
+<p>Seçimler bu tarayıcıya ait korumalı çerezde en fazla 365 gün tutulur; uygulama sunucusu sonuçları göstermek için okur. Veritabanına, Open Food Facts'e veya çeviri servisine gönderilmez. Web ve mobil tercihleri ayrı saklanır. Buraya tanı, sağlık öyküsü veya kişisel bilgi yazmayın.</p>
+<p>@HelalRehber.Shared.FoodPreferenceRules.Limits</p><p>Filtreler sonuçlarda seçtiğiniz eşleşmeleri öne çıkarır; bilinmeyen ürünleri güvenli sayarak gizlemez. Vegan/vejetaryen tercihi sertifika doğrulaması değildir.</p>
+@if(Saved=="1"){<p role="status">Tercihler kaydedildi. Ürün/etiket sayfasını yeniden açın.</p>}
+@{var current=Preferences.Read();}
+<form method="post" action="/food-preferences/save" data-enhance="false" class="food-preference-form"><AntiforgeryToken/>
+<fieldset><legend>Kaçınmak istediğiniz alerjen grupları</legend>@foreach(var a in HelalRehber.Shared.FoodPreferenceRules.All){<label><input type="checkbox" name="allergens" value="@a.Id" checked="@current.Allergens.Contains(a.Id)"/> @a.Name</label>}</fieldset>
+<label for="diet-choice">Özel diyet</label><select id="diet-choice" name="diet">@foreach(var d in new[]{"none","vegetarian","vegan"}){<option value="@d" selected="@(current.Diet==d)">@(d=="none"?"Seçilmedi":d=="vegan"?"Vegan":"Vejetaryen")</option>}</select>
+<label><input name="gluten" type="checkbox" value="true" checked="@current.AvoidGluten"/> Glutenden kaçınma (glutensiz onayı değildir)</label>
+<label><input name="lactose" type="checkbox" value="true" checked="@current.AvoidLactose"/> Laktozdan kaçınma (süt alerjisiyle aynı değildir)</label>
+<label for="food-custom">Ek kaçınılan içerikler (virgülle, en fazla 8)</label><input id="food-custom" name="custom" maxlength="500" value="@current.Custom"/>
+<button type="submit" class="search-button">Tercihleri kaydet</button></form>
+<form method="post" action="/food-preferences/clear" data-enhance="false"><AntiforgeryToken/><button type="submit">Tüm kişisel filtreleri temizle</button></form>
+</main>
+@code {[SupplyParameterFromQuery(Name="saved")]public string? Saved {get;set;}}
