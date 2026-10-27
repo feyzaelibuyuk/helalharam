@@ -90,6 +90,7 @@ public sealed class HomePage : TabbedPage
     private ContentPage Community()
     {
         var stack = Stack(Ui.T("feedbackHeading"), "İşletmeye ne sordun, ne yanıt aldın? Kayıtlar bu cihazda saklanır; yayınlanmaz ve doğrulanmış uygunluk sayılmaz.");
+        stack.Add(Action("Topluluk paylaşımları ve oylar", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new CommunityPage()))));
         var shop = new Entry { Placeholder = "Dükkân ve şube" };
         var dish = new Entry { Placeholder = "Yediğin yemek" };
         var date = new DatePicker { Date = DateTime.Today, MaximumDate = DateTime.Today };

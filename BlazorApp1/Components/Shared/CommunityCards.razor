@@ -1,0 +1,15 @@
+﻿@using BlazorApp1.Services
+@if(Items.Count==0){<div class="empty-state">Bu listede paylaşım yok.</div>}
+@foreach(var card in Items){<article class="info-card community-card"><h2>@card.Input.Place · @card.Input.Food</h2><p>@card.Input.City · @card.Input.Country · Ziyaret: @card.Input.VisitedOn?.ToString("dd.MM.yyyy")</p>
+@if(card.Input.VisitedOn<DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-180)){<p>Bu ziyaret 6 aydan eski; güncel bilgi olarak kabul etmeyin.</p>}
+<p><strong>Kullanıcı deneyimi — uygunluk doğrulanmadı</strong></p><h3>Sorulan soru</h3><p style="white-space:pre-wrap">@card.Input.Question</p><h3>Alınan yanıt / deneyim</h3><p style="white-space:pre-wrap">@card.Input.Answer</p>
+@if(HelalRehber.Shared.CertificateAuthorities.SafeHttps(card.Input.SourceUrl)){<p><a href="@card.Input.SourceUrl" target="_blank" rel="noopener noreferrer ugc nofollow">Kullanıcının eklediği kaynak (doğrulanmadı) ↗</a></p>}
+<p>@card.Author · <span class="beta-pill">@card.Stats.Badge</span></p><p>Yayındaki paylaşım: @card.Stats.Published · Bağlantı eklenmiş paylaşım: @card.Stats.Sourced · Alınan yararlı oyu: @card.Stats.Helpful</p>
+<p>Bu sayılar ve rozetler sertifika/kimlik/uzmanlık doğrulaması değildir.</p><p>@CommunityService.StatusLabel(card.Status)</p>
+@if(card.Status=="published"){
+<p>Yararlı: @card.Helpful · Güncelliği şüpheli: @card.Outdated</p>
+@if(!card.Own){<p>Oyunuz: @(card.MyVote=="helpful"?"Yararlı":card.MyVote=="outdated"?"Güncelliği şüpheli":"Henüz oy yok")</p><form method="post" action="/community/vote" data-enhance="false"><AntiforgeryToken/><input type="hidden" name="id" value="@card.Id"/><button type="submit" name="value" value="helpful">Yararlı</button> <button type="submit" name="value" value="outdated">Güncelliği şüpheli</button> <button type="submit" name="value" value="clear">Oyumu kaldır</button></form>}
+else{<p>Kendi paylaşımınıza oy veremezsiniz.</p>}}
+@if(card.Own&&card.Status!="withdrawn"){<form method="post" action="/community/withdraw" data-enhance="false"><AntiforgeryToken/><input type="hidden" name="id" value="@card.Id"/><input type="hidden" name="revision" value="@card.Revision"/><button type="submit">Paylaşımımı geri çek</button></form>}
+</article>}
+@code {[Parameter,EditorRequired] public List<CommunityCard> Items {get;set;}=[];}

@@ -1,0 +1,28 @@
+﻿@page "/admin/community/{Id:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@attribute [Authorize(Policy="Admin")]
+@inject CommunityService Service
+@inject IHttpContextAccessor Context
+<PageTitle>Topluluk paylaşımını incele</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/admin/community" data-enhance-nav="false">← Paylaşımlar</a></header>
+@if(detail is null){<p>Paylaşım bulunamadı.</p>}else{
+<h1>@detail.Input.Place · @detail.Input.Food</h1><p>@detail.Input.City · @detail.Input.Country · @detail.Input.VisitedOn</p><p>@CommunityService.StatusLabel(detail.Row.Status)</p>
+<h2>Soru</h2><p style="white-space:pre-wrap">@detail.Input.Question</p><h2>Yanıt / deneyim</h2><p style="white-space:pre-wrap">@detail.Input.Answer</p>
+@if(HelalRehber.Shared.CertificateAuthorities.SafeHttps(detail.Input.SourceUrl)){<a href="@detail.Input.SourceUrl" target="_blank" rel="noopener noreferrer">Kaynak (doğrulanmadı) ↗</a>}
+<p>Yayınlamadan önce kişisel bilgi, reklam/hakaret, tekrar ve iddiaların açıkça kullanıcı beyanı olarak yazıldığını kontrol edin. Yayınlama işletmenin uygunluğunu doğrulamaz.</p>
+@if(message is not null){<p role="status">@message</p>}
+@if(detail.Row.Status!="withdrawn"){
+<EditForm Model="Input" OnSubmit="Save" FormName="community-review" class="community-form">
+<input type="hidden" name="Input.ActionId" value="@Input!.ActionId"/><input type="hidden" name="Input.ExpectedRevision" value="@Input.ExpectedRevision"/>
+<label for="community-status">Karar</label><InputSelect id="community-status" @bind-Value="Input.Status"><option value="pending">İnceleme bekliyor</option><option value="published">Yayınla — uygunluk onayı değildir</option><option value="hidden">Gizle</option></InputSelect>
+<label for="community-note">Gerekçe (yalnız yöneticiye görünür)</label><InputTextArea id="community-note" @bind-Value="Input.Note" maxlength="2000" rows="5"/>
+<button type="submit" class="search-button" disabled="@saved">İncelemeyi kaydet</button></EditForm>}
+<h2>İnceleme geçmişi</h2>@foreach(var entry in detail.History){<article class="info-card"><p>Sürüm @entry.Revision · @CommunityService.StatusLabel(entry.Status) · @entry.Reviewer · @entry.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><p style="white-space:pre-wrap">@entry.Note</p></article>}
+}</main>
+@code {
+[Parameter] public Guid Id {get;set;} [SupplyParameterFromForm] public ReviewInput? Input {get;set;}
+private CommunityDetail? detail;private string? message;private bool saved;private ClaimsPrincipal User=>Context.HttpContext?.User??new ClaimsPrincipal();
+protected override async Task OnInitializedAsync(){detail=await Service.GetAsync(User,Id);Input??=new(){ActionId=Guid.NewGuid(),ExpectedRevision=detail?.Row.Revision??0,Status=detail?.Row.Status??"pending"};}
+private async Task Save(){if(Input is null)return;try{var result=await Service.ReviewAsync(User,Id,Input);message=result.Message;saved=result.HttpStatus==200;detail=await Service.GetAsync(User,Id);}catch(Exception){message="İnceleme kaydedilemedi. Notunuz korunuyor; yeniden deneyin.";}}
+}

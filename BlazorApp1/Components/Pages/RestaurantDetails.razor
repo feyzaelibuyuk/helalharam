@@ -17,6 +17,7 @@
                 <h3>Olası içerikler — doğrulanmadı</h3><p class="ingredients">@Known(r.PossibleIngredients)</p><p class="ingredients">Yemek adı tarifin, sosun veya etin kaynağının kanıtı değildir.</p></article>
             <article class="info-card"><h2>Bilgi kaynağı</h2><p class="ingredients">@Known(r.InformationSource)</p><p class="ingredients">Son kayıt kontrolü: @(r.LastCheckedUtc?.ToString("dd.MM.yyyy") ?? "Doğrulanmadı")<br />Kayıt dili: @Known(r.Language)</p><p class="ingredients">Doğrulanmış restoran sertifikası kaydı yok.</p></article>
         </div></section>
+        <p><a href="/community" data-enhance-nav="false">Topluluk deneyimleri ve paylaşım →</a></p>
         <section class="catalog-section"><h2>İşletmeye sorulabilecekler</h2><p><a href="/questions" data-enhance-nav="false">Soruları farklı dilde göster ve seslendir →</a></p><p class="ingredients" style="white-space:pre-line">@detail.Questions</p>
             <h3>Alternatif yemek</h3><p class="ingredients">İçeriği belirsiz bileşenin çıkarılmasını veya içerikleri açık başka bir yemek isteyebilirsin. Henüz kaynağı kontrol edilmiş alternatif yemek kaydı yok.</p></section>
     }

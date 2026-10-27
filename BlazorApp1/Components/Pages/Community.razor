@@ -1,0 +1,20 @@
+﻿@page "/community"
+@inject CommunityService Service
+@inject CommunityIdentity Identity
+@inject IHttpContextAccessor Context
+<PageTitle>Topluluk deneyimleri | Helal Rehber</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/">← Katalog</a><a href="/community/new" data-enhance-nav="false">Deneyim paylaş</a><a href="/community/mine" data-enhance-nav="false">Paylaşımlarım</a></header>
+<section class="hero"><h1>Topluluk deneyimleri</h1><p>İşletmeye ne sordunuz, ne yanıt aldınız? Bunlar kullanıcı deneyimleridir; güncel içerik, helal uygunluğu veya sertifika doğrulaması değildir.</p></section>
+<p>Yönetici incelemesinden geçen paylaşımlar listelenir. Oylar yalnız paylaşımın yararlılığı/güncelliği hakkındadır. Rozetler katkı geçmişini gösterir; uzmanlık veya güvenilirlik garantisi vermez.</p>
+<p>Hesap doğrulaması yoktur. Aynı tarayıcı kimliği bir paylaşımda tek oy tutar; çerez silme veya başka cihazla yeniden oy verme tamamen engellenemez.</p>
+@if(Notice is "vote" or "clear"){<p role="status">Oyunuz güncellendi.</p>}
+@if(list is not null){<p>@list.Total paylaşım · Sayfa @list.Page</p><BlazorApp1.Components.Shared.CommunityCards Items="list.Items"/>
+@if(list.Page>1){<a href="@($"/community?page={list.Page-1}")">← Önceki</a>}
+@if(list.Page*20<list.Total){<a href="@($"/community?page={list.Page+1}")">Sonraki →</a>}}
+</main>
+@code {
+[SupplyParameterFromQuery(Name="page")] public int Page {get;set;}=1;
+[SupplyParameterFromQuery(Name="notice")] public string? Notice {get;set;}
+private CommunityList? list;
+protected override async Task OnParametersSetAsync(){list=await Service.ListAsync(Identity.Read(Context.HttpContext),Page);}
+}

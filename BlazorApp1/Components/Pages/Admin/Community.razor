@@ -1,0 +1,13 @@
+﻿@page "/admin/community"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using System.Text.Json
+@using BlazorApp1.Models
+@attribute [Authorize(Policy="Admin")]
+@inject CommunityService Service
+@inject IHttpContextAccessor Context
+<PageTitle>Topluluk incelemesi</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/admin">← Yönetim</a></header><h1>Topluluk paylaşımları</h1><p>Yayınlama yalnız paylaşım kurallarına uygunluk incelemesidir; işletme beyanını, helal durumunu veya sertifikayı doğrulamaz. Kişisel bilgi, reklam, hakaret, tekrarlı/spam veya yanıltıcı içerikleri yayınlamayın.</p>
+@foreach(var row in rows){var input=JsonSerializer.Deserialize<CommunityInput>(row.Payload)!;<article class="info-card"><h2>@input.Place · @input.Food</h2><p>@CommunityService.StatusLabel(row.Status) · @row.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</p><a href="@($"/admin/community/{row.Id}")" data-enhance-nav="false">İncele →</a></article>}
+@if(rows.Count==0){<p>Henüz paylaşım yok.</p>}</main>
+@code {private List<CommunityPost> rows=[];protected override async Task OnInitializedAsync(){rows=await Service.QueueAsync(Context.HttpContext?.User??new ClaimsPrincipal());}}

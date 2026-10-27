@@ -1,0 +1,16 @@
+﻿@page "/community/mine"
+@inject CommunityService Community
+@inject CommunityIdentity Identity
+@inject IHttpContextAccessor Context
+<PageTitle>Paylaşımlarım | Helal Rehber</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/community">← Topluluk</a><a href="/community/new" data-enhance-nav="false">Yeni paylaşım</a></header><h1>Paylaşımlarım</h1><p>Yalnız bu tarayıcı kimliğine ait paylaşımlar. Bekleyen/gizlenen içerikler herkesin listesinde görünmez. Geri çekmek yayını kaldırır; kayıt ve yönetici geçmişi sunucuda korunur.</p>
+@if(Notice=="withdrawn"){<p role="status">Paylaşımınız geri çekildi.</p>}
+@if(list is not null){<BlazorApp1.Components.Shared.CommunityCards Items="list.Items"/>
+@if(list.Page>1){<a href="@($"/community/mine?page={list.Page-1}")">← Önceki</a>}
+@if(list.Page*20<list.Total){<a href="@($"/community/mine?page={list.Page+1}")">Sonraki →</a>}}
+</main>
+@code {
+[SupplyParameterFromQuery(Name="page")] public int Page {get;set;}=1;
+[SupplyParameterFromQuery(Name="notice")] public string? Notice {get;set;}
+private CommunityList? list;protected override async Task OnParametersSetAsync(){list=await Community.ListAsync(Identity.Read(Context.HttpContext),Page,true);}
+}

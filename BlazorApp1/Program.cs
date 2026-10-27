@@ -46,6 +46,8 @@ builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = ne
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddSingleton<CertificateEvidenceService>();
+builder.Services.AddSingleton<CommunityIdentity>();
+builder.Services.AddScoped<CommunityService>();
 builder.Services.AddAuthentication(AdminAccess.Scheme).AddCookie(AdminAccess.Scheme, options => {
     options.Cookie.Name = "helal-admin"; options.Cookie.HttpOnly = true; options.Cookie.SameSite = SameSiteMode.Strict;
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
@@ -78,9 +80,9 @@ builder.Services.AddRateLimiter(options => {
     options.OnRejected = async (context, token) => {
         context.HttpContext.Response.StatusCode = 429;
         context.HttpContext.Response.Headers.RetryAfter = "60";
-        if ((context.HttpContext.Request.Path.StartsWithSegments("/translate") || context.HttpContext.Request.Path.StartsWithSegments("/feedback") || context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
+        if ((context.HttpContext.Request.Path.StartsWithSegments("/community") || context.HttpContext.Request.Path.StartsWithSegments("/translate") || context.HttpContext.Request.Path.StartsWithSegments("/feedback") || context.HttpContext.Request.Path.StartsWithSegments("/corrections") || context.HttpContext.Request.Path.StartsWithSegments("/admin")))
         {
-            var retryPath = context.HttpContext.Request.Path.StartsWithSegments("/admin") ? "/admin/login" : context.HttpContext.Request.Path.ToString();
+            var retryPath = context.HttpContext.Request.Path.StartsWithSegments("/community") ? "/community" : context.HttpContext.Request.Path.StartsWithSegments("/admin") ? "/admin/login" : context.HttpContext.Request.Path.ToString();
             var path = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(retryPath);
             context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
             await context.HttpContext.Response.WriteAsync("<!doctype html><html lang='tr'><meta charset='utf-8'><title>Gönderim sınırı</title><main style='max-width:600px;margin:60px auto;font-family:system-ui'><h1>Biraz bekleyelim</h1><p>Gönderim sınırına ulaşıldı. Bir dakika sonra tekrar deneyin. Önceki forma dönmek için tarayıcınızın geri düğmesini kullanabilirsiniz.</p><a href=\"" + path + "\">Yeni form aç</a></main></html>", token);
@@ -93,7 +95,7 @@ builder.Services.AddRateLimiter(options => {
     options.AddPolicy("admin-login", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("correction-posts", context =>
-        context.Request.Method == "POST" && (context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections")
+        context.Request.Method == "POST" && (context.Request.Path == "/feedback" || context.Request.Path == "/api/feedback" || context.Request.Path.StartsWithSegments("/corrections") || context.Request.Path == "/api/corrections" || context.Request.Path.StartsWithSegments("/community"))
         ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
         : RateLimitPartition.GetNoLimiter("other-requests"));
@@ -155,6 +157,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await ReviewService.InitializeAsync(db);
     await FeedbackService.InitializeAsync(db);
     await CertificateEvidenceService.InitializeAsync(db);
+    await CommunityService.InitializeAsync(db);
 }
 
 app.MapPost("/language", async (HttpContext context, IAntiforgery antiforgery) => {
@@ -276,6 +279,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
+    if(context.Request.Path.StartsWithSegments("/community")){
+        context.Response.Headers.CacheControl="no-store";
+        if(context.Request.Method=="GET")context.RequestServices.GetRequiredService<CommunityIdentity>().Ensure(context);
+        if(context.Request.Method=="POST"){var size=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();if(size is {IsReadOnly:false})size.MaxRequestBodySize=64*1024;}
+    }
     if(context.Request.Path.StartsWithSegments("/certificates") || context.Request.Path.StartsWithSegments("/api/certificates") || context.Request.Path.StartsWithSegments("/admin/certificates") || context.Request.Path.StartsWithSegments("/api/admin/certificates")) context.Response.Headers.CacheControl="no-store";
     if(context.Request.Path=="/api/certificates/submissions") {var body=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();if(body is {IsReadOnly:false})body.MaxRequestBodySize=6*1024*1024;}
     if(context.Request.Path.StartsWithSegments("/translate")) context.Response.Headers.CacheControl = "no-store";
@@ -292,6 +300,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.UseAntiforgery();
 
+app.MapCommunity();
 app.MapCertificateEvidence();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

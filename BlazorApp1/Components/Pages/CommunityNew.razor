@@ -1,0 +1,29 @@
+﻿@page "/community/new"
+@inject CommunityService Community
+@inject CommunityIdentity Identity
+@inject IHttpContextAccessor Context
+<PageTitle>Deneyim paylaş | Helal Rehber</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr"><header class="topbar"><a class="brand" href="/community">← Topluluk</a><a href="/community/mine" data-enhance-nav="false">Paylaşımlarım</a></header><section class="hero"><h1>Deneyimini paylaş</h1><p>İşletme/şube, ziyaret tarihi, ne sorduğunuz ve alınan yanıt. Kendi gözleminizi yazın; bir işletmenin tüm ürünleri için uygunluk iddiasına genellemeyin.</p></section>
+<p>İnceleme sonrası bilgiler herkesçe görülebilir. Kişi adı, telefon, sağlık/alerji bilgisi veya başkasının özel bilgisini paylaşmayın. Kaynak bağlantısı eklemek doğrulama değildir.</p>
+<p>Paylaşımınız bu tarayıcıdaki korumalı kimlik çereziyle ilişkilendirilir (en fazla 365 gün). Çerez silinirse veya başka cihaz kullanılırsa eski paylaşımları yönetemeyebilirsiniz. Hesaplar arası eşitleme yoktur.</p>
+@if(message is not null){<p role="status">@message</p>}
+@if(!saved){<EditForm Model="Input" OnSubmit="Save" FormName="community-new" class="community-form">
+<input type="hidden" name="Input.SubmissionId" value="@Input!.SubmissionId"/>
+<label for="community-place">İşletme ve şube</label><InputText id="community-place" @bind-Value="Input.Place" maxlength="160"/>
+<label for="community-city">Şehir</label><InputText id="community-city" @bind-Value="Input.City" maxlength="100"/>
+<label for="community-country">Ülke</label><InputText id="community-country" @bind-Value="Input.Country" maxlength="80"/>
+<label for="community-food">Yemek / ürün</label><InputText id="community-food" @bind-Value="Input.Food" maxlength="160"/>
+<label for="community-date">Ziyaret tarihi</label><InputDate id="community-date" @bind-Value="Input.VisitedOn"/>
+<label for="community-question">İşletmeye ne sordunuz?</label><InputTextArea id="community-question" @bind-Value="Input.Question" maxlength="500" rows="3"/>
+<label for="community-answer">Alınan yanıt ve deneyiminiz</label><InputTextArea id="community-answer" @bind-Value="Input.Answer" maxlength="1200" rows="5"/>
+<label for="community-source">Kaynak bağlantısı (isteğe bağlı, https)</label><InputText id="community-source" @bind-Value="Input.SourceUrl" maxlength="1000"/>
+<label><InputCheckbox @bind-Value="Input.ConsentPublic"/> İncelemeden sonra bu bilgilerin herkese açık paylaşılmasını kabul ediyorum; paylaşma hakkım olan içerikleri gönderdim.</label>
+<button type="submit" class="search-button">İncelemeye gönder</button></EditForm>}
+else{<p><a href="/community/mine" data-enhance-nav="false">Paylaşım durumunu gör →</a></p>}
+</main>
+@code {
+[SupplyParameterFromForm] public CommunityInput? Input {get;set;}
+private string? message;private bool saved;
+protected override void OnInitialized(){Input??=new(){SubmissionId=Guid.NewGuid(),VisitedOn=DateOnly.FromDateTime(DateTime.UtcNow)};}
+private async Task Save(){if(Input is null)return;try{var result=await Community.SubmitAsync(Identity.Read(Context.HttpContext),Input);message=result.Message;saved=result.HttpStatus is 200 or 201;}catch(Exception){message="Sonuç alınamadı. Girdileriniz korunuyor; tekrar göndermeden Paylaşımlarım ekranını kontrol edin.";}}
+}

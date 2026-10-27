@@ -14,3 +14,8 @@
 
 [data-evidence-form], form:has(#cert-status) {display:grid;gap:12px;max-width:720px;}
 [data-evidence-form] input:not([type=checkbox]),[data-evidence-form] select,[data-evidence-form] textarea,form:has(#cert-status) textarea,form:has(#cert-status) input:not([type=checkbox]),form:has(#cert-status) select {width:100%;padding:10px;border:1px solid #b7c9c1;border-radius:8px;}
+
+.community-form {display:grid;gap:12px;max-width:720px;}
+.community-form input:not([type=checkbox]),.community-form select,.community-form textarea {width:100%;padding:10px;border:1px solid #b7c9c1;border-radius:8px;}
+.community-card {margin-block:20px;overflow-wrap:anywhere;}
+.community-card form {margin-block:12px;}

@@ -20,8 +20,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<CertificateEvidence> CertificateEvidence => Set<CertificateEvidence>();
     public DbSet<CertificateEvidenceReview> CertificateEvidenceReviews => Set<CertificateEvidenceReview>();
 
+    public DbSet<CommunityPost> CommunityPosts=>Set<CommunityPost>();
+    public DbSet<CommunityVote> CommunityVotes=>Set<CommunityVote>();
+    public DbSet<CommunityDecision> CommunityDecisions=>Set<CommunityDecision>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CommunityPost>().ToTable("CommunityPosts");
+        modelBuilder.Entity<CommunityPost>().Property(x=>x.Revision).IsConcurrencyToken();
+        modelBuilder.Entity<CommunityPost>().HasIndex(x=>new{x.Status,x.CreatedUtc});
+        modelBuilder.Entity<CommunityVote>().ToTable("CommunityVotes");
+        modelBuilder.Entity<CommunityVote>().HasKey(x=>new{x.PostId,x.OwnerKey});
+        modelBuilder.Entity<CommunityVote>().HasOne<CommunityPost>().WithMany().HasForeignKey(x=>x.PostId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CommunityDecision>().ToTable("CommunityDecisions");
+        modelBuilder.Entity<CommunityDecision>().HasIndex(x=>new{x.PostId,x.Revision}).IsUnique();
+        modelBuilder.Entity<CommunityDecision>().HasOne<CommunityPost>().WithMany().HasForeignKey(x=>x.PostId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<CertificateEvidence>().ToTable("CertificateEvidence");
         modelBuilder.Entity<CertificateEvidence>().Property(x=>x.Revision).IsConcurrencyToken();
         modelBuilder.Entity<CertificateEvidenceReview>().ToTable("CertificateEvidenceReviews");
