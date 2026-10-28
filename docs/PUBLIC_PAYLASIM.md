@@ -28,3 +28,9 @@ GitHub webinde oluşturulan commitler ayrı hesap ayarına bağlıdır: Settings
 4. Görünürlüğü GitHub'da kullanıcı değiştirsin. Public olduktan sonra başkaları klonlayabilir/forklayabilir; yeniden private yapmak bu kopyaları geri toplamaz.
 
 Kaynaklar: [GitHub görünürlük](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility), [commit e-postası](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address), [lisans verilmemesi](https://choosealicense.com/no-permission/).
+
+## GitHub geçmiş güncellemesi tamamlandı
+
+28 Ekim 2026: Kullanıcının gönderim onayıyla 40 uzak branch atomik force-with-lease işlemiyle güncellendi. Uzak branch kimliklerinin tamamı temizleme planıyla eşleşti; ardından normal fetch yapılıp yerelde erişilebilir commitlerin tümünde eski okul adresinin bulunmadığı tekrar doğrulandı. GitHub'ın ilan ettiği PR referansı veya tag bulunmadı. Fetch/Pull için geçici bekleme bu doğrulamayla sona erdi. Başka eski klonlar varsa eski geçmişi geri getirmemeleri için yeniden eşitlenmelidir.
+
+Bu sonuç aktif branch geçmişini kapsar; sunucunun eski nesne/önbellek kopyalarını kalıcı silme garantisi değildir. Depo görünürlüğü değiştirilmedi. README/lisans hazırlık branch'inin main'e birleştirilmesi ve GitHub Actions/Release/ek içerik kontrolü ayrı adımlardır.
