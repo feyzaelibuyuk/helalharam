@@ -1,0 +1,40 @@
+{
+  "model": "Helsinki-NLP/opus-mt-tc-big-en-tr",
+  "revision": "e539fc16a8a1a0ea5950eb339b595bfcce990e90",
+  "results": [
+    {
+      "id": "allergens",
+      "source": "Ingredients: milk, wheat flour, soy. May contain peanuts.",
+      "translation": "Malzemeler: süt, buğday unu, soya. Yer fıstığı içerebilir.",
+      "missing": [],
+      "wrong_context": [],
+      "seconds": 1.54,
+      "passed": true
+    },
+    {
+      "id": "nutrition",
+      "source": "Nutrition per 100 g: fat 12 g; salt 0.5 g.",
+      "translation": "100 g başına beslenme: yağ 12 g; tuz 0.5 g.",
+      "missing": [],
+      "wrong_context": [],
+      "seconds": 1.26,
+      "passed": true
+    },
+    {
+      "id": "restaurant-question",
+      "source": "Does this dish contain pork or alcohol?",
+      "translation": "Bu yemek domuz eti veya alkol içeriyor mu?",
+      "missing": [],
+      "wrong_context": [],
+      "seconds": 0.98,
+      "passed": true
+    }
+  ],
+  "limitations": "Only three synthetic lexical regression examples. Human review and end-to-end integration still required. Not a general accuracy or allergy/halal certification.",
+  "weights_sha256": "7bc7e1973431752bcbb083c090c3c8f1e6eb3389d2e2e0faf9bf1a85d969a789",
+  "tested_runtime": {
+    "python": "3.12.14",
+    "torch": "2.14.1+cpu",
+    "transformers": "4.57.6"
+  }
+}

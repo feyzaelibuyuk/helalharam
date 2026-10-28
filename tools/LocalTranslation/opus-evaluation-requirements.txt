@@ -1,0 +1,6 @@
+# Install CPU torch from https://download.pytorch.org/whl/cpu separately.
+# Tested: torch==2.14.1+cpu (Python 3.12, Windows).
+transformers==4.57.6
+huggingface-hub==0.36.2
+sentencepiece==0.2.2
+sacremoses==0.2.0

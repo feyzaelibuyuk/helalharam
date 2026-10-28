@@ -68,3 +68,5 @@ EN→TR çıktısında sınırlı bir içerik/besin terimleri listesi özgün me
 28 Ekim 2026 mevcut Argos 1.5 sonucu: içerik/alerjen örneği BAŞARISIZ ("May contain peanuts" → "Estetik içerebilir", yer fıstığı bilgisi kayıp); besin değeri BAŞARISIZ (fat → şişman, yağ bilgisi yanlış); restoranın domuz/alkol sorusu GEÇTİ. Beklenen kalite testi başarısızlığı saklanmadı. Özellikle eser miktar uyarıları için bu model güvenilir kabul edilmemelidir.
 
 Araştırmada resmi Argos indeksinin Türkçe EN→TR girdisi hâlâ 1.5: https://github.com/argosopentech/argospm-index/blob/main/index.json . Ücretsiz yerel aday Helsinki-NLP OPUS-MT tc-big EN→TR: https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-tr . Model kartı CC-BY-4.0, PyTorch ağırlığı yaklaşık 470 MB; ek çalışma kütüphaneleri gerekir. Henüz indirilmedi, denenmedi veya uygulamaya bağlanmadı; daha iyi olduğu iddia edilmiyor. Mevcut kurulum değiştirilmedi.
+
+Sonraki yerel aday denemesi: [OPUS-MT karşılaştırma sonucu](OPUS_MODEL_DENEMESI.md). Üç örnek geçti; C# API entegrasyonu henüz yapılmadı.
