@@ -54,3 +54,11 @@ Başarı sadece yerel ürün API'sine erişimi gösterir. OFF, çeviri motoru, k
 Elle deneme: Sunucuyu kapatıp kontrol edin; açıklayıcı hata görülmeli. Sunucuyu yukarıdaki komutla başlatıp yeniden deneyin; başarı görülmeli. İstek sürerken sayfayı kapatıp tekrar açın. Birden fazla dokunuş eşzamanlı istek başlatmamalı.
 
 28 Ekim 2026: Yeni ekran Android Compile hedefiyle 0 hata/0 uyarı verdi. Bağlı cihaz/emülatör bulunmadığından yukarıdaki dokunma denemeleri yapılmadı. Bu kontrol yeni APK paketinin oluşturulduğu anlamına gelmez.
+
+## 28 Ekim 2026 — OPUS sonrası güncel APK
+
+`0cc9d6a` düzeltmesini içeren güncel main üzerinden tam Android TestBuild APK yeniden paketlendi: 0 hata, bilinen 4 XA4301 OCR kütüphanesi uyarısı. `.NET` derlemeleri APK içine gömülüdür. Güncel imzalı çıktı `artifacts/android-test/HelalRehber-0.1.0-test.apk`; SHA256.txt aynı klasördedir. Önceki 21 Ekim paketiyle aynı sürüm numarası kullanıldığından dosya tarihini ve SHA256'yı kontrol edin.
+
+Kurulu Pixel_7 API 35 emülatörü başlatıldı; adb install -r başarılı oldu (veri silinmedi), uygulama başlatıldı ve Profil ekranı açıldı. Çeviri formundaki dokunma denemesi tamamlanmadı: Windows otomasyonunda odak/koordinat hatası oluştu. Bu nedenle Android uçtan uca çeviri geçti denmez. Kamera/OCR izinleri veya gerçek fotoğraf denemesi bu görevde yapılmadı.
+
+Elle kalan deneme: `start-opus-translation.cmd` açın; web/API'yi localhost:5088'de başlatın. Emülatörde Profil → Etiket / menü çevirisi açın. Kaynak English (en), hedef Turkish (tr) seçin; `Ingredients: milk, wheat flour, soy. May contain peanuts.` metnini girin. Sentetik metni kontrol ettiğinizi ve yalnız yerel motora gönderimi onaylayın. Sonuçta OPUS sağlayıcısı, süt/buğday/soya ve yer fıstığı uyarısı görünmeli. Özgün metin korunmalı. Çeviri sonucu helal veya alerjen güvenliği onayı değildir.
