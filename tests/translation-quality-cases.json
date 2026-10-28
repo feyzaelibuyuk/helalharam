@@ -1,0 +1,48 @@
+[
+  {
+    "id": "allergens",
+    "text": "Ingredients: milk, wheat flour, soy. May contain peanuts.",
+    "concepts": [
+      [
+        "süt"
+      ],
+      [
+        "buğday"
+      ],
+      [
+        "soya"
+      ],
+      [
+        "yer fıstığı",
+        "yerfıstığı"
+      ]
+    ]
+  },
+  {
+    "id": "nutrition",
+    "text": "Nutrition per 100 g: fat 12 g; salt 0.5 g.",
+    "concepts": [
+      [
+        "yağ"
+      ],
+      [
+        "tuz"
+      ]
+    ],
+    "forbidden": [
+      "şişman"
+    ]
+  },
+  {
+    "id": "restaurant-question",
+    "text": "Does this dish contain pork or alcohol?",
+    "concepts": [
+      [
+        "domuz"
+      ],
+      [
+        "alkol"
+      ]
+    ]
+  }
+]

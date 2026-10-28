@@ -60,3 +60,11 @@ Tekrar kontrol: kurulu yerel motoru ve izole web sunucusunu açtıktan sonra `py
 EN→TR çıktısında sınırlı bir içerik/besin terimleri listesi özgün metinle karşılaştırılır. Her iki metinde ayrı sözcük olarak aynı kalan terimler uyarının başında listelenir. Büyük/küçük harf ve Unicode sözcük sınırları dikkate alınır. Çıktı değiştirilmez. Gluten/laktoz gibi ortak terimler de eşleşebilir; bu nedenle mesaj olasılık olarak ifade edilir. Liste tüm dilleri veya tüm içerikleri kapsamaz ve anlam hatalarını tespit etmez.
 
 28 Ekim 2026: Web derlemesi 0 hata/0 uyarı. Gerçek motor üzerinden `tests/translation-live-http.py` tekrar geçti: MILK/WHEAT/SOY kalan çıktıda özel uyarı bulundu; özgün metin ve E471 korundu, onaysız ve kurulu olmayan dil isteği reddedildi. Aynı API uyarıları mevcut web ve mobil çeviri ekranlarında gösterilir; yeni mobil cihaz testi yapılmadı. Modelin “fat” anlam hatası devam ediyor; görev 25 tamamlanmış değildir.
+
+## Model karşılaştırması için kalite örnekleri
+
+`tests/translation-quality-http.py`, `translation-quality-cases.json` içindeki üç sentetik EN→TR örneğini izole C# API üzerinden dener. Servisler önceden çalışmalıdır. Dakikalık limite takılmamak için diğer çeviri testlerinden ayrı sunucu çalıştırmasında kullanılır. Çıkış kodu 0: bu sınırlı sözcük örnekleri geçti; 1: kalite eksiği bulundu; 2: sonuç alınamadı/ölçüm yapılamadı. Sözcük eşleşmesi dil uzmanı incelemesi veya genel doğruluk puanı değildir.
+
+28 Ekim 2026 mevcut Argos 1.5 sonucu: içerik/alerjen örneği BAŞARISIZ ("May contain peanuts" → "Estetik içerebilir", yer fıstığı bilgisi kayıp); besin değeri BAŞARISIZ (fat → şişman, yağ bilgisi yanlış); restoranın domuz/alkol sorusu GEÇTİ. Beklenen kalite testi başarısızlığı saklanmadı. Özellikle eser miktar uyarıları için bu model güvenilir kabul edilmemelidir.
+
+Araştırmada resmi Argos indeksinin Türkçe EN→TR girdisi hâlâ 1.5: https://github.com/argosopentech/argospm-index/blob/main/index.json . Ücretsiz yerel aday Helsinki-NLP OPUS-MT tc-big EN→TR: https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-tr . Model kartı CC-BY-4.0, PyTorch ağırlığı yaklaşık 470 MB; ek çalışma kütüphaneleri gerekir. Henüz indirilmedi, denenmedi veya uygulamaya bağlanmadı; daha iyi olduğu iddia edilmiyor. Mevcut kurulum değiştirilmedi.
