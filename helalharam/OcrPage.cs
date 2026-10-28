@@ -10,6 +10,7 @@ public sealed class OcrPage : ContentPage
     private readonly Picker script = new() { Title = Ui.T("ocrModel"), ItemsSource = ScriptOcr.Scripts.Select(x => Ui.T("script_" + x.Code)).ToArray(), SelectedIndex = 0 };
     private readonly Picker language = new() { Title = Ui.T("textLanguage"), ItemsSource = new[] { "Türkçe", "English", "Français", "Deutsch", "Italiano", "Español", "中文", "日本語", "한국어", "हिन्दी", "العربية", "Русский", "Other / bilinmiyor" }, SelectedIndex = 0 };
     private readonly CheckBox reviewed = new();
+    private readonly CheckBox contrast = new();
     private readonly Label status = new() { Text = Ui.T("photoHint") };
     private readonly VerticalStackLayout results = new() { Spacing = 12 };
     private readonly Button capture = new() { Text = Ui.T("capture") };
@@ -37,7 +38,14 @@ public sealed class OcrPage : ContentPage
         var stack = new VerticalStackLayout { Padding = 22, Spacing = 14 };
         stack.Add(new Label { Text = Ui.T("ocrHeading"), FontSize = 25, TextColor = Color.FromArgb("#166456") });
         stack.Add(new Label { Text = Ui.T("ocrIntro") });
-        stack.Add(mode); stack.Add(script); stack.Add(capture); stack.Add(pick); stack.Add(status); stack.Add(preview); stack.Add(text);
+        stack.Add(mode); stack.Add(script);
+#if ANDROID
+        var contrastRow = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }, ColumnSpacing = 8 };
+        contrastRow.Add(contrast);
+        contrastRow.Add(new Label { Text = Ui.T("ocrContrast"), VerticalOptions = LayoutOptions.Center, LineBreakMode = LineBreakMode.WordWrap }, 1, 0);
+        stack.Add(contrastRow); stack.Add(new Label { Text = Ui.T("ocrContrastNote"), FontSize = 13 });
+#endif
+        stack.Add(capture); stack.Add(pick); stack.Add(status); stack.Add(preview); stack.Add(text);
         stack.Add(new Label { Text = Ui.T("actualLanguage") }); stack.Add(language);
         var confirm = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }, ColumnSpacing = 8 }; confirm.Add(reviewed);
         confirm.Add(new Label { Text = Ui.T("reviewed"), VerticalOptions = LayoutOptions.Center, LineBreakMode = LineBreakMode.WordWrap }, 1, 0);
@@ -52,6 +60,7 @@ public sealed class OcrPage : ContentPage
         capture.Clicked += async (_, _) => await ReadPhotoAsync(true);
         pick.Clicked += async (_, _) => await ReadPhotoAsync(false);
         analyze.Clicked += async (_, _) => await AnalyzeAsync();
+        contrast.CheckedChanged += (_, _) => ResetReview();
         text.TextChanged += (_, _) => ResetReview();
         language.SelectedIndexChanged += (_, _) => ResetReview();
         script.SelectedIndexChanged += (_, _) => ResetReview();
@@ -70,7 +79,7 @@ public sealed class OcrPage : ContentPage
     private void SetBusy(bool value)
     {
         busy = value; capture.IsEnabled = pick.IsEnabled = analyze.IsEnabled = !value;
-        text.IsEnabled = mode.IsEnabled = language.IsEnabled = script.IsEnabled = reviewed.IsEnabled = !value;
+        text.IsEnabled = mode.IsEnabled = language.IsEnabled = script.IsEnabled = reviewed.IsEnabled = contrast.IsEnabled = !value;
     }
     private async Task ReadPhotoAsync(bool useCamera)
     {
@@ -78,6 +87,7 @@ public sealed class OcrPage : ContentPage
         var scriptCode = ScriptOcr.Scripts[Math.Max(0, script.SelectedIndex)].Code;
         if(scriptCode == "unsupported") { status.Text = Ui.T("unsupportedScript"); return; }
         var token = lifetime.Token;
+        var useContrast = contrast.IsChecked;
         SetBusy(true); ResetReview();
         try
         {
@@ -100,14 +110,15 @@ public sealed class OcrPage : ContentPage
             text.Text = "";
             preview.Source = ImageSource.FromStream(() => new MemoryStream(data, writable: false));
             preview.IsVisible = true;
-            var recognized = await ScriptOcr.ReadAsync(data, scriptCode, token);
+            var ocrData = useContrast ? await OcrImage.EnhanceContrastAsync(data, token) : data;
+            var recognized = await ScriptOcr.ReadAsync(ocrData, scriptCode, token);
             token.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(recognized))
             { status.Text = Ui.T("readFailed"); return; }
             if (recognized.Length > 12000)
             { status.Text = "Okunan metin çok uzun. Yalnız içindekiler veya menü bölümünün fotoğrafını seçin."; return; }
             text.Text = recognized;
-            status.Text = Ui.T("readDone");
+            status.Text = Ui.T("readDone") + (useContrast ? "\n" + Ui.T("ocrContrastUsed") : "");
         }
         catch (OperationCanceledException) { }
         catch (PermissionException) { status.Text = Ui.T("permission"); }

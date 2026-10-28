@@ -59,4 +59,40 @@ internal static class OcrImage
         return data;
 #endif
     }
+    internal static Task<byte[]> EnhanceContrastAsync(byte[] normalized, CancellationToken token) => Task.Run<byte[]>(() =>
+    {
+#if ANDROID
+        var bounds = new Android.Graphics.BitmapFactory.Options { InJustDecodeBounds = true };
+        Android.Graphics.BitmapFactory.DecodeByteArray(normalized, 0, normalized.Length, bounds);
+        if(bounds.OutWidth <= 0 || bounds.OutHeight <= 0 || (long)bounds.OutWidth * bounds.OutHeight > 2048L * 2048)
+            throw new InvalidDataException("Kontrast işlemi için normalize edilmiş fotoğraf gerekir.");
+        using var bitmap = Android.Graphics.BitmapFactory.DecodeByteArray(normalized, 0, normalized.Length)
+            ?? throw new InvalidDataException("Görüntü okunamadı.");
+        var pixels = new int[bitmap.Width * bitmap.Height];
+        bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);
+        var histogram = new int[256];
+        for(int i=0;i<pixels.Length;i++)
+        {
+            if((i & 65535)==0) token.ThrowIfCancellationRequested();
+            var c=pixels[i]; int gray=(77*((c>>16)&255)+150*((c>>8)&255)+29*(c&255))>>8;
+            pixels[i]=gray; histogram[gray]++;
+        }
+        int low=0,high=255,count=0,cut=Math.Max(1,pixels.Length/200);
+        while(low<255 && count+histogram[low]<cut) count+=histogram[low++];
+        count=0;while(high>0 && count+histogram[high]<cut) count+=histogram[high--];
+        if(high-low<8) return normalized; // Avoid amplifying almost uniform/blank images.
+        for(int i=0;i<pixels.Length;i++)
+        {
+            if((i & 65535)==0) token.ThrowIfCancellationRequested();
+            int gray=Math.Clamp((pixels[i]-low)*255/(high-low),0,255);
+            pixels[i]=unchecked((int)0xff000000)|(gray<<16)|(gray<<8)|gray;
+        }
+        using var adjusted=Android.Graphics.Bitmap.CreateBitmap(pixels,bitmap.Width,bitmap.Height,Android.Graphics.Bitmap.Config.Argb8888!)!;
+        using var output=new MemoryStream();adjusted.Compress(Android.Graphics.Bitmap.CompressFormat.Jpeg!,95,output);
+        return output.ToArray();
+#else
+        throw new NotSupportedException("Kontrast iyileştirme bu platformda henüz desteklenmiyor.");
+#endif
+    }, token);
+
 }

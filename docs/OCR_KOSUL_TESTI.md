@@ -43,3 +43,5 @@ QA paketlemesi: 0 hata, bilinen 4 XA4301 OCR uyarısı. Gerçek kamera/galeri iz
 Resmî görüntü önerileri: https://developers.google.com/ml-kit/vision/text-recognition/v2/android#input-image-guidelines . Google yeterli karakter piksel boyutu ve netliği vurgular; kabul edilmeyen sonuçta yeniden çekim önerir.
 
 Normal Android TestBuild Compile kontrolü 0 hata/0 uyarıyla geçti. MSBuild Compile öğelerinde OcrQualityAndroid ve OcrAndroidSmoke bulunmadığı doğrulandı. Ayrı com.companyname.helalharam.ocrqa paketi sonuçlar toplandıktan sonra kaldırıldı; asıl uygulama kaldırılmadı. İpuçları/onay metni değişikliğinin yeni tam APK paketlemesi ve görsel kontrolü bu görevde yapılmadı. JSON süreleri yalnız native OCR çağrısını kapsar; kamera/galeri veya tüm işlem süresi değildir.
+
+Sonraki kontrollü deney: [isteğe bağlı kontrast karşılaştırması](OCR_KONTRAST.md). Bazı örnekleri iyileştirirken Türkçe örneği kötüleştirdiği için varsayılan kapalıdır.

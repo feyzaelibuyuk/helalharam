@@ -56,7 +56,12 @@ public sealed class OcrQualityReceiver : BroadcastReceiver
                 var normalized=Normalize(actual);var reference=c.Blank ? "" : Normalize(expected);
                 string[] critical=c.Turkish?["sut","bugday","yer fistigi","jelatin","e471"]:["wheat","milk","peanuts","gelatin","e471"];
                 var missing=c.Blank?Array.Empty<string>():critical.Where(x=>!Regex.IsMatch(normalized,"(?<![a-z0-9])"+Regex.Escape(x)+"(?![a-z0-9])")).ToArray();
-                var report=new {Run=run,Index=index,c.Name,Expected=c.Blank?"":expected,Recognized=actual,NormalizedCharacterErrorRate=reference.Length==0?(normalized.Length==0?0d:1d):(double)Distance(reference,normalized)/reference.Length,MissingCritical=missing,ExactNormalized=normalized==reference,Seconds=clock.Elapsed.TotalSeconds,Parameters=c,Scope="Synthetic image degradation, not lux measurement or real camera accuracy"};
+                var enhanced=await OcrImage.EnhanceContrastAsync(bytes,CancellationToken.None);
+                var contrastActual=await ScriptOcr.ReadAsync(enhanced,"latin",CancellationToken.None);
+                var contrastNormalized=Normalize(contrastActual);
+                var contrastMissing=c.Blank?Array.Empty<string>():critical.Where(x=>!Regex.IsMatch(contrastNormalized,"(?<![a-z0-9])"+Regex.Escape(x)+"(?![a-z0-9])")).ToArray();
+                var contrastError=reference.Length==0?(contrastNormalized.Length==0?0d:1d):(double)Distance(reference,contrastNormalized)/reference.Length;
+                var report=new {ContrastRecognized=contrastActual,ContrastMissingCritical=contrastMissing,ContrastNormalizedCharacterErrorRate=contrastError,Run=run,Index=index,c.Name,Expected=c.Blank?"":expected,Recognized=actual,NormalizedCharacterErrorRate=reference.Length==0?(normalized.Length==0?0d:1d):(double)Distance(reference,normalized)/reference.Length,MissingCritical=missing,ExactNormalized=normalized==reference,Seconds=clock.Elapsed.TotalSeconds,Parameters=c,Scope="Synthetic image degradation, not lux measurement or real camera accuracy"};
                 string json=JsonSerializer.Serialize(report);
                 await File.WriteAllTextAsync(Path.Combine(FileSystem.AppDataDirectory,$"ocr-quality-{index}.json"),json);
                 Android.Util.Log.Info("OcrQuality","DONE "+index+" "+c.Name);

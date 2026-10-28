@@ -33,6 +33,10 @@ for index in range(15):
         expected=report["Expected"];actual=report["Recognized"]
         report["ExactRaw"]=actual==expected
         report["RawCharacterErrorRate"]=distance(expected,actual)/len(expected) if expected else (0 if not actual else 1)
+        if "ContrastRecognized" in report:
+            adjusted=report["ContrastRecognized"]
+            report["ContrastExactRaw"]=adjusted==expected
+            report["ContrastRawCharacterErrorRate"]=distance(expected,adjusted)/len(expected) if expected else (0 if not adjusted else 1)
     reports.append(report);print(json.dumps(report,ensure_ascii=False),flush=True)
     (out/"results.json").write_text(json.dumps(reports,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 print("Report:",out/"results.json")
