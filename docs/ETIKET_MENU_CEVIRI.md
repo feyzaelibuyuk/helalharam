@@ -72,3 +72,5 @@ EN→TR çıktısında sınırlı bir içerik/besin terimleri listesi özgün me
 Araştırmada resmi Argos indeksinin Türkçe EN→TR girdisi hâlâ 1.5: https://github.com/argosopentech/argospm-index/blob/main/index.json . Ücretsiz yerel aday Helsinki-NLP OPUS-MT tc-big EN→TR: https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-tr . Model kartı CC-BY-4.0, PyTorch ağırlığı yaklaşık 470 MB; ek çalışma kütüphaneleri gerekir. Henüz indirilmedi, denenmedi veya uygulamaya bağlanmadı; daha iyi olduğu iddia edilmiyor. Mevcut kurulum değiştirilmedi.
 
 Sonraki yerel aday denemesi: [OPUS-MT karşılaştırma sonucu](OPUS_MODEL_DENEMESI.md). Üç örnek geçti; C# API entegrasyonu henüz yapılmadı.
+
+Güncel doğrulama: C# API→OPUS uçtan uca üç kalite örneği, uzun metin ve motor kapalı hata akışı geçti. Ayrıntı/protokol düzeltmesi OPUS_ENTEGRASYON.md son bölümünde. Genel/global çeviri kalite görevi devam ediyor.

@@ -13,6 +13,9 @@ for case in json.loads(Path(__file__).with_name("translation-quality-cases.json"
     request=urllib.request.Request("http://127.0.0.1:5095/api/translation",data=json.dumps(payload).encode(),headers={"Content-Type":"application/json"})
     try:
         with urllib.request.urlopen(request,timeout=150) as response: result=json.load(response)
+    except urllib.error.HTTPError as error:
+        print("UNVERIFIED:",case["id"],"HTTP",error.code,error.read().decode("utf-8",errors="replace"))
+        raise SystemExit(2)
     except (urllib.error.URLError,TimeoutError) as error:
         print("UNVERIFIED:",case["id"],type(error).__name__)
         raise SystemExit(2)

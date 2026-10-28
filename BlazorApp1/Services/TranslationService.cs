@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text;
 using System.Text.RegularExpressions;
 using HelalRehber.Shared;
 using Microsoft.Extensions.Caching.Memory;
@@ -67,7 +68,8 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
             var detectedLow=false;
             if(source=="auto")
             {
-                using var detection=await clients.CreateClient("Translator").PostAsJsonAsync("detect",new { q=input.Text },token);
+                using var detectionBody = new StringContent(JsonSerializer.Serialize(new { q=input.Text }), Encoding.UTF8, "application/json");
+                using var detection=await clients.CreateClient("Translator").PostAsync("detect",detectionBody,token);
                 if(!detection.IsSuccessStatusCode) return new(502,"Kaynak dil algılanamadı. Dili elle seçin.");
                 using var detected=JsonDocument.Parse(await detection.Content.ReadAsStringAsync(token));
                 var best=detected.RootElement.EnumerateArray().OrderByDescending(x=>x.GetProperty("confidence").GetDouble()).FirstOrDefault();
@@ -83,7 +85,9 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
             async Task<string> TranslateTo(string language)
             {
                 if(actualSource==language) return input.Text;
-                using var response=await clients.CreateClient("Translator").PostAsJsonAsync("translate",new { q=input.Text, source=actualSource, target=language, format="text" },token);
+                // Buffer this bounded JSON body so the loopback gateway receives Content-Length, not chunked framing.
+                using var body = new StringContent(JsonSerializer.Serialize(new { q=input.Text, source=actualSource, target=language, format="text" }), Encoding.UTF8, "application/json");
+                using var response=await clients.CreateClient("Translator").PostAsync("translate",body,token);
                 if(response.StatusCode==HttpStatusCode.TooManyRequests) throw new TranslationFailure(429);
                 if(!response.IsSuccessStatusCode) throw new TranslationFailure(502);
                 using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync(token));

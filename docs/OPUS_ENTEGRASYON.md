@@ -27,3 +27,11 @@ Geçit yalnız 127.0.0.1 üzerinde dinler. Model yerel dosyadan yüklenir; çevi
 Web build 0 hata/0 uyarı. `tests/opus-gateway-http.py` gerçek OPUS geçidinde geçti: üç kalite örneği; birden fazla parçaya bölünen uzun metnin son işareti; CRLF/LF ve boş satırlar; E471 ve örnek sayılar; tür/karakter sınırı ve bilinmeyen yol. Yeni C# uygulaması normal `dotnet run` sırasında Windows Uygulama Denetimi tarafından engellendi. Başka yükleyiciyle çalıştırma denenmedi, güvenlik politikası değiştirilmedi. Bu nedenle güncel C#→OPUS uçtan uca testi geçti denemez. Android derleme ve cihaz durumu ayrıca aşağıda belirtilir.
 
 Android Compile hedefi 0 hata/0 uyarı ile geçti. Yeni APK paketleme, Android dokunma akışı ve C# uygulamasının Windows engeli sonrasında çalıştırılması yapılmadı.
+
+### C# uçtan uca tamamlanan kontrol ve protokol düzeltmesi
+
+28 Ekim 2026 sonraki denemede normal `dotnet run` çalıştı; güvenlik koruması değiştirilmedi. Gerçek entegrasyon denemesinde C# `PostAsJsonAsync` isteğinin chunked gövde göndermesi ve geçidin Content-Length beklemesi nedeniyle 502 alındı. Algılama/çeviri gövdeleri sınırlı JSON olarak bellekte hazırlanıp `StringContent` ile gönderilerek Content-Length sağlandı. Özgün içerik değiştirilmedi. Web build 0 hata/0 uyarı.
+
+Düzeltme sonrası `tests/translation-quality-http.py` üç örneğin tamamında gerçek C# API→OPUS→sonuç akışında geçti. Ayrı uzun metin isteğinde özgün metin birebir, sağlayıcı OPUS, E471, son 987654 işareti, örnek sayılar, CRLF/LF ve boş satırlar doğrulandı. Geçit durdurulduktan sonra C# API 502 ve boş Document döndürdü; sahte başarı/eski motora dönüş olmadı. Yalnız bu görevin açtığı test sunucusu ve geçit kapatıldı.
+
+Bu sonuç önceki çalıştırma engelinden kalan C# uçtan uca belirsizliğini giderir. Üç kalite örneği genel çeviri doğruluğu değildir; gerçek ambalajlar ve Android dokunma akışı ayrıca denenmelidir.
