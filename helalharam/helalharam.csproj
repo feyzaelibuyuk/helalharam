@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net10.0-android</TargetFrameworks>
@@ -97,4 +97,7 @@
 <ItemGroup><Compile Include="..\Shared\TravelModels.cs" Link="Shared\TravelModels.cs" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\CertificateEvidence.cs" Link="Shared\CertificateEvidence.cs" /></ItemGroup>
 <ItemGroup><Compile Include="..\Shared\FoodPreferences.cs" Link="Shared/FoodPreferences.cs" /></ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' and '$(OcrQualityTests)' == 'true' and '$(TestBuild)' != 'true'">
+    <Compile Include="..\tests\OcrQualityAndroid.cs" Link="Tests\OcrQualityAndroid.cs" />
+  </ItemGroup>
 </Project>

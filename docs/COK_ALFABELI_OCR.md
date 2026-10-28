@@ -25,3 +25,5 @@ Web derlemesi 0 hata/0 uyarı. Yeni diller için IngredientChecks çalıştırma
 Arayüz metinleri kaynak anahtarlarına taşınacak; ilk çeviri seti Türkçe/İngilizce/Arapça olarak hazırlanıp genişletilebilir olacak. Sağdan sola düzen, dil seçiminin kalıcılığı ve eksik çeviri için açık Türkçe geri dönüşü ayrı doğrulanmalı. Kaynak etiket/menü metni bu seçimle değiştirilmemeli; değerlendirme/sertifika kaynağı ve dilleri gizlenmemeli. Bu branch'te arayüz dili seçici yoktur.
 
 Son TestBuild APK derlemesi 0 hata ve mevcut 4 XA4301 uyarısıyla tamamlandı. İmza doğrulandı; teslim APK manifestinde OCR test alıcısı bulunmadığı kontrol edildi. API 35 emülatörüne güncelleme kurulumu başarılı.
+
+28 Ekim 2026 Latin modelin loş/silik/bulanık/kadraj koşullarındaki kontrollü test sonuçları: [OCR koşul testi](OCR_KOSUL_TESTI.md). Bunlar fiziksel ışık eşiği veya tüm alfabelerde başarı garantisi değildir.

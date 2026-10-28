@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 
 namespace helalharam;
 
@@ -39,8 +39,8 @@ public sealed class OcrPage : ContentPage
         stack.Add(new Label { Text = Ui.T("ocrIntro") });
         stack.Add(mode); stack.Add(script); stack.Add(capture); stack.Add(pick); stack.Add(status); stack.Add(preview); stack.Add(text);
         stack.Add(new Label { Text = Ui.T("actualLanguage") }); stack.Add(language);
-        var confirm = new HorizontalStackLayout(); confirm.Add(reviewed);
-        confirm.Add(new Label { Text = Ui.T("reviewed"), VerticalOptions = LayoutOptions.Center });
+        var confirm = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }, ColumnSpacing = 8 }; confirm.Add(reviewed);
+        confirm.Add(new Label { Text = Ui.T("reviewed"), VerticalOptions = LayoutOptions.Center, LineBreakMode = LineBreakMode.WordWrap }, 1, 0);
         stack.Add(new Label { Text = Ui.T("ocrCoverage") });
         stack.Add(confirm); stack.Add(analyze);
         var translate=new Button { Text="Metnin tamamını çevir (etiket / menü)" };
