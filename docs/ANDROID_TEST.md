@@ -44,3 +44,13 @@ Kamera/galeri, dokunma akışları ve kişisel izin durumları elle kontrol gere
 Device Manager'daki pixel_7_api_35 kaydı mevcut olmayan google_apis_playstore görüntüsüne işaret ediyor. Doğrulamada kurulu google_apis görüntüsünü kullanan Pixel_7 çalıştırıldı. Bozuk kayıt silinmedi veya değiştirilmedi.
 
 Sonraki güncelleme: çok alfabeli Android OCR kapsamı ve sınırlamaları için [COK_ALFABELI_OCR](COK_ALFABELI_OCR.md). Önceki Latin-only test sonuçları tarihsel kayıttır.
+
+## Profil üzerinden bağlantı kontrolü
+
+Profil → Bağlantıyı kontrol et → Bağlantıyı kontrol et yolunu kullanın. Düğme basılınca sabit yerel adresteki `/api/products` sorgulanır; konum, kişisel içerik veya çerez gönderilmez. Başarı için HTTP başarı kodu, JSON içerik türü ve ürün dizisi beklenir. Kontrolün zaman sınırı 10 saniyedir; sayfa kapanınca istek iptal edilir.
+
+Başarı sadece yerel ürün API'sine erişimi gösterir. OFF, çeviri motoru, kamera ve harita ayrı denenmelidir. Gerçek telefon 10.0.2.2 adresiyle bilgisayara bağlanamaz.
+
+Elle deneme: Sunucuyu kapatıp kontrol edin; açıklayıcı hata görülmeli. Sunucuyu yukarıdaki komutla başlatıp yeniden deneyin; başarı görülmeli. İstek sürerken sayfayı kapatıp tekrar açın. Birden fazla dokunuş eşzamanlı istek başlatmamalı.
+
+28 Ekim 2026: Yeni ekran Android Compile hedefiyle 0 hata/0 uyarı verdi. Bağlı cihaz/emülatör bulunmadığından yukarıdaki dokunma denemeleri yapılmadı. Bu kontrol yeni APK paketinin oluşturulduğu anlamına gelmez.

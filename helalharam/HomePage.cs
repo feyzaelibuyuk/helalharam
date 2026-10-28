@@ -126,6 +126,7 @@ public sealed class HomePage : TabbedPage
         var personal = new Entry { Placeholder = "Eski not alanı — otomatik filtre değildir", Text = Preferences.Default.Get("avoid", "") };
         stack.Add(Text($"Sürüm: {AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})"));
         stack.Add(Text(Ui.T("testSetup")));
+        stack.Add(Action("Bağlantıyı kontrol et", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new ConnectionCheckPage()))));
         var uiLanguage = new Picker { Title = Ui.T("language"), ItemsSource = new[] { "Türkçe", "English", "العربية" }, SelectedIndex = Array.IndexOf(HelalRehber.Shared.UiCatalog.Languages, Ui.Language) };
         stack.Add(uiLanguage); stack.Add(Text(Ui.T("languageNote")));
         stack.Add(Action(Ui.T("applyLanguage"), async (_, _) => {
