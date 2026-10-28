@@ -1,0 +1,7 @@
+Open Sans Regular: Digitized data copyright © 2010-2011, Google Corporation.
+Open Sans Semibold: Digitized data copyright © 2011, Google Corporation.
+
+Licensed under the Apache License, Version 2.0.
+A copy is included as OpenSans-APACHE-2.0.txt.
+Official license: https://www.apache.org/licenses/LICENSE-2.0
+These font files have not been modified by this project.

@@ -1,66 +1,71 @@
-﻿# Helal mi?
+# Helal Rehber — Helal mi?
 
-Android + web MVP başlangıcı. Çözüm `helalharam.slnx` içindedir.
+Gıda etiketlerini ve menüleri anlamaya yardımcı olan, geliştirme aşamasındaki bir öğrenci projesi. Android uygulaması **C# / .NET MAUI**, web arayüzü ve API **C# / ASP.NET Core Blazor** ile geliştirilir. Yerel çeviri motoru için ayrı bir Python servisi kullanılır; harita ve tarayıcı özelliklerinde küçük JavaScript köprüleri bulunur.
 
-## Projeler
+Proje şu anda ders sunumu ve portföy içindir. Herkese açık çalışan bir hizmet veya mağaza sürümü değildir. Mobil arayüz tasarımı geliştirilmektedir.
 
-- `helalharam`: Android istemcisi (.NET MAUI, C#).
-- `BlazorApp1`: Web arayüzü ve C# API. SQLite veritabanını ilk çalıştırmada oluşturur.
+## Mevcut özellikler
 
-## Geliştirme
+- Open Food Facts üzerinden gerçek barkod sorgulama; marka, kaynak, özgün içerik ve veri eksikliği gösterimi.
+- Android kamerayla barkod tarama; etiket/menü fotoğrafından OCR, okunan metni kontrol etme ve elle düzeltme.
+- Sınırlı içerik kuralları, kullanıcı alerjen/diyet tercihleri ve belirsizlik uyarıları.
+- Yerel OPUS-MT modeliyle İngilizce → Türkçe tam metin çevirisi; diğer dil çiftleri ayrıca kurulu yerel modellere bağlıdır.
+- Menüden işletmeye sorulabilecek sorular ve cihazın desteklediği dillerde seslendirme.
+- Harita/şehir araması; restoran bilgileri, kaynak ayrımı ve seyahat ekranı.
+- Cihaza/tarayıcıya özgü favoriler; topluluk gönderileri, oylama, bildirim ve yönetici incelemesi.
+- Bilgi düzeltme önerileri ve özel sertifika belgesi inceleme akışı. Belge incelemesi otomatik sertifika doğrulaması değildir.
 
-1. Visual Studio'da `helalharam.slnx` çözümünü aç.
-2. NuGet paketlerini geri yükle.
-3. Önce `BlazorApp1` projesini çalıştır. Web: `http://localhost:5088`; API: `/api/products` ve `/api/restaurants`.
-4. Android emülatörünü başlat; sonra `helalharam` projesini Android hedefiyle çalıştır. Emülatör, API'ye `10.0.2.2:5088` üzerinden erişir.
+Mobil alt sekmeler: **Katalog · Favoriler · Menü · Deneyimler · Profil**.
 
-Başlangıçtaki ürün ve restoran kayıtları yalnızca arayüz/API denemesi içindir; gerçek ürün veya işletme bilgisi değildir. Uygulama kesin dini hüküm vermez.
+## Kapsam ve doğruluk sınırları
 
-## Yeni mobil akışlar
-Menü metninden sorular, cihazda deneyim taslağı, profil tercihleri ve demo ürün ekranı eklendi. Mevcut API kataloğu Katalog sekmesinde korunur. Katalog sekmesinde kamera ile barkod tarama eklendi. Etiket ve menü fotoğrafları için Android OCR eklendi; kullanım ve dil kapsamı: docs/ETIKET_MENU_OCR.md. Kamera kullanımı ve cihaz kontrol adımları: docs/BARKOD_KAMERA.md.
-Özellikler: docs/OZELLIKLER.md. Android derleme: ./build-android.ps1; emülatörde çalıştırma: ./build-android.ps1 -Run.
-Aktarım öncesi ilk çalışmanın dosya ve Git yedekleri migration-backup klasöründe yereldir, GitHub'a gönderilmez.
+Her barkodun veritabanında bulunması, her dilin çevrilmesi veya her fotoğrafın okunması garanti edilmez. OCR Latin, Çince, Japonca, Korece ve Devanagari yazı sistemleri için yapılandırılmıştır; tüm dünya alfabeleri desteklenmez. Arayüzdeki Türkçe/İngilizce/Arapça seçenekleri OCR ve çeviri dil kapsamından ayrıdır.
 
-## Android cihaz seçimi
-Bu bilgisayarda Pixel_7 (API 35) sistem imajı kuruludur. API 36 cihazının sistem imajı eksik olduğu için açılmaz. Visual Studio'da API 35 cihazını seçin veya Android Device Manager üzerinden başlatın.
-Komut satırı APK'sı C# derlemelerini içerir; build-android.ps1 ile oluşturulabilir.
+OCR/çeviri hatası veya eksik kaynak bilgisi içerik kaybına yol açabilir. Kullanıcı özgün etiketi ve okunan metni kontrol etmelidir. Riskli madde bulunamaması **helal sertifikası, kesin dini hüküm veya alerjen yokluğu** anlamına gelmez. Topluluk oyu ve harita etiketi de sertifika değildir. Yerel başlangıç ürün/restoran kayıtları açıkça **DEMO** olarak gösterilir.
 
-## Ürün kataloğu
-Ürün detayları, ülke filtresi ve demo alternatif akışı için docs/URUN_KATALOG.md dosyasına bakın. Web ve mobil Katalog sekmesi aynı servisi kullanır. Mobil Ürünler sekmesi ilk yerel demo olarak korunmuştur.
+## Proje yapısı
 
-## Gerçek ürün API'si
-Open Food Facts barkod bağlantısı web ve mobilde eklendi. Kullanım ve sınırlar: docs/OPEN_FOOD_FACTS.md. API anahtarı gerekmez. Gerçek ürünlerde sınırlı kaynaklı içerik kuralları uygulanır; sertifika onayı verilmez. Kapsam ve deneme: docs/ICERIK_KURALLARI.md.
+| Klasör | İçerik |
+| --- | --- |
+| `helalharam/` | .NET MAUI Android istemcisi |
+| `BlazorApp1/` | Blazor web arayüzü, API ve SQLite |
+| `Shared/` | Paylaşılan modeller, kurallar ve metinler |
+| `tools/` | Yerel yönetici/çeviri kurulum araçları ve çeviri servisi |
+| `tests/` | C#, Python, JavaScript ve Android kontrol araçları |
+| `docs/` | Özellik kapsamı, kurulum ve ölçüm raporları |
 
+## Yerel çalıştırma
 
-## Favoriler
-Web ve mobil ürün favorileri eklendi. Kapsam, saklama ve kontrol adımları: docs/FAVORILER.md. Listeler tarayıcıya/cihaza özeldir; hesap eşitlemesi yoktur.
+.NET 10 SDK, MAUI/Android iş yükü, uygun Android SDK ve JDK kurulmuş olmalıdır. Android emülatörü için API 35 kullanılarak deneme yapılmıştır; iOS/Windows dağıtımı doğrulanmış değildir.
 
+1. Depoyu klonlayıp `helalharam.slnx` çözümünü Visual Studio'da açın; NuGet paketlerini geri yükleyin.
+2. Web/API'yi başlatın:
 
-## Türkiye restoran/yemek detayları
-Şehir ve şube bilgileri, kaynak, içerik belirsizliği ve işletme soruları eklendi. Mevcut kayıtlar DEMO'dur; gerçek işletme verisi bağlı değildir. Kontrol adımları: docs/TURKIYE_YEMEK_DETAY.md.
+   ```text
+   dotnet run --project BlazorApp1/BlazorApp1.csproj --launch-profile http
+   ```
 
+   Yerel web: `http://localhost:5088`. SQLite veritabanı ilk çalıştırmada oluşturulur.
+3. Android emülatörünü açın. Visual Studio'da `helalharam` projesini başlangıç projesi, çalışan Android emülatörünü hedef seçip çalıştırın. Emülatör API'ye `http://10.0.2.2:5088` üzerinden ulaşır. Bu adres fiziksel telefonda kullanılamaz.
+4. Yönetici ekranı isteğe bağlıdır; varsayılan parola yoktur. Yerel kurulum için [yönetici yönergesi](docs/YONETIM_INCELEME.md).
+5. Çeviri isteğe bağlıdır. Git klonlamak Python ortamını veya model ağırlıklarını getirmez. [OPUS kurulumu ve kapsamı](docs/OPUS_ENTEGRASYON.md), [model denemesi](docs/OPUS_MODEL_DENEMESI.md). Ortam/model kurulduktan sonra `start-opus-translation.cmd` kullanılır. Motor kapalıysa çeviri başarı sonucu üretmez.
 
-## Bilgi düzeltme önerileri
-Web ve mobil ürün/yemek detaylarından düzeltme önerisi gönderilebilir. Öneriler ayrı tabloda inceleme bekler; katalog otomatik değişmez. Kapsam ve kontrol: docs/BILGI_DUZELTME.md.
+Kamera/OCR cihazda, OFF ve harita dış bağlantıyla, bazı mobil ekranlar ise çalışan web/API ile işler. Çalıştırma ayrıntıları: [Android test sürümü](docs/ANDROID_TEST.md), [web yayın hazırlığı](docs/WEB_YAYIN.md).
 
+## Doğrulama ve geliştirme durumu
 
-## Gönderim yönetimi
-Yönetici erişimiyle kuyruk, inceleme kararı ve geçmiş eklendi. Varsayılan parola yoktur; yerel kurulum için configure-admin.ps1 ve docs/YONETIM_INCELEME.md dosyasına bakın. Katalog otomatik değiştirilmez.
+Otomatik kontroller tek başına bütün mobil dokunma akışlarının doğrulandığı anlamına gelmez. OCR için sentetik bozulmuş görsellerle ölçümler vardır; bunlar gerçek kamera/ışık ortamlarının tamamını kapsamaz. Çeviri örnekleri genel doğruluk garantisi değildir.
 
-Gizlilik ve hata ekranları: [HATA_GIZLILIK](docs/HATA_GIZLILIK.md). Web: /privacy; mobil: Profil → Gizlilik ve kullanım sınırları.
+- [OCR koşul ölçümleri](docs/OCR_KOSUL_TESTI.md) · [isteğe bağlı kontrast](docs/OCR_KONTRAST.md)
+- [Çeviri entegrasyonu ve ölçümler](docs/OPUS_ENTEGRASYON.md)
+- [Mobil gezinme](docs/MOBIL_GEZINME.md) · [UI çizim rehberi](docs/UI_CIZIM_REHBERI.md)
+- [Gizlilik ve kullanım sınırları](docs/HATA_GIZLILIK.md)
+- [Sunum kontrol listesi](docs/SUNUM_KONTROL_LISTESI.md)
 
-Web yayın paketi ve kalıcı sunucu verileri: [WEB_YAYIN](docs/WEB_YAYIN.md).
+## Kaynaklar ve kullanım hakları
 
-Android sunum/test paketi 0.1.0: [ANDROID_TEST](docs/ANDROID_TEST.md).
+Open Food Facts, OpenStreetMap, GeoNames ve kullanılan kütüphane/model lisansları: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Harici veriler kendi lisanslarına tabidir.
 
-İlk kullanıcı geri bildirim formu ve deneme planı: [GERI_BILDIRIM](docs/GERI_BILDIRIM.md).
+Copyright © 2026 Feyza Elibüyük. Projeye özgü kod için şu anda genel bir açık kaynak kullanım lisansı verilmemiştir; hakları saklıdır. Bu bildirim üçüncü taraf bileşenlerinin lisanslarını veya GitHub koşullarının sağladığı hakları değiştirmez. Public kaynak görünürlüğü MIT gibi bir lisans verildiği anlamına gelmez.
 
-Çok alfabeli Android OCR ve kapsam sınırları: [COK_ALFABELI_OCR](docs/COK_ALFABELI_OCR.md).
-
-Arayüz dili ilk çeviri seti ve kapsam: [ARAYUZ_DILLERI](docs/ARAYUZ_DILLERI.md).
-
-Etiket/menü tam metin çevirisi ve ücretsiz yerel LibreTranslate kurulumu: [ETIKET_MENU_CEVIRI](docs/ETIKET_MENU_CEVIRI.md).
-
-Çok dilli sabit soru kartları ve ücretsiz cihaz seslendirmesi: [COK_DILLI_SORU_KARTLARI](docs/COK_DILLI_SORU_KARTLARI.md).
-
-Ücretsiz harita, dünya şehir araması ve seyahat ekranı: [HARITA_SEYAHAT](docs/HARITA_SEYAHAT.md) (canlı web restoran araması doğrulandı; mobil GPS testi bekliyor).
+[Güvenlik ve hassas veri](SECURITY.md) · [Public paylaşım kontrolü](docs/PUBLIC_PAYLASIM.md)
