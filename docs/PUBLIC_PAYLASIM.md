@@ -12,14 +12,18 @@ README güncellendi. Open Sans / Bootstrap / Popper lisans metinleri ve üçünc
 
 Bu depodaki yeni CLI/GitHub Desktop commitleri için yerel Git e-postası hesabın ID tabanlı GitHub noreply adresine ayarlandı. Bu bir parola veya hesap ayarı değişikliği değildir; yalnız bu depoyu etkiler.
 
-**Önceki commitlerdeki okul e-postası hâlâ bulunur.** Yeni e-posta ayarı geçmişi değiştirmez. Tamamen kaldırmak tüm ilgili branch/tag geçmişini yeniden yazmayı, uzak referansları güncellemeyi ve mevcut klonları yeniden eşitlemeyi gerektirir. Bu hazırlıkta geçmiş yeniden yazılmadı ve force-push yapılmadı. Okul adresi öğrenci numarasını açığa çıkarabileceğinden public yapmadan önce bu kararı verin.
+Kullanıcının onayıyla yereldeki tüm referansların eriştiği 50 commitin geçmişi yeniden yazıldı. Okul adresi hem author hem committer alanlarında gizli GitHub adresiyle değiştirildi; dosya ağaçları, mesajlar, tarihler ve ebeveyn bağlantıları korundu. Her commit için dosya ağacı ve mesaj eşitliği, bütün erişilebilir commitlerde eski adresin bulunmaması doğrulandı. İmzalı commit/tag yoktu; tag veya stash bulunmadı. Yerel geçmişteki eski commit kimlikleri değişti.
+
+Git dışında, yalnız yerelde tam Git bundle yedeği ve commit eşleme planı saklandı. Yedek eski kişisel metaveriyi içerir; GitHub’a yüklenmemelidir. Yerel reflog/eski Git nesneleri de özel çalışma kopyasında kalabilir; normal branch gönderimi bunları yayımlamaz.
+
+GitHub’daki 40 branch için atomik ve her branch’in eski uzak kimliğine bağlı force-with-lease gönderim planı hazırlandı. Gönderim tamamlanıp uzaktaki referanslar doğrulanana kadar uzak geçmiş temiz kabul edilmez. Eski klonlardan/branch’lerden pull veya merge eski geçmişi tekrar getirebilir; diğer klonları yeniden klonlayın veya kontrollü eşitleyin. GitHub’ın sakladığı PR referansları/önbellekler yerel referans taramasıyla doğrulanmaz.
 
 GitHub webinde oluşturulan commitler ayrı hesap ayarına bağlıdır: Settings → Emails → Keep my email addresses private. Bu ayar kullanıcı tarafından kontrol edilmelidir; hesabın güvenlik/gizlilik ayarları otomatik değiştirilmedi.
 
 ## Public yapmadan önce kalanlar
 
 1. Bu branch'i gözden geçirip main'e birleştirin; gerekli commitleri GitHub'a gönderin.
-2. Okul e-postasının eski commitlerde görünmesini kabul edip etmediğinize karar verin. Gizlenecekse görünürlüğü değiştirmeden önce geçmiş temizliği ayrı yapılmalıdır.
+2. Hazırlanan geçmiş güncellemesini GitHub’a gönderip bütün uzak branch’lerin yeni kimliklerini doğrulayın. Bu tamamlanmadan Fetch/Pull veya public görünürlüğe geçiş yapmayın.
 3. GitHub'daki bütün branch/tag'leri, Releases eklerini, Actions günlük/artifact'lerini, Issue/PR eklerini ve wiki'yi kontrol edin. Bunlar yerel dosya taramasıyla doğrulanmadı. GitHub tarafında bu alanlara erişen bir oturum bu incelemede kullanılmadı.
 4. Görünürlüğü GitHub'da kullanıcı değiştirsin. Public olduktan sonra başkaları klonlayabilir/forklayabilir; yeniden private yapmak bu kopyaları geri toplamaz.
 
