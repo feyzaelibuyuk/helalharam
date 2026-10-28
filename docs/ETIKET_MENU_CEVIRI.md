@@ -1,4 +1,4 @@
-﻿# Ücretsiz yerel etiket / menü çevirisi — Trello 25
+# Ücretsiz yerel etiket / menü çevirisi — Trello 25
 
 Azure/Google hesabı, API anahtarı ve ücretli abonelik kullanılmaz. C# web/API ve MAUI uygulaması, sunucunun bilgisayarındaki LibreTranslate servisini çağırır. Çeviri motoru Python tabanlı dış bağımlılıktır; uygulama kodu C# kalır. Hocanın C# şartı sunumda bu ayrımla anlatılmalıdır.
 
@@ -44,3 +44,13 @@ LibreTranslate 1.9.6 kuruldu; resmi Argos indeksinden EN→TR 1.5 ve TR→EN 1.5
 Windows kullanıcı adındaki Türkçe karakterleri SentencePiece okuyamadığından başlatıcı model klasörünün Windows kısa yol adını kullanır; güvenlik koruması değişmez. Argos varsayılan INFO günlüğü kullanıcı metni içerdiğinden başlatıcı bu günlüğü devre dışı bırakır. Gerçek testten sonra konsolda kaynak metin görünmedi. Bu başlatıcıyla çalıştırın; ham libretranslate komutunu kullanmayın.
 
 Gerçek motor testi C# web uçtan uca testinin yerine geçmez. Windows Uygulama Denetimi engeli devam eder; yeni web/Android çeviri akışı gerçek servise karşı henüz doğrulanmadı. Azure hesabı/anahtarı gerekmez, dış ücretli çeviri çağrısı yapılmadı.
+
+## 28 Ekim 2026 — C# üzerinden gerçek motor doğrulaması
+
+Önceki Windows engeli bu çalıştırmada tekrarlanmadı: izole 5095 Development web sunucusu normal `dotnet run` ile, kurulu motor normal başlatıcısıyla çalıştı. Güvenlik politikası değiştirilmedi. `tests/translation-live-http.py` gerçek C# API → LibreTranslate → sonuç akışında geçti. Yeni model indirilmedi; yalnız kurulu EN/TR kullanıldı.
+
+Doğrulananlar: gerçek dil listesi, EN→TR yanıtı, özgün metnin birebir korunması, E471 korunması, no-store, onaysız isteğin ve kurulu olmayan Japonca hedefin reddi. Test sentetik ambalaj metni kullanır; motoru başlatmaz veya model kurmaz. Motor hazır değilse açıkça başarısız olur. Bu test çeviri doğruluğu ölçümü değildir.
+
+Kalite sorunu tekrar görüldü: MILK/WHEAT/SOY çevrilmedi, “fat” besin bağlamında yanlış olarak “şişman” çevrildi. Otomatik sözlükle çıktı değiştirilmedi; tüm metnin güvenilir çevirisi sağlanmış sayılmaz. Trello 25 devam ediyor. Cihazdaki OCR→çeviri dokunma akışı bu kontrolde denenmedi.
+
+Tekrar kontrol: kurulu yerel motoru ve izole web sunucusunu açtıktan sonra `python tests/translation-live-http.py`. Gerçek kullanıcı metni veya kişisel veri kullanılmaz. Test çevirisinin konsolda gösterilmesi yalnız sentetik örneğe özeldir.
