@@ -26,6 +26,10 @@ namespace helalharam
     		builder.Logging.AddDebug();
 #endif
 
+#if ANDROID
+            if(DeviceInfo.Current.DeviceType==DeviceType.Virtual)
+                builder.ConfigureMauiHandlers(handlers=>handlers.AddHandler<ScrollView,EmulatorScrollViewHandler>());
+#endif
             return builder.Build();
         }
     }
