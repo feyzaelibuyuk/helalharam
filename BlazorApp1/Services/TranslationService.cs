@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -94,6 +94,19 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
             var checkText=useEnglish ? await TranslateTo("en") : translated;
             var checkLanguage=useEnglish ? "en" : target.Code;
             var warnings=new List<string>{"Makine çevirisi hatalı veya eksik olabilir. İçindekilerin tamamını, alerjen ve eser miktar uyarılarını özgün etiketle karşılaştırın. Bu çıktı helal onayı veya alerjen güvenliği garantisi değildir.","Yalnız girdiğiniz/okuttuğunuz metin çevrildi; fotoğrafta okunmayan ya da kadraj dışında kalan bölüm çevrilmiş sayılmaz."};
+
+            // A deliberately limited signal, never a proof that all other words were translated.
+            if(actualSource == "en" && target.Code == "tr")
+            {
+                string[] terms = ["milk", "wheat", "soy", "soya", "peanut", "peanuts", "egg", "eggs", "sesame", "fish", "shellfish", "mustard", "celery", "lupin", "sulphites", "sulfites", "gluten", "lactose", "whey", "casein", "sugar", "salt", "fat"];
+                bool ContainsWord(string text, string word) => Regex.IsMatch(text,
+                    @"(?<![\p{L}\p{N}])" + Regex.Escape(word) + @"(?![\p{L}\p{N}])",
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+                var retained = terms.Where(word => ContainsWord(input.Text, word) && ContainsWord(translated, word)).ToArray();
+                if(retained.Length > 0) warnings.Insert(0,
+                    "Eksik çeviri olasılığı: " + string.Join(", ", retained) +
+                    ". Bu sözcükler İngilizce kaynakta ve Türkçe çıktıda aynı biçimde bulundu. Ortak kullanılan terimler de eşleşebilir. Çıktı düzeltilmedi; özgün metni ayrıca kontrol edin. Bu sınırlı kontrol diğer çeviri hatalarını bulmaz.");
+            }
 
             if(detectedLow) warnings.Add("Otomatik dil algılama belirsiz. Kaynak dili elle doğrulayın; özgün metin için değerlendirme yapılmadı.");
             var codePattern=@"(?<![A-Za-z0-9])E[ -]?\d{3,4}[a-z]?(?![A-Za-z0-9])";

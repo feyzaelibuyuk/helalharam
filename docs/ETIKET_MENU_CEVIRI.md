@@ -54,3 +54,9 @@ Doğrulananlar: gerçek dil listesi, EN→TR yanıtı, özgün metnin birebir ko
 Kalite sorunu tekrar görüldü: MILK/WHEAT/SOY çevrilmedi, “fat” besin bağlamında yanlış olarak “şişman” çevrildi. Otomatik sözlükle çıktı değiştirilmedi; tüm metnin güvenilir çevirisi sağlanmış sayılmaz. Trello 25 devam ediyor. Cihazdaki OCR→çeviri dokunma akışı bu kontrolde denenmedi.
 
 Tekrar kontrol: kurulu yerel motoru ve izole web sunucusunu açtıktan sonra `python tests/translation-live-http.py`. Gerçek kullanıcı metni veya kişisel veri kullanılmaz. Test çevirisinin konsolda gösterilmesi yalnız sentetik örneğe özeldir.
+
+## Eksik çeviri sözcük uyarısı
+
+EN→TR çıktısında sınırlı bir içerik/besin terimleri listesi özgün metinle karşılaştırılır. Her iki metinde ayrı sözcük olarak aynı kalan terimler uyarının başında listelenir. Büyük/küçük harf ve Unicode sözcük sınırları dikkate alınır. Çıktı değiştirilmez. Gluten/laktoz gibi ortak terimler de eşleşebilir; bu nedenle mesaj olasılık olarak ifade edilir. Liste tüm dilleri veya tüm içerikleri kapsamaz ve anlam hatalarını tespit etmez.
+
+28 Ekim 2026: Web derlemesi 0 hata/0 uyarı. Gerçek motor üzerinden `tests/translation-live-http.py` tekrar geçti: MILK/WHEAT/SOY kalan çıktıda özel uyarı bulundu; özgün metin ve E471 korundu, onaysız ve kurulu olmayan dil isteği reddedildi. Aynı API uyarıları mevcut web ve mobil çeviri ekranlarında gösterilir; yeni mobil cihaz testi yapılmadı. Modelin “fat” anlam hatası devam ediyor; görev 25 tamamlanmış değildir.

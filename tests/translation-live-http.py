@@ -25,6 +25,10 @@ assert doc["translatedText"].strip(), "Empty translation"
 assert doc["sourceLanguage"] == "en" and doc["targetLanguage"] == "tr"
 assert "E471" in doc["translatedText"], "E code was lost"
 print("PASS: real C# -> local motor -> result; original preserved; E471 retained; no-store")
+unchanged = [word for word in ("milk", "wheat", "soy") if word in doc["translatedText"].lower()]
+if unchanged:
+    assert any("Eksik çeviri olasılığı" in warning and all(word in warning for word in unchanged) for warning in doc["warnings"]), "Retained food terms must be flagged"
+print("PASS: retained English food terms carry a specific warning when present")
 print("Synthetic translation for HUMAN quality review:")
 print(doc["translatedText"])
 print("Quality is not certified by these checks.")
