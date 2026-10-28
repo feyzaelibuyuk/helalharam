@@ -7,3 +7,5 @@ Ekran açıldığında/yenilendiğinde sorgulanır. Push, okunma sayacı, otomat
 Mobil Bildirimler sekmesindeki düğme aynı topluluk WebView kökenini açar. Gerçek cihazda topluluk gönderimi, yönetici incelemesi ve bildirimi yenileme denemesi yapılmalıdır. Web ve mobil kimlikleri eşitlenmez.
 
 Kontrol: Web build ve Android Compile hedefi 0 hata/0 uyarı ile geçti. İzole HTTP denemesinde sentetik paylaşım/inceleme olayı kullanıldı: sahip görürken ikinci çerez kimliği görmedi, no-store başlığı korundu, özel not ve inceleyen bilgisi HTML içinde bulunmadı. Sentetik kayıt temizlendi. APK paketleme ve gerçek mobil tıklama/çerez paylaşımı bu görevde denenmedi.
+
+Okunabilirlik güncellemesi: Her olay sahibinin gönderimindeki işletme/şube ve yemek adıyla gösterilir; Razor metni HTML olarak kodlar. Eski veya bozuk JSON kaydı durum listesini düşürmez, gönderim numarası korunur. Mobil bağlantı başarısızsa Yeniden dene düğmesi görünür; başarılı yüklemede hata temizlenir. Bu güncellemede web build ve Android Compile kontrol edildi; gerçek cihazda sunucu kapalı/açık geçişi ayrıca denenmelidir.

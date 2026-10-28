@@ -64,18 +64,25 @@ public sealed class CommunityService(IDbContextFactory<AppDbContext> factory,Adm
         db.CommunityPosts.Add(new(){Id=input.SubmissionId,OwnerKey=owner!,Payload=payload,Status="pending",Revision=0,CreatedUtc=DateTime.UtcNow});
         try{await db.SaveChangesAsync();return new(201,"Paylaşım incelemeye alındı. Şimdilik yalnız siz ve yönetici görebilirsiniz.");}catch(DbUpdateException){return new(409,"Gönderim eşzamanlı değişti. Paylaşımlarım ekranını kontrol edin.");}
     }
-    public sealed record StatusNotice(Guid PostId, int Revision, string Status, DateTime CreatedUtc);
+    public sealed record StatusNotice(Guid PostId, int Revision, string Status, DateTime CreatedUtc, string Place, string Food);
     public async Task<List<StatusNotice>> NoticesAsync(string? owner)
     {
         if (!Owner(owner)) return [];
         await using var db = await factory.CreateDbContextAsync();
         // Ownership comes only from the protected cookie. Internal reviewer notes never leave this query.
-        return await (from decision in db.CommunityDecisions.AsNoTracking()
+        var rows = await (from decision in db.CommunityDecisions.AsNoTracking()
                       join post in db.CommunityPosts.AsNoTracking() on decision.PostId equals post.Id
                       where post.OwnerKey == owner
                       orderby decision.CreatedUtc descending, decision.Id descending
-                      select new StatusNotice(post.Id, decision.Revision, decision.Status, decision.CreatedUtc))
+                      select new { PostId = post.Id, decision.Revision, decision.Status, decision.CreatedUtc, post.Payload })
                       .Take(100).ToListAsync();
+        return rows.Select(row => {
+            CommunityInput? input = null;
+            try { input = JsonSerializer.Deserialize<CommunityInput>(row.Payload); }
+            catch (JsonException) { /* Keep the status visible even if an older payload is unreadable. */ }
+            return new StatusNotice(row.PostId, row.Revision, row.Status, row.CreatedUtc,
+                input?.Place ?? "Gönderim", input?.Food ?? "");
+        }).ToList();
     }
     public async Task<CommunityList> ListAsync(string? owner,int page=1,bool mine=false)
     {
