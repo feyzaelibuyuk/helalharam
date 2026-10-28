@@ -107,24 +107,25 @@ public sealed class OcrPage : ContentPage
             token = lifetime.Token;
             status.Text = Ui.T("reading");
             var data = await OcrImage.ReadAsync(photo, token);
-            text.Text = "";
-            preview.Source = ImageSource.FromStream(() => new MemoryStream(data, writable: false));
-            preview.IsVisible = true;
             var ocrData = useContrast ? await OcrImage.EnhanceContrastAsync(data, token) : data;
             var recognized = await ScriptOcr.ReadAsync(ocrData, scriptCode, token);
             token.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(recognized))
-            { status.Text = Ui.T("readFailed"); return; }
+            { status.Text = Ui.T("readFailed") + "\n" + Ui.T("ocrPreviousKept"); return; }
             if (recognized.Length > 12000)
-            { status.Text = "Okunan metin çok uzun. Yalnız içindekiler veya menü bölümünün fotoğrafını seçin."; return; }
+            { status.Text = "Okunan metin çok uzun. Yalnız içindekiler veya menü bölümünün fotoğrafını seçin. " + Ui.T("ocrPreviousKept"); return; }
+            // Commit the matching text/preview together only after successful recognition.
+            // A failed or cancelled new image must never erase edited text or pair it with another photo.
+            preview.Source = ImageSource.FromStream(() => new MemoryStream(data, writable: false));
+            preview.IsVisible = true;
             text.Text = recognized;
             status.Text = Ui.T("readDone") + (useContrast ? "\n" + Ui.T("ocrContrastUsed") : "");
         }
         catch (OperationCanceledException) { }
         catch (PermissionException) { status.Text = Ui.T("permission"); }
         catch (NotSupportedException ex) { status.Text = ex.Message; }
-        catch (InvalidDataException ex) { status.Text = ex.Message; }
-        catch (Exception) { status.Text = Ui.T("photoFailed"); }
+        catch (InvalidDataException ex) { if(visible)status.Text = ex.Message + "\n" + Ui.T("ocrPreviousKept"); }
+        catch (Exception) { if(visible)status.Text = Ui.T("photoFailed") + "\n" + Ui.T("ocrPreviousKept"); }
         finally { SetBusy(false); }
     }
     private async Task AnalyzeAsync()
