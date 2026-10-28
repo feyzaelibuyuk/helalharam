@@ -1,4 +1,4 @@
-﻿@page "/translate"
+@page "/translate"
 @page "/translate/off/{Barcode}"
 @page "/translate/catalog/{CatalogId:int}"
 @inject TranslationService Translator
@@ -19,7 +19,7 @@
 <label for="source-language">Kaynak dil</label><InputSelect id="source-language" @bind-Value="Input.SourceLanguage"><option value="auto">Otomatik algıla — sonucu kontrol edin</option>@foreach(var lang in options?.Languages ?? []){<option value="@lang.Code">@lang.NativeName (@lang.Code)</option>}</InputSelect>
 <label for="target-language">Çeviri dili</label><InputSelect id="target-language" @bind-Value="Input.TargetLanguage"><option value="">Dil seçin</option>@foreach(var lang in options?.Languages ?? []){<option value="@lang.Code">@lang.NativeName (@lang.Code)</option>}</InputSelect>
 <p><label><InputCheckbox @bind-Value="Input.ReviewedSource" /> Metni özgün etiket / menü ile karşılaştırıp düzelttim. Eksik veya okunmayan bölümleri ayrıca kontrol edeceğim.</label></p>
-<p><label><InputCheckbox @bind-Value="Input.CloudConsent" /> Bu metnin çeviri için sunucunun bilgisayarındaki yerel LibreTranslate servisine gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ön kontrol için ek İngilizce çeviri kullanılır; karakter kotasına dahildir. Kişisel / sağlık bilgisi yazmayacağım.</label></p>
+<p><label><InputCheckbox @bind-Value="Input.CloudConsent" /> Bu metnin çeviri için sunucunun bilgisayarındaki yerel çeviri servisine gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ön kontrol için ek İngilizce çeviri kullanılır; karakter kotasına dahildir. Kişisel / sağlık bilgisi yazmayacağım.</label></p>
 <button type="submit" class="search-button" disabled="@(options?.Configured != true || options.Languages.Count==0)">Metnin tamamını çevir</button>
 </EditForm>
 @if(document is not null){

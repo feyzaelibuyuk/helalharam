@@ -1,4 +1,4 @@
-﻿namespace HelalRehber.Shared;
+namespace HelalRehber.Shared;
 public sealed class TranslationInput
 {
     public string Text { get; set; } = "";
@@ -18,7 +18,7 @@ public static class TranslationRules
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(input.Text) || input.Text.Length > MaxLength) errors.Add("1–12.000 karakter metin girin. Metin otomatik kısaltılmaz.");
         if (!input.ReviewedSource) errors.Add("OCR metnini fotoğrafla karşılaştırıp kontrol edin.");
-        if (!input.CloudConsent) errors.Add("Metnin sunucunun bilgisayarındaki yerel LibreTranslate servisine gönderilmesini onaylayın.");
+        if (!input.CloudConsent) errors.Add("Metnin sunucunun bilgisayarındaki yerel çeviri servisine gönderilmesini onaylayın.");
         if (input.Mode is not ("label" or "menu")) errors.Add("Etiket veya menü türünü seçin.");
         if (string.IsNullOrWhiteSpace(input.SourceLanguage) || input.SourceLanguage.Length > 20 || string.IsNullOrWhiteSpace(input.TargetLanguage) || input.TargetLanguage.Length > 20) errors.Add("Kaynak ve hedef dili seçin.");
         return errors;

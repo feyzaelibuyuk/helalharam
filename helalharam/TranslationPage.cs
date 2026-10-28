@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using HelalRehber.Shared;
 namespace helalharam;
 public sealed class TranslationPage : ContentPage
@@ -32,7 +32,7 @@ public sealed class TranslationPage : ContentPage
         body.Add(new Label { Text="Yalnız burada yer alan metin çevrilir. Fotoğrafta eksik / okunmayan bölümler çevrilmiş sayılmaz. Kaynak metni kontrol edip düzeltin. En fazla 12.000 karakter; otomatik kısaltma yapılmaz." });
         body.Add(mode);body.Add(text);body.Add(source);body.Add(target);
         var reviewRow=new VerticalStackLayout();reviewRow.Add(new Label { Text="Metni özgün etiket / menüyle karşılaştırıp düzelttim." });reviewRow.Add(reviewed);body.Add(reviewRow);
-        var consentRow=new VerticalStackLayout();consentRow.Add(new Label { Text="Bu metnin sunucunun bilgisayarındaki yerel LibreTranslate servisine gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ek İngilizce ön kontrol çevirisi kullanılır; kotaya dahildir. Kişisel / sağlık bilgisi yazmayın." });consentRow.Add(consent);body.Add(consentRow);
+        var consentRow=new VerticalStackLayout();consentRow.Add(new Label { Text="Bu metnin sunucunun bilgisayarındaki yerel çeviri servisine gönderilmesini onaylıyorum. Fotoğraf gönderilmez. Gerekirse ek İngilizce ön kontrol çevirisi kullanılır; kotaya dahildir. Kişisel / sağlık bilgisi yazmayın." });consentRow.Add(consent);body.Add(consentRow);
         body.Add(status);body.Add(reload);body.Add(send);body.Add(results);
         var close=new Button { Text=Ui.T("close") };close.Clicked+=async(_,_)=>{if(Navigation.NavigationStack.Count>1)await Navigation.PopAsync();else await Navigation.PopModalAsync();};body.Add(close);
         Content=new ScrollView { Content=body };
@@ -58,7 +58,7 @@ public sealed class TranslationPage : ContentPage
             status.Text=options.Message;loaded=options.Languages.Count>0;
         }
         catch(OperationCanceledException){if(visible)status.Text="Dil listesi isteği tamamlanamadı. Tekrar deneyin.";}
-        catch(Exception){if(visible)status.Text="Dil listesi alınamadı. Yerel API ve LibreTranslate servisinin açık olduğunu kontrol edin.";}
+        catch(Exception){if(visible)status.Text="Dil listesi alınamadı. Yerel API ve OPUS çeviri geçidinin açık olduğunu kontrol edin.";}
         finally{SetBusy(false);}
     }
     private async Task TranslateAsync()

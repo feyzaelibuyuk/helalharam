@@ -4,7 +4,7 @@
 
 1. GitHub Desktop'ta sunacağınız commit'in seçili olduğundan ve Changes alanının temiz olduğundan emin olun.
 2. Web için depo kökünde `dotnet run --project BlazorApp1/BlazorApp1.csproj --launch-profile http`. Adres `http://localhost:5088`.
-3. Çeviri gösterecekseniz kurulu yerel motor için `start-local-translation.cmd` dosyasını açın ve açık bırakın. Motor/model kurulumu ayrıca tamamlanmış olmalı; yalnızca web sunucusunun açık olması yeterli değildir. Yeni hesap veya ücretli çeviri anahtarı gerekmiyor.
+3. Çeviri gösterecekseniz kurulu yerel motor için `start-opus-translation.cmd` dosyasını açın ve açık bırakın. İngilizce→Türkçe için OPUS modeli kurulmuş olmalı. Diğer yüklü çiftler/otomatik algılama için ayrıca `start-local-translation.cmd` açılabilir. Motor/model kurulumu ayrıca tamamlanmış olmalı; yalnızca web sunucusunun açık olması yeterli değildir. Yeni hesap veya ücretli çeviri anahtarı gerekmiyor.
 4. Android için Visual Studio'da `helalharam` MAUI projesini ve çalışan API 35 emülatörünü seçip çalıştırın. Emülatörün API adresi `10.0.2.2:5088`; bilgisayardaki web/API açık kalmalı.
 
 ## Gösterilecek kısa akış
@@ -23,7 +23,7 @@
 
 - Tüm dünya barkodlarının veritabanında bulunması garanti değildir.
 - OCR beş başlangıç alfabesiyle sınırlı; Arapça/Kiril OCR yok. Arayüz TR/EN/AR kısmi; tüm ekranlar/tüm diller çevrilmedi.
-- Yerel EN↔TR çeviri motorunda bilinen kalite sorunları vardır. Tam/doğru global etiket çevirisi tamamlanmış sayılmaz.
+- Eski LibreTranslate EN→TR modelinde bilinen kalite sorunları vardır; yeni OPUS adayının yalnız sınırlı örnekleri kontrol edilmiştir. Tam/doğru global etiket çevirisi tamamlanmış sayılmaz.
 - Kişisel kurallar sınırlı sözlük ve kaynak etiketlerine dayanır; klinik doğruluk/alerjensizlik/çapraz temas ölçümü yoktur.
 - Diğer dini profiller, gerçek push bildirimleri, doğrulanmış kullanıcı hesabı ve kötüye kullanımın tam önlenmesi henüz yoktur.
 - Resmî sertifikaların otomatik küresel doğrulama API'si yoktur. Topluluk oyu/rozet belge veya uzmanlık değildir.

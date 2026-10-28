@@ -1,5 +1,7 @@
 # Ücretsiz yerel etiket / menü çevirisi — Trello 25
 
+Güncel başlatma: [OPUS entegrasyonu](OPUS_ENTEGRASYON.md). İngilizce→Türkçe için `start-opus-translation.cmd` (5002) kullanılır. Aşağıdaki LibreTranslate kurulumu diğer çiftler ve önceki sürüm için korunmuştur; tek başına 5000 motorunu açmak güncel C# bağlantısı için yeterli değildir.
+
 Azure/Google hesabı, API anahtarı ve ücretli abonelik kullanılmaz. C# web/API ve MAUI uygulaması, sunucunun bilgisayarındaki LibreTranslate servisini çağırır. Çeviri motoru Python tabanlı dış bağımlılıktır; uygulama kodu C# kalır. Hocanın C# şartı sunumda bu ayrımla anlatılmalıdır.
 
 ## Yerel kurulum

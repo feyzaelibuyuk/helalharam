@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -42,7 +42,7 @@ builder.Services.AddScoped<WebUi>();
 builder.Services.AddSingleton<TranslationService>();
 builder.Services.AddSingleton<TravelCatalog>();
 builder.Services.AddHttpClient("Overpass", client => { client.BaseAddress=new Uri(builder.Configuration["Maps:OverpassEndpoint"]??"https://overpass-api.de/api/interpreter");client.Timeout=TimeSpan.FromSeconds(45);client.DefaultRequestHeaders.UserAgent.ParseAdd("HelalRehber-StudentDemo/0.1"); }).ConfigurePrimaryHttpMessageHandler(()=>new HttpClientHandler {AllowAutoRedirect=false});
-builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("http://127.0.0.1:5000/"); client.Timeout = TimeSpan.FromSeconds(120); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
+builder.Services.AddHttpClient("Translator", client => { client.BaseAddress = new Uri("http://127.0.0.1:5002/"); client.Timeout = TimeSpan.FromSeconds(120); }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddSingleton<AdminAccess>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddSingleton<CertificateEvidenceService>();

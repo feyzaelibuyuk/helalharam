@@ -19,7 +19,7 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
     private static bool RuleLanguage(string language) => language.Split('-')[0] is "tr" or "en" or "fr" or "de";
     public async Task<TranslationOptions> OptionsAsync(CancellationToken token = default)
     {
-        if(cache.TryGetValue<List<TranslationLanguage>>("libre-languages-v1",out var known)) return new(Configured,"LibreTranslate (yerel)",known!,Configured ? "" : "Çeviri servisi henüz yapılandırılmadı. Yerel LibreTranslate servisini başlatın.");
+        if(cache.TryGetValue<List<TranslationLanguage>>("libre-languages-v1",out var known)) return new(Configured,"Yerel OPUS-MT / LibreTranslate",known!,Configured ? "" : "Çeviri servisi henüz yapılandırılmadı. Yerel OPUS çeviri geçidini başlatın.");
         await languageGate.WaitAsync(token);
         try
         {
@@ -34,10 +34,10 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
                 if(known.Count == 0 || !known.Any(x=>x.Code=="en")) throw new JsonException();
                 cache.Set("libre-languages-v1",known,TimeSpan.FromHours(24));
             }
-            return new(Configured,"LibreTranslate (yerel)",known!,Configured ? "" : "Çeviri servisi henüz yapılandırılmadı. Yerel LibreTranslate servisini başlatın.");
+            return new(Configured,"Yerel OPUS-MT / LibreTranslate",known!,Configured ? "" : "Çeviri servisi henüz yapılandırılmadı. Yerel OPUS çeviri geçidini başlatın.");
         }
         catch(Exception ex) when(ex is HttpRequestException or JsonException or InvalidOperationException or KeyNotFoundException or TaskCanceledException)
-        { if(token.IsCancellationRequested) throw; return new(Configured,"LibreTranslate (yerel)",[],"Dil listesi alınamadı. Bilgisayardaki LibreTranslate servisini başlatıp tekrar deneyin."); }
+        { if(token.IsCancellationRequested) throw; return new(Configured,"Yerel OPUS-MT / LibreTranslate",[],"Dil listesi alınamadı. Bilgisayardaki OPUS çeviri geçidini başlatıp tekrar deneyin."); }
         finally { languageGate.Release(); }
     }
     public async Task<TranslationResult> TranslateAsync(TranslationInput input, CancellationToken token = default)
@@ -79,6 +79,7 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
             if(!cache.TryGetValue<Dictionary<string,HashSet<string>>>("libre-routes-v1",out var routes) || routes is null || !routes.TryGetValue(actualSource,out var targets) ||
                 (actualSource!=target.Code && !targets.Contains(target.Code)) || (useEnglish && actualSource!="en" && !targets.Contains("en")))
                 return new(400,"Bu dil çifti için yerel çeviri modeli yüklü değil. Başka dil seçin veya gerekli modeli yükleyin.");
+            var provider = "Yerel çeviri";
             async Task<string> TranslateTo(string language)
             {
                 if(actualSource==language) return input.Text;
@@ -86,6 +87,8 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
                 if(response.StatusCode==HttpStatusCode.TooManyRequests) throw new TranslationFailure(429);
                 if(!response.IsSuccessStatusCode) throw new TranslationFailure(502);
                 using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync(token));
+                if(result.RootElement.TryGetProperty("provider",out var engine) && language==target.Code)
+                    provider=engine.GetString() ?? "Yerel çeviri";
                 var value=result.RootElement.GetProperty("translatedText").GetString();
                 if(string.IsNullOrWhiteSpace(value) || value.Length>120000) throw new TranslationFailure(502);
                 return value;
@@ -117,7 +120,7 @@ public sealed class TranslationService(IHttpClientFactory clients, IConfiguratio
             var precheck=input.Mode=="label" ? IngredientEvaluator.Evaluate(checkText,checkLanguage) : null;
             if(precheck is not null) warnings.Add("Çeviri üzerinde ön kontrol: bulgular makine çevirisine dayanır, gerçek bileşen/kaynak özgün etiketten doğrulanmalıdır. Bulgu olmaması uygunluk veya alerjen yokluğu değildir.");
             if(useEnglish) warnings.Add("Seçilen hedef dil için içerik kuralları olmadığından ek İngilizce çeviri ön kontrolde kullanıldı. Bu ikinci metin ayrıca gösterilir ve karakter kotasına dahildir.");
-            return new(200,"Metin çevrildi; özgün metinle karşılaştırın.",new(input.Text,translated,actualSource,target.Code,target.Direction,"LibreTranslate (yerel)",input.Mode,warnings,originalAssessment,checkText ?? "",checkLanguage,precheck));
+            return new(200,"Metin çevrildi; özgün metinle karşılaştırın.",new(input.Text,translated,actualSource,target.Code,target.Direction,provider,input.Mode,warnings,originalAssessment,checkText ?? "",checkLanguage,precheck));
         }
         catch(TranslationFailure ex) { return new(ex.Status,"Yerel çeviri servisi isteği tamamlayamadı. Özgün metin korunuyor."); }
         catch(OperationCanceledException) when(!token.IsCancellationRequested) { return new(504,"Çeviri isteği zaman aşımına uğradı. Metniniz korunuyor; tekrar deneyin."); }
