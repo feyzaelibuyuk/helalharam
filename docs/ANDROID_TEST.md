@@ -62,3 +62,5 @@ Elle deneme: Sunucuyu kapatıp kontrol edin; açıklayıcı hata görülmeli. Su
 Kurulu Pixel_7 API 35 emülatörü başlatıldı; adb install -r başarılı oldu (veri silinmedi), uygulama başlatıldı ve Profil ekranı açıldı. Çeviri formundaki dokunma denemesi tamamlanmadı: Windows otomasyonunda odak/koordinat hatası oluştu. Bu nedenle Android uçtan uca çeviri geçti denmez. Kamera/OCR izinleri veya gerçek fotoğraf denemesi bu görevde yapılmadı.
 
 Elle kalan deneme: `start-opus-translation.cmd` açın; web/API'yi localhost:5088'de başlatın. Emülatörde Profil → Etiket / menü çevirisi açın. Kaynak English (en), hedef Turkish (tr) seçin; `Ingredients: milk, wheat flour, soy. May contain peanuts.` metnini girin. Sentetik metni kontrol ettiğinizi ve yalnız yerel motora gönderimi onaylayın. Sonuçta OPUS sağlayıcısı, süt/buğday/soya ve yer fıstığı uyarısı görünmeli. Özgün metin korunmalı. Çeviri sonucu helal veya alerjen güvenliği onayı değildir.
+
+Mobil gezinme güncellemesi: beş alt sekmeli güncel APK aynı artifacts/android-test yoluna yenilendi. Katalog ve Profil görünümü emülatörde doğrulandı; ayrıntı MOBIL_GEZINME.md. Çeviri uçtan uca dokunma kontrolü hâlâ ayrı denemedir.
