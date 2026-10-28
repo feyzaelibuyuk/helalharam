@@ -1,4 +1,4 @@
-﻿namespace helalharam;
+namespace helalharam;
 
 public sealed class HomePage : TabbedPage
 {
@@ -113,8 +113,9 @@ public sealed class HomePage : TabbedPage
 
     private ContentPage Notifications()
     {
-        var stack = Stack(Ui.T("notifications"), "Gerçek bildirim servisi henüz bağlı değil. Planlanan bildirimler:");
-        stack.Add(Text("• Favori ürünün içerik veya değerlendirme bilgisi değişti.\n\n• Beklediğin ürünün eksik bilgisi tamamlandı.\n\n• Gönderdiğin deneyim veya düzeltme moderasyonda sonuçlandı."));
+        var stack = Stack(Ui.T("notifications"), "Topluluk paylaşımlarınızın inceleme sonuçlarını kontrol edin. Ekran açıldığında yenilenir; arka planda telefon bildirimi gönderilmez.");
+        stack.Add(Action("İnceleme bildirimlerini aç", async (_, _) => await Navigation.PushModalAsync(new NavigationPage(new CommunityPage(true)))));
+        stack.Add(Text("Bildirimler topluluk web görünümünün kimliğine bağlıdır. Tarayıcı ve mobil kimlikleri ayrı olabilir. Favori ürün değişiklikleri ve bilgi düzeltme sonuçları henüz bağlı değildir."));
         return Page(Ui.T("notifications"), stack);
     }
 

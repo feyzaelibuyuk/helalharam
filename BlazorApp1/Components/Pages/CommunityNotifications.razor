@@ -1,0 +1,18 @@
+@page "/community/notifications"
+@inject CommunityService Community
+@inject CommunityIdentity Identity
+@inject IHttpContextAccessor Context
+<PageTitle>Bildirimler | Helal Rehber</PageTitle>
+<main class="app-shell" lang="tr" dir="ltr">
+<header class="topbar"><a class="brand" href="/community">← Topluluk</a><a href="/community/mine" data-enhance-nav="false">Paylaşımlarım</a></header>
+<h1>Bildirimler</h1>
+<p>Bu tarayıcı kimliğine ait topluluk paylaşımlarının son 100 durum değişikliği. Ekranı açtığınızda veya yenilediğinizde kontrol edilir. Telefon bildirimi gönderilmez; hesap ve cihazlar arası eşitleme yoktur.</p>
+<a class="action-link" href="/community/notifications" data-enhance-nav="false">Bildirimleri yenile</a>
+@if(items.Count == 0){<section class="info-card"><h2>Henüz durum değişikliği yok</h2><p>Paylaşımınız incelendiğinde sonuç burada görünür. Çerezleri silmek veya başka tarayıcı kullanmak önceki kimliğin kayıtlarına erişimi kaldırır.</p></section>}
+@foreach(var item in items){<section class="info-card"><h2>@CommunityService.StatusLabel(item.Status)</h2><p><time datetime="@item.CreatedUtc.ToString("O")">@item.CreatedUtc.ToString("dd.MM.yyyy HH:mm") UTC</time> · İşlem @item.Revision</p><p>Gönderim: @item.PostId</p><a href="/community/mine" data-enhance-nav="false">Paylaşımlarımda güncel durumu gör</a></section>}
+<p>Geçmişteki bir yayın kararı sonradan değişmiş olabilir. Bu sonuçlar helal onayı, sertifika doğrulaması veya katalog güncellemesi değildir. Favori ürün değişiklikleri ve bilgi düzeltme sonuçları henüz bu ekrana bağlı değildir.</p>
+</main>
+@code {
+private List<CommunityService.StatusNotice> items = [];
+protected override async Task OnParametersSetAsync() => items = await Community.NoticesAsync(Identity.Read(Context.HttpContext));
+}
