@@ -8,6 +8,9 @@ namespace helalharam
     {
         public static MauiApp CreateMauiApp()
         {
+#if ANDROID
+            MouseWheelScrolling.Configure();
+#endif
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()

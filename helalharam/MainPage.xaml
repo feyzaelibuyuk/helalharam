@@ -18,7 +18,8 @@
             </Border>
         </Grid>
 
-        <ScrollView Grid.Row="1">
+        <CollectionView x:Name="ResultsList" Grid.Row="1" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset">
+            <CollectionView.Header>
             <VerticalStackLayout Padding="22,24,22,30" Spacing="18">
                 <Label Text="{local:Tr eyebrow}" FontSize="10" CharacterSpacing="1.4" TextColor="#71867B" FontAttributes="Bold" />
                 <Label Text="Ne yediğini&#10;bilerek seç." FontSize="38" LineHeight="1.05" TextColor="#1D342C" FontAttributes="Bold" />
@@ -45,10 +46,11 @@
                 <Entry x:Name="CityEntry" IsVisible="False" Placeholder="{local:Tr cityMobile}" MaxLength="80" Completed="OnSearchCompleted" />
                 <Label x:Name="ResultCount" Text="Kaynak durumuyla gösterilen örnek kayıtlar" FontSize="11" TextColor="#8A948D" />
 
-                <CollectionView x:Name="ResultsList" SelectionMode="None">
+            </VerticalStackLayout>
+            </CollectionView.Header>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="0,0,0,12" Padding="16" BackgroundColor="White" Stroke="#E7E9E3" StrokeThickness="1" StrokeShape="RoundRectangle 11">
+                            <Border Margin="22,0,22,12" Padding="16" BackgroundColor="White" Stroke="#E7E9E3" StrokeThickness="1" StrokeShape="RoundRectangle 11">
                                 <VerticalStackLayout Spacing="9">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Label Text="{Binding Status}" TextColor="#9B6C37" BackgroundColor="#FBF2E5" Padding="8,5" FontSize="10" HorizontalOptions="Start" />
@@ -64,13 +66,16 @@
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
-                </CollectionView>
+            <CollectionView.Footer>
+                <VerticalStackLayout Padding="22,0,22,30" Spacing="12">
+
 
                 <Border Padding="14" BackgroundColor="#FBF7EE" Stroke="#EBDFCB" StrokeThickness="1" StrokeShape="RoundRectangle 9">
                     <Label Text="Bilgi notu — Uygulama kesin dini hüküm veya sertifika vermez. Örnek kayıtlar gösterim amaçlıdır; gerçek ürün/işletme bilgisi olarak kullanılmamalıdır." FontSize="11" TextColor="#927950" LineHeight="1.4" />
                 </Border>
                 <Label x:Name="ConnectionStatus" Text="" FontSize="10" TextColor="#9A6C36" />
-            </VerticalStackLayout>
-        </ScrollView>
+                </VerticalStackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
     </Grid>
 </ContentPage>
