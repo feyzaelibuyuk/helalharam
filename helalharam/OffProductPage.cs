@@ -32,7 +32,7 @@ public sealed class OffProductPage : ContentPage
             if (result?.Product is not { } p)
             {
                 Text(result?.Message ?? "Ürün bilgisi alınamadı.");
-                var ocr=new Button { Text="Barkod bulunamadıysa etiket fotoğrafını oku / çevir" };ocr.Clicked+=async(_,_)=>await Navigation.PushAsync(new OcrPage());body.Add(ocr);
+                ReadLabel();
                 if (response.StatusCode is System.Net.HttpStatusCode.BadGateway or System.Net.HttpStatusCode.TooManyRequests) Retry();
                 return;
             }
@@ -77,7 +77,17 @@ public sealed class OffProductPage : ContentPage
                     body.Add(reference);
                 }
             }
-            var translate=new Button { Text="İçindekilerin tamamını çevir" };translate.Clicked+=async(_,_)=>await Navigation.PushAsync(new TranslationPage(p.Ingredients,p.IngredientsLanguage));body.Add(translate);
+            if (string.IsNullOrWhiteSpace(p.Ingredients))
+            {
+                Text("Ürün bulundu; kaynakta içindekiler metni yok. Ambalajdaki etiketi fotoğrafla okuyabilir veya metni elle girebilirsin.");
+                ReadLabel();
+            }
+            else
+            {
+                var translate=new Button { Text="İçindekilerin tamamını çevir" };
+                translate.Clicked+=async(_,_)=>await Navigation.PushAsync(new TranslationPage(p.Ingredients,p.IngredientsLanguage));
+                body.Add(translate);
+            }
             Text("Özgün içindekiler", 20); Text(string.IsNullOrWhiteSpace(p.Ingredients) ? "Kaynakta içerik bulunmuyor." : p.Ingredients);
             Text($"Kaynak alerjen etiketleri: {Join(p.Allergens)}\nKaynak eser miktar etiketleri: {Join(p.Traces)}\nBoş liste alerjen veya çapraz temas yokluğu anlamına gelmez.");
             Text($"Dil: {p.IngredientsLanguage}\nSatış ülke etiketleri: {Join(p.Countries)}\nKategori etiketleri: {Join(p.Categories)}");
@@ -97,8 +107,15 @@ public sealed class OffProductPage : ContentPage
             }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
-        { body.Clear(); Text("Sunucuya ulaşılamadı. Blazor/API projesinin çalıştığını kontrol edin."); Retry(); }
+        { body.Clear(); Text("Sunucuya ulaşılamadı. Blazor/API projesinin çalıştığını kontrol edin."); ReadLabel(); Retry(); }
         finally { loading = false; }
+    }
+    private void ReadLabel()
+    {
+        var read = new Button { Text = "Etiket fotoğrafını oku veya içindekileri elle gir" };
+        read.Clicked += async (_, _) => await Navigation.PushAsync(new OcrPage(0));
+        body.Add(read);
+        Text("Fotoğraftan okuma ve elle giriş için devam edebilirsin. İçerik analizi ve çeviri için ilgili servislerin erişilebilir olması gerekir.", 13);
     }
     private void Retry() { var retry = new Button { Text = "Tekrar dene" }; retry.Clicked += async (_, _) => await LoadAsync(); body.Add(retry); }
     private static string Join(string[] tags) => tags.Length == 0 ? "Belirtilmedi" : string.Join(", ", tags.Select(t => t.Contains(':') ? t[(t.IndexOf(':') + 1)..] : t));
